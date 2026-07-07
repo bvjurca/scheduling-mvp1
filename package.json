@@ -1,0 +1,11 @@
+{
+  "name": "dsa-commercial-scheduling-mvp1-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static stakeholder prototype for DSA Commercial Scheduling MVP1.",
+  "scripts": {
+    "build": "node scripts/validate-static-site.mjs",
+    "serve": "npx serve public"
+  },
+  "devDependencies": {}
+}

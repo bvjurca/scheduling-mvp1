@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSA Commercial Scheduling MVP1 Stakeholder Proposal</title>
+  <style>
+    :root {
+      --ink: #202124;
+      --muted: #5e6671;
+      --line: #d9dee5;
+      --soft: #f6f7f4;
+      --panel: #ffffff;
+      --teal: #087f7b;
+      --teal-soft: #e2f4f2;
+      --coral: #b64e3f;
+      --coral-soft: #f8e7e3;
+      --amber: #9a6b12;
+      --amber-soft: #fff1cf;
+      --green: #247a3b;
+      --green-soft: #e5f4e9;
+      --violet: #5d4f9a;
+      --violet-soft: #ece9fb;
+      --shadow: 0 16px 45px rgba(32, 33, 36, 0.08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(8, 127, 123, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(8, 127, 123, 0.07) 0 1px, transparent 1px 100%),
+        #f7f8f5;
+      background-size: 32px 32px;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      color: var(--teal);
+    }
+
+    .hero {
+      min-height: 430px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 26px;
+    }
+
+    .hero-copy {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: clamp(28px, 5vw, 58px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: 0.98;
+      letter-spacing: 0;
+      max-width: 860px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.05;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 19px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      margin-bottom: 10px;
+    }
+
+    .lede {
+      max-width: 850px;
+      font-size: clamp(18px, 2vw, 23px);
+      color: #39404a;
+      margin-bottom: 24px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .button {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: white;
+      min-height: 40px;
+      border-radius: 5px;
+      padding: 10px 14px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .button.secondary {
+      background: white;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .button.small {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .hero-board {
+      border-radius: var(--radius);
+      border: 1px solid #c8d0d7;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .sketch-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .journey-sketch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-content: center;
+    }
+
+    .sketch-card {
+      border: 1px dashed #aeb8c2;
+      border-radius: 7px;
+      padding: 14px;
+      min-height: 128px;
+      background: linear-gradient(180deg, #fff, #fbfcfd);
+    }
+
+    .sketch-card strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .line {
+      height: 10px;
+      border-radius: 99px;
+      background: #dfe5ea;
+      margin: 9px 0;
+    }
+
+    .line.short {
+      width: 54%;
+    }
+
+    .line.med {
+      width: 74%;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .mini-box {
+      min-height: 44px;
+      border: 1px solid #cbd4dc;
+      border-radius: 6px;
+      background: #f8fafb;
+    }
+
+    .note-strip {
+      border-left: 4px solid var(--teal);
+      background: var(--teal-soft);
+      padding: 12px 14px;
+      color: #174b4a;
+      font-size: 14px;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(20px, 3vw, 32px);
+      margin-bottom: 22px;
+      box-shadow: 0 10px 30px rgba(32, 33, 36, 0.04);
+    }
+
+    .section.unframed {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 18px 0;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .context-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .scope-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      background: white;
+    }
+
+    .scope-card h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .date-clarification {
+      border: 1px solid #d8d1f7;
+      border-left: 5px solid var(--violet);
+      background: var(--violet-soft);
+      border-radius: var(--radius);
+      padding: 15px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 99px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .tag.good {
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #b7d9c0;
+    }
+
+    .tag.warn {
+      background: var(--amber-soft);
+      color: var(--amber);
+      border-color: #ead198;
+    }
+
+    .tag.bad {
+      background: var(--coral-soft);
+      color: var(--coral);
+      border-color: #edc0b7;
+    }
+
+    .tag.info {
+      background: var(--violet-soft);
+      color: var(--violet);
+      border-color: #d8d1f7;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      min-height: 138px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .prototype {
+      border: 1px solid #bfc8d2;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #eef2f5;
+      box-shadow: var(--shadow);
+    }
+
+    .wire-toolbar {
+      min-height: 54px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 5px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      color: #39404a;
+    }
+
+    .tab.active {
+      border-color: var(--teal);
+      background: var(--teal-soft);
+      color: #075b58;
+    }
+
+    .wire-grid {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 370px;
+      gap: 1px;
+      background: var(--line);
+      min-height: 720px;
+    }
+
+    .wire-panel {
+      background: white;
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .pipeline-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .opportunity-button {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 7px;
+      padding: 11px;
+      text-align: left;
+      cursor: pointer;
+      min-height: 88px;
+      display: grid;
+      gap: 5px;
+      color: var(--ink);
+    }
+
+    .opportunity-button:hover,
+    .opportunity-button.active {
+      border-color: var(--teal);
+      box-shadow: inset 3px 0 0 var(--teal);
+      background: #fbfffe;
+    }
+
+    .opportunity-button small {
+      color: var(--muted);
+      display: block;
+      line-height: 1.35;
+    }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 11px;
+      min-height: 70px;
+      background: #fbfcfd;
+    }
+
+    .field span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .field strong {
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .gate-list,
+    .rule-list,
+    .recommendation-list,
+    .handoff-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .gate-item,
+    .rule-item,
+    .recommendation,
+    .handoff-row {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .gate-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-top: 3px;
+      border: 2px solid currentColor;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .status-dot.pass {
+      color: var(--green);
+      background: var(--green);
+    }
+
+    .status-dot.fail {
+      color: var(--coral);
+      background: var(--coral);
+    }
+
+    .status-dot.warn {
+      color: var(--amber);
+      background: var(--amber);
+    }
+
+    .status-dot.pending {
+      color: var(--muted);
+    }
+
+    .rule-item {
+      display: grid;
+      gap: 6px;
+    }
+
+    .rule-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .recommendation {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rec-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mini-stat {
+      background: #f7f9fa;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px;
+      min-height: 58px;
+    }
+
+    .mini-stat span {
+      color: var(--muted);
+      display: block;
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .mini-stat strong {
+      font-size: 13px;
+    }
+
+    .decision-banner {
+      border-radius: 7px;
+      padding: 14px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+
+    .decision-banner.good {
+      background: var(--green-soft);
+      border-color: #b7d9c0;
+    }
+
+    .decision-banner.warn {
+      background: var(--amber-soft);
+      border-color: #ead198;
+    }
+
+    .decision-banner.bad {
+      background: var(--coral-soft);
+      border-color: #edc0b7;
+    }
+
+    .decision-banner.info {
+      background: var(--violet-soft);
+      border-color: #d8d1f7;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      padding: 14px;
+      min-height: 120px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1;
+      margin-bottom: 8px;
+      color: var(--teal);
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 99px;
+      background: #e6ebef;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--teal);
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .release {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      padding: 16px;
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      counter-reset: question;
+    }
+
+    .question {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 14px 14px 48px;
+      background: white;
+      position: relative;
+      min-height: 96px;
+    }
+
+    .question::before {
+      counter-increment: question;
+      content: counter(question);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      position: absolute;
+      left: 14px;
+      top: 14px;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 12px 0 6px;
+    }
+
+    @media (max-width: 1180px) {
+      .hero,
+      .split,
+      .wire-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wire-grid {
+        min-height: auto;
+      }
+
+      .workflow,
+      .kpi-grid,
+      .context-grid,
+      .roadmap {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 14px;
+      }
+
+      .topbar,
+      .wire-toolbar,
+      .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-copy {
+        padding: 24px;
+      }
+
+      .journey-sketch,
+      .scope-grid,
+      .field-grid,
+      .workflow,
+      .kpi-grid,
+      .context-grid,
+      .roadmap,
+      .question-grid,
+      .rec-meta {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar" aria-label="Proposal context">
+      <div class="brand"><span class="brand-mark">DSA</span><span>Commercial Scheduling MVP1</span></div>
+      <div>Stakeholder proposal draft | Wireframe fidelity | Refreshed with SFDC/RACE context dated 2026-07-06</div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">First tentative proposal</p>
+        <h1>Rules-supported green light to say yes</h1>
+        <p class="lede">A stakeholder-facing concept for helping Client Services move from a Salesforce Opportunity/RFP to a credible Site / Month-of-Timing recommendation, with transparent qualification checks, expiry, and a Central Scheduling off-ramp.</p>
+        <div class="cta-row">
+          <a class="button" href="#prototype">Review workflow wireframe</a>
+          <a class="button secondary" href="#questions">Validate open decisions</a>
+        </div>
+      </div>
+
+      <aside class="hero-board" aria-label="Wireframe overview">
+        <div class="sketch-title">
+          <strong>Core product shape</strong>
+          <span class="tag info">Not final UI</span>
+        </div>
+        <div class="journey-sketch">
+          <div class="sketch-card">
+            <strong>Opportunity intake</strong>
+            <div class="line med"></div>
+            <div class="line"></div>
+            <div class="line short"></div>
+          </div>
+          <div class="sketch-card">
+            <strong>Eligibility gate</strong>
+            <div class="mini-grid">
+              <div class="mini-box"></div>
+              <div class="mini-box"></div>
+              <div class="mini-box"></div>
+            </div>
+            <div class="line med"></div>
+          </div>
+          <div class="sketch-card">
+            <strong>Rule trace</strong>
+            <div class="line"></div>
+            <div class="line med"></div>
+            <div class="line short"></div>
+          </div>
+          <div class="sketch-card">
+            <strong>Recommendation</strong>
+            <div class="mini-grid">
+              <div class="mini-box"></div>
+              <div class="mini-box"></div>
+              <div class="mini-box"></div>
+            </div>
+            <div class="line"></div>
+          </div>
+        </div>
+        <div class="note-strip">MVP1 answers "can Commercial credibly share this site/month option?" The date input is the customer's requested commercial timing anchor, not calculated LabSci/test-material availability and not RPM's post-award execution date.</div>
+      </aside>
+    </header>
+
+    <section class="section split" id="scope">
+      <div>
+        <p class="eyebrow">Proposal framing</p>
+        <h2>What MVP1 should prove</h2>
+        <p class="muted">The first release should let stakeholders validate the decision model and user workflow before committing to production integration depth. The strongest value is speed with traceability: a Client Manager can see why an option is safe to share, why it expires, and when Central Scheduling must take over.</p>
+      </div>
+      <div class="scope-grid">
+        <article class="scope-card">
+          <h3>In scope <span class="tag good">MVP1</span></h3>
+          <ul>
+            <li>Customer-requested commercial timing anchor known and more than four months out.</li>
+            <li>Required SFDC Opportunity, RFP, and Study configuration metadata present.</li>
+            <li>Site Capability and Lead Time / Site Availability checks.</li>
+            <li>Site / Month-of-Timing recommendation with expiration.</li>
+            <li>Central Scheduling triage reason and handoff context.</li>
+          </ul>
+        </article>
+        <article class="scope-card">
+          <h3>Out of scope <span class="tag warn">Later</span></h3>
+          <ul>
+            <li>Exact date, room, or operations scheduling optimization.</li>
+            <li>Room Availability, Animal Availability, Test Item Receipt, and Reporting Milestones.</li>
+            <li>Labor, equipment, preferences, overbooking, profitability, and full production integrations.</li>
+            <li>Fully automated scheduling commitment.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="date-clarification">
+        <p class="eyebrow">Date language clarification</p>
+        <h3>MVP1 should say "requested start / timing anchor" instead of bare "target date"</h3>
+        <p class="muted">For this proposal, the gating date means the date or month the customer is asking Commercial to evaluate for the study. It may be captured in SFDC as Opportunity Start Date, Requested Start Date on the RFP, or Study timing context depending on the object. It should not be treated as a calculated LabSci lead-time date, test material availability date, room date, or RPM execution milestone.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Current system context</p>
+      <h2>What the latest screenshots add</h2>
+      <div class="context-grid">
+        <article class="scope-card">
+          <h3>Opportunity <span class="tag info">SFDC</span></h3>
+          <p class="muted">The live surface is a Salesforce Opportunity record with stage path, owner, amount, close date, opportunity number, activity timeline, related Studies, and related Request for Proposals.</p>
+        </article>
+        <article class="scope-card">
+          <h3>RFP tab <span class="tag info">SFDC</span></h3>
+          <p class="muted">The RFP form includes fields that matter for MVP1 wording: Status, Contact, Preferred Site, Triage Site, Requested Start Date, Management Triage Release, RFP Created Date, Proposal Submission Date, LabSci triage, and Triage Comments.</p>
+        </article>
+        <article class="scope-card">
+          <h3>Study record <span class="tag warn">SFDC</span></h3>
+          <p class="muted">Study records carry CRL Site, Scientific Group, Study Type, Product Line, Start Date, Anticipated Start Date, Anticipated End Date, and history. For MVP1 these are context, not a post-award execution system of record.</p>
+        </article>
+        <article class="scope-card">
+          <h3>RACE modules <span class="tag good">Reference</span></h3>
+          <p class="muted">The DSA Study & Animal Logistics dashboards already expose General Timing, Just Say Yes, LabSci Lead Times, TCR Lead Times, In Vivo Capabilities, and LabSci Capabilities. MVP1 can reference these patterns without absorbing all Release 2/3 constraints.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section unframed">
+      <p class="eyebrow">North-star flow</p>
+      <h2>From inquiry to customer-ready option</h2>
+      <div class="workflow" aria-label="Six step workflow">
+        <article class="step">
+          <div>
+            <div class="step-num">1</div>
+            <h3>Capture</h3>
+          </div>
+          <p>Commercial user starts with SFDC Opportunity, RFP, and related Study metadata.</p>
+        </article>
+        <article class="step">
+          <div>
+            <div class="step-num">2</div>
+            <h3>Gate</h3>
+          </div>
+          <p>System checks known requested start / timing anchor, four-month lead-time window, and metadata completeness.</p>
+        </article>
+        <article class="step">
+          <div>
+            <div class="step-num">3</div>
+            <h3>Evaluate</h3>
+          </div>
+          <p>Rules check site capability, lead time, data freshness, and business guardrails.</p>
+        </article>
+        <article class="step">
+          <div>
+            <div class="step-num">4</div>
+            <h3>Recommend</h3>
+          </div>
+          <p>User receives a site/month option, fit, rationale, assumptions, and expiration date.</p>
+        </article>
+        <article class="step">
+          <div>
+            <div class="step-num">5</div>
+            <h3>Respond</h3>
+          </div>
+          <p>Commercial can share, revise selections, collect missing data, or request assistance.</p>
+        </article>
+        <article class="step">
+          <div>
+            <div class="step-num">6</div>
+            <h3>Handoff</h3>
+          </div>
+          <p>Selected context, rule trace, expiry, and unresolved items are preserved downstream.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="prototype">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Clickable wireframe</p>
+          <h2>Commercial Scheduling decision console</h2>
+          <p class="muted">Select each synthetic opportunity to see how MVP1 should explain the outcome. This is meant to provoke stakeholder feedback on logic, labels, and workflow rather than visual polish.</p>
+        </div>
+        <span class="tag info">Synthetic data</span>
+      </div>
+
+      <div class="prototype">
+        <div class="wire-toolbar">
+          <div>
+            <strong>SFDC Opportunity / RFP workbench</strong>
+            <div class="small">Requested start, site/month recommendation, expiry, and triage</div>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Prototype views">
+            <button class="tab active" type="button">Pipeline</button>
+            <button class="tab" type="button">RFP</button>
+            <button class="tab" type="button">Studies</button>
+            <button class="tab" type="button">Rules</button>
+            <button class="tab" type="button">Recommendations</button>
+            <button class="tab" type="button">Admin</button>
+            <button class="tab" type="button">Metrics</button>
+          </div>
+        </div>
+
+        <div class="wire-grid">
+          <aside class="wire-panel">
+            <p class="eyebrow">Opportunity pipeline</p>
+            <h3>Scenarios</h3>
+            <div class="pipeline-list" id="pipelineList"></div>
+          </aside>
+
+          <main class="wire-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">SFDC Opportunity + RFP intake</p>
+                <h3 id="selectedTitle">Opportunity</h3>
+                <p class="small" id="selectedSubtitle"></p>
+              </div>
+              <span id="outcomeTag" class="tag">Outcome</span>
+            </div>
+
+            <div class="field-grid" id="fieldGrid"></div>
+
+            <div class="gate-list" id="gateList"></div>
+
+            <div class="rule-list" id="ruleList"></div>
+          </main>
+
+          <aside class="wire-panel">
+            <div id="decisionBanner" class="decision-banner">
+              <p class="eyebrow">Decision outcome</p>
+              <h3 id="decisionTitle">Outcome</h3>
+              <p id="decisionCopy" class="muted"></p>
+            </div>
+
+            <div class="recommendation-list" id="recommendationList"></div>
+
+            <div class="handoff-list">
+              <div class="handoff-row">
+                <p class="eyebrow">Downstream packet</p>
+                <strong id="handoffTitle">Preserved context</strong>
+                <p class="small" id="handoffCopy">Selected site/month, rule trace, expiration, assumptions, triage reasons, and unresolved items.</p>
+              </div>
+              <div class="handoff-row">
+                <p class="eyebrow">Release 2 placeholder</p>
+                <strong>Room Availability</strong>
+                <p class="small">Shown as dependency only. This wireframe keeps MVP1 at site/month granularity.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Governance and measurement</p>
+          <h2>Reference data and KPI baseline</h2>
+        </div>
+        <span class="tag warn">Owner model to validate</span>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi">
+          <strong>132</strong>
+          <span>Inquiries evaluated</span>
+          <div class="bar"><span style="width: 72%"></span></div>
+        </article>
+        <article class="kpi">
+          <strong>58%</strong>
+          <span>Green-light rate</span>
+          <div class="bar"><span style="width: 58%"></span></div>
+        </article>
+        <article class="kpi">
+          <strong>24%</strong>
+          <span>Central Scheduling escalation</span>
+          <div class="bar"><span style="width: 24%"></span></div>
+        </article>
+        <article class="kpi">
+          <strong>13%</strong>
+          <span>Missing-data rate</span>
+          <div class="bar"><span style="width: 13%"></span></div>
+        </article>
+        <article class="kpi">
+          <strong>2.4m</strong>
+          <span>Average time to recommendation</span>
+          <div class="bar"><span style="width: 82%"></span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Release path</p>
+      <h2>How this grows without overloading MVP1</h2>
+      <div class="roadmap">
+        <article class="release">
+          <h3>Release 1: Commercial Scheduling MVP</h3>
+          <ul>
+            <li>SFDC Opportunity, RFP, and Study intake metadata.</li>
+            <li>Four-month eligibility gate.</li>
+            <li>Site Capability and Lead-Time reference data.</li>
+            <li>Site / Month-of-Timing recommendation.</li>
+            <li>Expiration and Central Scheduling triage.</li>
+          </ul>
+        </article>
+        <article class="release">
+          <h3>Release 2: Operational detail</h3>
+          <ul>
+            <li>Room Availability.</li>
+            <li>Animal Availability.</li>
+            <li>Test Item Receipt.</li>
+            <li>Reporting Milestones.</li>
+            <li>Richer Study Director handoff.</li>
+          </ul>
+        </article>
+        <article class="release">
+          <h3>Release 3: Optimization</h3>
+          <ul>
+            <li>Labor and equipment availability.</li>
+            <li>Client preferences and scenario tradeoffs.</li>
+            <li>Financial prioritization.</li>
+            <li>Overbooking and profitability guardrails.</li>
+            <li>Decision analytics.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="questions">
+      <p class="eyebrow">Stakeholder validation</p>
+      <h2>Decisions this draft is designed to surface</h2>
+      <div class="question-grid">
+        <article class="question"><strong>What exact SFDC fields define sufficient configuration metadata?</strong><p class="small">Current placeholder: RFP requested start, preferred/triage site, Study Type 1, Study Type 2, species, and selected or preferred site.</p></article>
+        <article class="question"><strong>What official label should replace ambiguous "target date"?</strong><p class="small">Recommended prototype language: requested start / commercial timing anchor.</p></article>
+        <article class="question"><strong>What is the official rule when the customer does not know timing?</strong><p class="small">The model assumes a business-process placeholder start date may be needed, and that placeholder should be visibly labeled.</p></article>
+        <article class="question"><strong>How long should a Site / Month-of-Timing offer remain valid?</strong><p class="small">Current prototype uses five business days from evaluation date.</p></article>
+        <article class="question"><strong>What are the official Central Scheduling triage reason codes?</strong><p class="small">The wireframe includes missing data, too-soon start, site mismatch, lead-time issue, LabSci uncertainty, expired offer, and unresolved options.</p></article>
+        <article class="question"><strong>What does "green light to say yes" legally and operationally mean?</strong><p class="small">This draft treats it as permission to share a site/month option, not a final operational commitment.</p></article>
+        <article class="question"><strong>Who owns reference data after MVP1?</strong><p class="small">Site Capability, Lead Time / Site Availability, and Business Rules need named business owners and update cadence.</p></article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Prepared as a first stakeholder proposal, intentionally wireframe-level.</span>
+      <span>All opportunity, sponsor, site, and metric values shown here are synthetic placeholders.</span>
+    </footer>
+  </div>
+
+  <script>
+    const ruleConfig = {
+      today: '2026-07-02',
+      mvp1MinimumLeadTimeMonths: 4,
+      defaultOfferExpiryBusinessDays: 5,
+      requiredConfigurationFields: ['studyType1', 'studyType2', 'species', 'selectedSiteId']
+    };
+
+    const sites = [
+      {
+        id: 'site-hor',
+        name: 'Horsham',
+        supportedStudyType1: ['PK', 'Toxicology'],
+        supportedStudyType2: ['Pregnant animal PK', 'DART'],
+        supportedSpecies: ['rat', 'rabbit'],
+        labSciCapabilities: ['method transfer', 'bioanalysis'],
+        lastUpdated: '2026-06-30',
+        dataQualityStatus: 'validated'
+      },
+      {
+        id: 'site-mattawan',
+        name: 'Mattawan',
+        supportedStudyType1: ['Toxicology', 'PK'],
+        supportedStudyType2: ['General tox', 'NHP IV infusion', 'Pregnant animal PK'],
+        supportedSpecies: ['rat', 'rabbit', 'dog', 'NHP'],
+        labSciCapabilities: ['bioanalysis', 'method transfer', 'clinical pathology'],
+        lastUpdated: '2026-06-28',
+        dataQualityStatus: 'validated'
+      },
+      {
+        id: 'site-reno',
+        name: 'Reno',
+        supportedStudyType1: ['Toxicology', 'PK'],
+        supportedStudyType2: ['NHP IV infusion', 'General tox'],
+        supportedSpecies: ['NHP', 'rat'],
+        labSciCapabilities: ['clinical pathology'],
+        lastUpdated: '2026-06-25',
+        dataQualityStatus: 'needs_review'
+      },
+      {
+        id: 'site-ashland',
+        name: 'Ashland',
+        supportedStudyType1: ['Toxicology'],
+        supportedStudyType2: ['General tox', 'DART'],
+        supportedSpecies: ['rat', 'dog', 'rabbit'],
+        labSciCapabilities: ['clinical pathology'],
+        lastUpdated: '2026-06-20',
+        dataQualityStatus: 'validated'
+      },
+      {
+        id: 'site-seneville',
+        name: 'Senneville',
+        supportedStudyType1: ['Toxicology', 'PK'],
+        supportedStudyType2: ['General tox', 'Immunotox'],
+        supportedSpecies: ['rat', 'dog', 'NHP'],
+        labSciCapabilities: ['bioanalysis', 'clinical pathology', 'method transfer'],
+        lastUpdated: '2026-06-21',
+        dataQualityStatus: 'validated'
+      }
+    ];
+
+    const leadTimes = [
+      { siteId: 'site-hor', studyType1: 'PK', studyType2: 'Pregnant animal PK', species: 'rat', minimumLeadTimeDays: 120, availableTimingMonths: ['2027-02', '2027-03', '2027-04'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-30' },
+      { siteId: 'site-hor', studyType1: 'PK', studyType2: 'Pregnant animal PK', species: 'rabbit', minimumLeadTimeDays: 150, availableTimingMonths: ['2027-03', '2027-04'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-30' },
+      { siteId: 'site-mattawan', studyType1: 'Toxicology', studyType2: 'NHP IV infusion', species: 'NHP', minimumLeadTimeDays: 180, availableTimingMonths: ['2027-04', '2027-05'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-28' },
+      { siteId: 'site-reno', studyType1: 'Toxicology', studyType2: 'NHP IV infusion', species: 'NHP', minimumLeadTimeDays: 150, availableTimingMonths: ['2027-03', '2027-04'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-25' },
+      { siteId: 'site-ashland', studyType1: 'Toxicology', studyType2: 'General tox', species: 'dog', minimumLeadTimeDays: 120, availableTimingMonths: ['2027-01', '2027-02', '2027-03'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-20' },
+      { siteId: 'site-seneville', studyType1: 'Toxicology', studyType2: 'General tox', species: 'rat', minimumLeadTimeDays: 120, availableTimingMonths: ['2027-03', '2027-04'], source: 'MVP1 App DB - Lead Time / Site Availability', lastUpdated: '2026-06-21' }
+    ];
+
+    const opportunities = [
+      {
+        id: 'OPP-700100',
+        sponsorName: 'Synthetic Sponsor A',
+        stage: 'inquiry',
+        commercialOwner: 'Amanda',
+        opportunityStartDate: '2027-02-15',
+        targetStartDateKnown: true,
+        customerResponseStatus: 'not_sent',
+        studies: [{ id: 'STUDY-700100-A', title: 'HOR pregnant rat PK', studyType1: 'PK', studyType2: 'Pregnant animal PK', species: 'rat', selectedSiteId: 'site-hor', labSciRequired: false, configurationMetadataComplete: true, status: 'in_planning' }]
+      },
+      {
+        id: 'OPP-700200',
+        sponsorName: 'Synthetic Sponsor B',
+        stage: 'inquiry',
+        commercialOwner: 'Client Manager 1',
+        opportunityStartDate: '2026-09-01',
+        targetStartDateKnown: true,
+        customerResponseStatus: 'not_sent',
+        studies: [{ id: 'STUDY-700200-A', title: 'Rabbit PK with method transfer - too soon for MVP1', studyType1: 'PK', studyType2: 'Pregnant animal PK', species: 'rabbit', selectedSiteId: 'site-hor', labSciRequired: true, labSciCapabilityRequired: 'method transfer', configurationMetadataComplete: true, status: 'in_planning' }]
+      },
+      {
+        id: 'OPP-700300',
+        sponsorName: 'Synthetic Sponsor C',
+        stage: 'inquiry',
+        commercialOwner: 'Client Manager 2',
+        opportunityStartDate: null,
+        targetStartDateKnown: false,
+        customerResponseStatus: 'not_sent',
+        studies: [{ id: 'STUDY-700300-A', title: 'General tox - customer does not know timing', studyType1: 'Toxicology', studyType2: 'General tox', species: 'rat', selectedSiteId: 'site-mattawan', labSciRequired: false, configurationMetadataComplete: true, status: 'not_schedulable' }]
+      },
+      {
+        id: 'OPP-700400',
+        sponsorName: 'Synthetic Sponsor D',
+        stage: 'inquiry',
+        commercialOwner: 'Client Manager 3',
+        opportunityStartDate: '2027-03-01',
+        targetStartDateKnown: true,
+        customerResponseStatus: 'not_sent',
+        studies: [{ id: 'STUDY-700400-A', title: 'NHP infusion tox - selected site mismatch', studyType1: 'Toxicology', studyType2: 'NHP IV infusion', species: 'NHP', selectedSiteId: 'site-hor', labSciRequired: false, configurationMetadataComplete: true, status: 'in_planning' }]
+      },
+      {
+        id: 'OPP-700500',
+        sponsorName: 'Synthetic Sponsor E',
+        stage: 'negotiation',
+        commercialOwner: 'Client Manager 4',
+        opportunityStartDate: '2027-01-20',
+        targetStartDateKnown: true,
+        customerResponseStatus: 'awaiting_customer_response',
+        studies: [{ id: 'STUDY-700500-A', title: 'General tox - accepted flow with expired offer', studyType1: 'Toxicology', studyType2: 'General tox', species: 'dog', selectedSiteId: 'site-ashland', labSciRequired: false, configurationMetadataComplete: true, status: 'offer_expired', expirationDateForSiteMonth: '2026-06-10' }]
+      },
+      {
+        id: 'OPP-700600',
+        sponsorName: 'Synthetic Sponsor F',
+        stage: 'inquiry',
+        commercialOwner: 'Client Manager 5',
+        opportunityStartDate: '2027-04-15',
+        targetStartDateKnown: true,
+        customerResponseStatus: 'not_sent',
+        studies: [{ id: 'STUDY-700600-A', title: 'Incomplete config metadata', studyType1: 'Toxicology', studyType2: 'General tox', species: null, selectedSiteId: 'site-seneville', labSciRequired: false, configurationMetadataComplete: false, status: 'not_schedulable' }]
+      }
+    ];
+
+    const rows = opportunities.flatMap((opportunity) => opportunity.studies.map((study) => ({ opportunity, study })));
+    let selectedId = rows[0].study.id;
+
+    function evaluate(opportunity, study) {
+      const ruleTrace = [];
+      const today = date(ruleConfig.today);
+
+      if (study.expirationDateForSiteMonth && date(study.expirationDateForSiteMonth) < today) {
+        ruleTrace.push({ rule: 'Offer expiry', status: 'fail', rationale: 'Existing Site / Month-of-Timing offer has expired.' });
+        return result('offer_expired', 'needs_human_review', [], true, ['offer_expired'], [], ruleTrace);
+      }
+
+      if (!opportunity.targetStartDateKnown || !opportunity.opportunityStartDate) {
+        ruleTrace.push({ rule: 'Requested start / timing anchor known', status: 'fail', rationale: 'Customer-requested timing is missing or the customer does not know timing.' });
+        return result('requires_placeholder_start_date', 'missing_start_date', ['opportunityStartDate'], false, [], [], ruleTrace);
+      }
+
+      const gateDate = addMonths(today, ruleConfig.mvp1MinimumLeadTimeMonths);
+      const oppStart = date(opportunity.opportunityStartDate);
+      if (oppStart <= gateDate) {
+        ruleTrace.push({ rule: 'MVP1 lead-time gate', status: 'fail', rationale: 'Requested start / timing anchor must be more than four months out for MVP1 happy path.' });
+        return result('out_of_mvp_scope_start_too_soon', 'not_mvp1_start_too_soon', [], true, ['start_date_inside_mvp1_window'], [], ruleTrace);
+      }
+
+      ruleTrace.push({ rule: 'MVP1 lead-time gate', status: 'pass', rationale: 'Requested start / timing anchor is more than four months out.' });
+
+      const missingFields = ruleConfig.requiredConfigurationFields.filter((field) => !study[field]);
+      if (missingFields.length > 0 || study.configurationMetadataComplete === false) {
+        ruleTrace.push({ rule: 'Configuration metadata completeness', status: 'fail', rationale: 'Required SFDC configuration metadata is missing.' });
+        return result('needs_missing_data', 'missing_configuration', missingFields, false, ['missing_configuration_metadata'], [], ruleTrace);
+      }
+
+      ruleTrace.push({ rule: 'Configuration metadata completeness', status: 'pass', rationale: 'Required SFDC configuration metadata is present.' });
+      const recommendations = buildRecommendations(opportunity, study);
+      const viable = recommendations.filter((rec) => rec.failedRules.length === 0);
+
+      if (viable.length > 0) {
+        return result('green_light_to_say_yes', 'eligible_for_mvp1', [], false, [], viable, ruleTrace.concat(viable[0].ruleTrace));
+      }
+
+      if (recommendations.length > 0) {
+        return result('modify_selections', 'needs_human_review', [], false, ['site_capability_mismatch', 'lead_time_not_feasible'], recommendations, ruleTrace.concat(recommendations[0].ruleTrace));
+      }
+
+      ruleTrace.push({ rule: 'Recommendation generation', status: 'fail', rationale: 'No recommendation could be generated.' });
+      return result('request_central_scheduling_assistance', 'needs_human_review', [], true, ['user_cannot_resolve_options'], [], ruleTrace);
+    }
+
+    function result(outcome, releaseEligibility, missingFields, triageRequired, triageReasonCodes, recommendations, ruleTrace) {
+      return { outcome, releaseEligibility, missingFields, triageRequired, triageReasonCodes, recommendations, ruleTrace };
+    }
+
+    function buildRecommendations(opportunity, study) {
+      return sites
+        .filter((site) => !study.selectedSiteId || site.id === study.selectedSiteId || canSupportStudy(site, study))
+        .map((site) => buildRecommendation(opportunity, study, site));
+    }
+
+    function buildRecommendation(opportunity, study, site) {
+      const failedRules = [];
+      const warnings = [];
+      const rationale = [];
+      const assumptions = [];
+      const ruleTrace = [];
+
+      if (!canSupportStudy(site, study)) {
+        failedRules.push('site_capability_mismatch');
+        ruleTrace.push({ rule: 'Site Capability', status: 'fail', rationale: `${site.name} does not fully support the requested study configuration.`, source: 'MVP1 Site Capability DB' });
+      } else {
+        rationale.push(`${site.name} supports the study type/species configuration.`);
+        ruleTrace.push({ rule: 'Site Capability', status: 'pass', rationale: `${site.name} supports the requested study configuration.`, source: 'MVP1 Site Capability DB' });
+      }
+
+      if (study.labSciRequired && study.labSciCapabilityRequired && !site.labSciCapabilities.includes(study.labSciCapabilityRequired)) {
+        failedRules.push('lab_sci_capability_uncertain');
+        ruleTrace.push({ rule: 'LabSci capability', status: 'fail', rationale: `${site.name} does not show required LabSci capability: ${study.labSciCapabilityRequired}.`, source: 'MVP1 Site Capability DB' });
+      }
+
+      const matchingLeadTime = leadTimes.find((record) =>
+        record.siteId === site.id &&
+        record.studyType1 === study.studyType1 &&
+        record.studyType2 === study.studyType2 &&
+        record.species === study.species
+      );
+
+      const oppMonth = opportunity.opportunityStartDate ? opportunity.opportunityStartDate.slice(0, 7) : 'unknown';
+      let timingMonth = oppMonth;
+
+      if (!matchingLeadTime) {
+        failedRules.push('lead_time_not_found');
+        ruleTrace.push({ rule: 'Lead Time / Site Availability', status: 'fail', rationale: `No lead-time record found for ${site.name} and this configuration.`, source: 'MVP1 Lead Time DB' });
+      } else {
+        timingMonth = matchingLeadTime.availableTimingMonths.includes(oppMonth) ? oppMonth : matchingLeadTime.availableTimingMonths[0];
+        const start = date(opportunity.opportunityStartDate);
+        const minStart = addDays(date(ruleConfig.today), matchingLeadTime.minimumLeadTimeDays);
+        if (start < minStart) {
+          failedRules.push('lead_time_not_feasible');
+          ruleTrace.push({ rule: 'Lead Time / Site Availability', status: 'fail', rationale: `Requested start is before minimum lead time for ${site.name}.`, source: matchingLeadTime.source });
+        } else if (!matchingLeadTime.availableTimingMonths.includes(oppMonth)) {
+          warnings.push('requested_month_not_available');
+          rationale.push(`Requested month is not listed; nearest available month is ${timingMonth}.`);
+          ruleTrace.push({ rule: 'Lead Time / Site Availability', status: 'warning', rationale: `Requested month ${oppMonth} is not listed; suggesting ${timingMonth}.`, source: matchingLeadTime.source });
+        } else {
+          rationale.push(`${site.name} has lead-time support for ${timingMonth}.`);
+          ruleTrace.push({ rule: 'Lead Time / Site Availability', status: 'pass', rationale: `${site.name} has lead-time support for ${timingMonth}.`, source: matchingLeadTime.source });
+        }
+        assumptions.push(`Lead-time record fresh as of ${matchingLeadTime.lastUpdated}.`);
+      }
+
+      if (site.dataQualityStatus !== 'validated') {
+        warnings.push('site_data_needs_review');
+        assumptions.push(`Site capability data quality is ${site.dataQualityStatus}.`);
+      }
+
+      const fitScore = Math.max(0, 100 - failedRules.length * 35 - warnings.length * 10);
+      const confidence = fitScore >= 90 ? 'high' : fitScore >= 70 ? 'medium' : 'low';
+
+      return {
+        siteName: site.name,
+        timingMonth,
+        confidence,
+        fitScore,
+        expirationDateForSiteMonth: formatDate(addBusinessDays(date(ruleConfig.today), ruleConfig.defaultOfferExpiryBusinessDays)),
+        rationale,
+        assumptions,
+        failedRules,
+        warnings,
+        ruleTrace
+      };
+    }
+
+    function canSupportStudy(site, study) {
+      return Boolean(
+        study.studyType1 && site.supportedStudyType1.includes(study.studyType1) &&
+        study.studyType2 && site.supportedStudyType2.includes(study.studyType2) &&
+        study.species && site.supportedSpecies.includes(study.species)
+      );
+    }
+
+    function render() {
+      const selected = rows.find((row) => row.study.id === selectedId) || rows[0];
+      const evaluation = evaluate(selected.opportunity, selected.study);
+
+      renderPipeline(evaluation);
+      renderHeader(selected, evaluation);
+      renderFields(selected);
+      renderGates(selected, evaluation);
+      renderRules(evaluation);
+      renderDecision(evaluation);
+      renderRecommendations(evaluation);
+    }
+
+    function renderPipeline(currentEvaluation) {
+      document.getElementById('pipelineList').innerHTML = rows.map(({ opportunity, study }) => {
+        const evaluation = evaluate(opportunity, study);
+        const active = study.id === selectedId ? ' active' : '';
+        const tagClass = toneForOutcome(evaluation.outcome);
+        return `
+          <button class="opportunity-button${active}" type="button" data-study-id="${study.id}">
+            <strong>${opportunity.id}</strong>
+            <small>${study.title}</small>
+            <span class="tag ${tagClass}">${human(evaluation.outcome)}</span>
+          </button>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.opportunity-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedId = button.dataset.studyId;
+          render();
+        });
+      });
+    }
+
+    function renderHeader(selected, evaluation) {
+      document.getElementById('selectedTitle').textContent = `${selected.opportunity.id}: ${selected.study.title}`;
+      document.getElementById('selectedSubtitle').textContent = `${selected.opportunity.sponsorName} | Owner: ${selected.opportunity.commercialOwner} | Stage: ${human(selected.opportunity.stage)}`;
+      const outcomeTag = document.getElementById('outcomeTag');
+      outcomeTag.className = `tag ${toneForOutcome(evaluation.outcome)}`;
+      outcomeTag.textContent = human(evaluation.outcome);
+    }
+
+    function renderFields(selected) {
+      const site = siteName(selected.study.selectedSiteId);
+      const fields = [
+        ['Opportunity #', selected.opportunity.id],
+        ['RFP status', selected.study.configurationMetadataComplete === false ? 'Needs completion' : 'Ready for proposal'],
+        ['Requested Start Date', selected.opportunity.opportunityStartDate || 'Missing'],
+        ['Requested timing known', selected.opportunity.targetStartDateKnown ? 'Yes' : 'No'],
+        ['Preferred Site', site],
+        ['Triage Site', evaluationTriageSite(selected)],
+        ['Management Triage Release', selected.opportunity.opportunityStartDate ? 'Mocked release field' : 'Pending placeholder rule'],
+        ['Proposal Submission Date', 'Client requested field'],
+        ['Study Type 1', selected.study.studyType1 || 'Missing'],
+        ['Study Type 2', selected.study.studyType2 || 'Missing'],
+        ['Species', selected.study.species || 'Missing'],
+        ['LabSci required', selected.study.labSciRequired ? 'Yes' : 'No'],
+        ['LabSci capability', selected.study.labSciCapabilityRequired || 'Not applicable'],
+        ['Study Start Date', 'Not MVP1 source of truth'],
+        ['Anticipated Start Date', selected.opportunity.opportunityStartDate ? 'Downstream context only' : 'Not set']
+      ];
+
+      document.getElementById('fieldGrid').innerHTML = fields.map(([label, value]) => `
+        <div class="field"><span>${label}</span><strong>${value}</strong></div>
+      `).join('');
+    }
+
+    function renderGates(selected, evaluation) {
+      const startKnown = selected.opportunity.targetStartDateKnown && selected.opportunity.opportunityStartDate;
+      const moreThanFourMonths = startKnown && date(selected.opportunity.opportunityStartDate) > addMonths(date(ruleConfig.today), 4);
+      const metadataComplete = ruleConfig.requiredConfigurationFields.every((field) => selected.study[field]) && selected.study.configurationMetadataComplete !== false;
+      const standardized = metadataComplete ? true : null;
+      const gateItems = [
+        ['Requested timing anchor known', startKnown ? 'pass' : 'fail', startKnown ? 'Requested Start Date is available in commercial context.' : 'Needs customer timing or visibly labeled placeholder start date.'],
+        ['Requested start more than four months out', moreThanFourMonths ? 'pass' : (startKnown ? 'fail' : 'pending'), moreThanFourMonths ? 'Eligible for MVP1 lead-time gate.' : 'Requires Central Scheduling or placeholder workflow.'],
+        ['Required SFDC/RFP/Study configuration present', metadataComplete ? 'pass' : 'fail', metadataComplete ? 'Minimum Opportunity, RFP, and Study metadata is present.' : `Missing: ${evaluation.missingFields.map(human).join(', ') || 'configuration metadata'}.`],
+        ['Configuration transformed / standardized', standardized ? 'pass' : 'pending', standardized ? 'Ready for rules engine.' : 'Needs normalized values before full evaluation.']
+      ];
+
+      document.getElementById('gateList').innerHTML = `
+        <div>
+          <p class="eyebrow">MVP1 eligibility gate</p>
+          ${gateItems.map(([title, status, copy]) => `
+            <div class="gate-item">
+              <span class="status-dot ${status}"></span>
+              <div><strong>${title}</strong><p class="small">${copy}</p></div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderRules(evaluation) {
+      document.getElementById('ruleList').innerHTML = `
+        <div>
+          <p class="eyebrow">Transparent rule trace</p>
+          ${evaluation.ruleTrace.map((item) => `
+            <div class="rule-item">
+              <div class="rule-top">
+                <strong>${item.rule}</strong>
+                <span class="tag ${toneForStatus(item.status)}">${item.status.toUpperCase()}</span>
+              </div>
+              <p class="small">${item.rationale}</p>
+              ${item.source ? `<p class="small">Source: ${item.source}</p>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderDecision(evaluation) {
+      const banner = document.getElementById('decisionBanner');
+      banner.className = `decision-banner ${toneForOutcome(evaluation.outcome)}`;
+      document.getElementById('decisionTitle').textContent = decisionTitle(evaluation.outcome);
+      document.getElementById('decisionCopy').textContent = decisionCopy(evaluation);
+      const best = evaluation.recommendations[0];
+      document.getElementById('handoffTitle').textContent = best ? `${best.siteName} / ${best.timingMonth}` : 'No selected recommendation yet';
+      document.getElementById('handoffCopy').textContent = best
+        ? 'Preserve site/month, expiration, assumptions, and rule trace for downstream handoff.'
+        : 'Preserve missing fields, triage reasons, failed gates, and next action for follow-up.';
+    }
+
+    function renderRecommendations(evaluation) {
+      const list = document.getElementById('recommendationList');
+      if (!evaluation.recommendations.length) {
+        list.innerHTML = `
+          <div class="recommendation">
+            <p class="eyebrow">Recommendation</p>
+            <strong>No site/month option generated</strong>
+            <p class="small">The user should fill missing data, apply a placeholder date, modify selections, or request Central Scheduling assistance.</p>
+          </div>
+          ${triageBlock(evaluation)}
+        `;
+        return;
+      }
+
+      list.innerHTML = evaluation.recommendations.map((rec, index) => `
+        <div class="recommendation">
+          <div class="rule-top">
+            <div>
+              <p class="eyebrow">${index === 0 ? 'Recommended option' : 'Alternate option'}</p>
+              <strong>${rec.siteName} / ${rec.timingMonth}</strong>
+            </div>
+            <span class="tag ${rec.failedRules.length ? 'bad' : rec.warnings.length ? 'warn' : 'good'}">${rec.confidence} confidence</span>
+          </div>
+          <div class="rec-meta">
+            <div class="mini-stat"><span>Fit score</span><strong>${rec.fitScore}</strong></div>
+            <div class="mini-stat"><span>Expires</span><strong>${rec.expirationDateForSiteMonth}</strong></div>
+            <div class="mini-stat"><span>Failed rules</span><strong>${rec.failedRules.length}</strong></div>
+          </div>
+          ${rec.rationale.length ? `<p class="small"><strong>Why it works:</strong> ${rec.rationale.join(' ')}</p>` : ''}
+          ${rec.warnings.length ? `<p class="small"><strong>Warnings:</strong> ${rec.warnings.map(human).join(', ')}</p>` : ''}
+          ${rec.failedRules.length ? `<p class="small"><strong>Failed rules:</strong> ${rec.failedRules.map(human).join(', ')}</p>` : ''}
+          ${rec.assumptions.length ? `<p class="small"><strong>Assumptions:</strong> ${rec.assumptions.join(' ')}</p>` : ''}
+          <button class="button small ${rec.failedRules.length ? 'secondary' : ''}" type="button">${rec.failedRules.length ? 'Modify selection' : 'Select option'}</button>
+        </div>
+      `).join('') + triageBlock(evaluation);
+    }
+
+    function triageBlock(evaluation) {
+      if (!evaluation.triageReasonCodes.length) return '';
+      return `
+        <div class="recommendation">
+          <p class="eyebrow">Central Scheduling triage</p>
+          <strong>${evaluation.triageRequired ? 'Assistance required' : 'Reason codes captured'}</strong>
+          <p class="small">${evaluation.triageReasonCodes.map(human).join(', ')}</p>
+        </div>
+      `;
+    }
+
+    function decisionTitle(outcome) {
+      const map = {
+        green_light_to_say_yes: 'Green light to say yes',
+        needs_missing_data: 'Fill missing configuration data',
+        requires_placeholder_start_date: 'Apply placeholder start date process',
+        out_of_mvp_scope_start_too_soon: 'Off-ramp: start date too soon',
+        modify_selections: 'Modify site or timing selections',
+        request_central_scheduling_assistance: 'Request Central Scheduling assistance',
+        offer_expired: 'Offer expired and must be recalculated'
+      };
+      return map[outcome] || human(outcome);
+    }
+
+    function decisionCopy(evaluation) {
+      const map = {
+        green_light_to_say_yes: 'Commercial can share this site/month option with the customer until the expiration date.',
+        needs_missing_data: 'The app should ask the user to complete required SFDC metadata before rule evaluation.',
+        requires_placeholder_start_date: 'MVP1 needs a known customer-requested timing anchor or business-approved placeholder before evaluating feasibility.',
+        out_of_mvp_scope_start_too_soon: 'This inquiry is inside the MVP1 lead-time window and needs Central Scheduling support.',
+        modify_selections: 'The selected option does not pass all checks. User can adjust site/timing or escalate.',
+        request_central_scheduling_assistance: 'The user cannot resolve the inquiry through MVP1 rules and should send the trace to Central Scheduling.',
+        offer_expired: 'The previously shared site/month option is no longer valid and must be recalculated.'
+      };
+      return map[evaluation.outcome] || `Release eligibility: ${human(evaluation.releaseEligibility)}.`;
+    }
+
+    function toneForOutcome(outcome) {
+      if (outcome === 'green_light_to_say_yes') return 'good';
+      if (outcome === 'needs_missing_data' || outcome === 'requires_placeholder_start_date' || outcome === 'modify_selections') return 'warn';
+      if (outcome === 'out_of_mvp_scope_start_too_soon' || outcome === 'offer_expired' || outcome === 'request_central_scheduling_assistance') return 'bad';
+      return 'info';
+    }
+
+    function toneForStatus(status) {
+      if (status === 'pass') return 'good';
+      if (status === 'warning') return 'warn';
+      return 'bad';
+    }
+
+    function siteName(id) {
+      return (sites.find((site) => site.id === id) || {}).name || 'Missing';
+    }
+
+    function evaluationTriageSite(selected) {
+      if (!selected.opportunity.opportunityStartDate || selected.study.configurationMetadataComplete === false) return 'Pending';
+      return siteName(selected.study.selectedSiteId);
+    }
+
+    function human(value) {
+      if (!value) return 'Missing';
+      return String(value).replaceAll('_', ' ');
+    }
+
+    function date(value) {
+      return new Date(`${value}T12:00:00Z`);
+    }
+
+    function addMonths(value, months) {
+      const result = new Date(value);
+      result.setMonth(result.getMonth() + months);
+      return result;
+    }
+
+    function addDays(value, days) {
+      const result = new Date(value);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function addBusinessDays(value, days) {
+      const result = new Date(value);
+      let added = 0;
+      while (added < days) {
+        result.setDate(result.getDate() + 1);
+        const day = result.getDay();
+        if (day !== 0 && day !== 6) added += 1;
+      }
+      return result;
+    }
+
+    function formatDate(value) {
+      return value.toISOString().slice(0, 10);
+    }
+
+    render();
+  </script>
+</body>
+</html>
