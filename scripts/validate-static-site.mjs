@@ -1,4 +1,10 @@
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+
+const removedPublicManual = new URL('../public/manual.html', import.meta.url);
+
+if (existsSync(removedPublicManual)) {
+  throw new Error('public/manual.html should not be part of the hosted demo surface.');
+}
 
 const checks = [
   {
@@ -13,23 +19,14 @@ const checks = [
     ]
   },
   {
-    path: '../public/manual.html',
-    minBytes: 4000,
-    requiredText: [
-      'Stakeholder manual',
-      'Blueprint anchor',
-      'Snapshot, not promise',
-      'Opportunity Start Date'
-    ]
-  },
-  {
     path: '../public/app.js',
     minBytes: 10000,
     requiredText: [
       'Opportunity Start Date known',
       'specific_date_requested',
       'green_light',
-      'Snapshot-based recommendation, not capacity reservation'
+      'Snapshot-based recommendation, not capacity reservation',
+      'Selected snapshot option'
     ]
   },
   {
@@ -39,15 +36,23 @@ const checks = [
       '.demo-grid',
       '.wizard',
       '.decision-console',
-      '.manual-layout'
+      '.state-tab',
+      '.option-card',
+      '.selection-state'
     ]
+  },
+  {
+    path: '../docs/dsa-scheduling-mvp1-stakeholder-manual.pdf',
+    minBytes: 5000,
+    binary: true,
+    requiredText: []
   }
 ];
 
 for (const check of checks) {
   const filePath = new URL(check.path, import.meta.url);
-  const text = readFileSync(filePath, 'utf8');
   const stats = statSync(filePath);
+  const text = check.binary ? '' : readFileSync(filePath, 'utf8');
   const missing = check.requiredText.filter((snippet) => !text.includes(snippet));
 
   if (stats.size < check.minBytes) {
