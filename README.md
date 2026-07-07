@@ -1,17 +1,39 @@
-# DSA Commercial Scheduling MVP1 Stakeholder Prototype
+# DSA Commercial Scheduling MVP1
 
-Static stakeholder proposal for the DSA Commercial Scheduling MVP1 concept.
+Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 stakeholder prototype.
 
-The prototype is intentionally wireframe-level. It demonstrates the MVP1 workflow, SFDC/RFP/Study context, requested start date clarification, rule trace, recommendations, expiry, Central Scheduling triage, reference data governance, and release path.
+This package intentionally splits the artifact into two surfaces:
+
+- **Demo:** `public/index.html` contains only the scheduling wizard and decision console.
+- **Stakeholder manual:** `public/manual.html` carries the explanatory story, VoC synthesis, scope guardrails, and implementation notes.
+
+## MVP1 Anchor
+
+The Blueprint remains the source of truth for scope. MVP1 is a Commercial Persona flow for "Just Say Yes" / "In The Know":
+
+- starts from SFDC intake;
+- uses **Opportunity Start Date** as the mandatory gate date;
+- checks whether the Opportunity Start Date is more than four months out;
+- asks for missing configuration data;
+- calculates site/month options;
+- gives Commercial a green light, caveated recommendation, or off-ramp.
+
+MVP1 does not reserve capacity, optimize room-level schedules, replace Central Scheduling, or create a final RPM execution date.
 
 ## Project Structure
 
 ```text
 .
 ├── public/
-│   └── index.html
+│   ├── app.js
+│   ├── index.html
+│   ├── manual.html
+│   └── styles.css
 ├── docs/
 │   └── mvp1-target-date-clarification-and-context-note.md
+├── scripts/
+│   ├── serve-static.mjs
+│   └── validate-static-site.mjs
 ├── netlify.toml
 ├── package.json
 └── .github/
@@ -21,13 +43,19 @@ The prototype is intentionally wireframe-level. It demonstrates the MVP1 workflo
 
 ## Local Preview
 
-This is a static site. You can open `public/index.html` directly, or run:
-
 ```bash
 npm run serve
 ```
 
-Then open the local URL printed by the server.
+Then open the local URL printed by the server. The site is static, so Netlify can publish the `public` directory directly after validation.
+
+## Validate
+
+```bash
+npm run build
+```
+
+The build checks that the demo, manual, JavaScript, and CSS files contain the expected MVP1 content.
 
 ## Deploy To Netlify From GitHub
 
@@ -42,7 +70,7 @@ Build command: npm run build
 Publish directory: public
 ```
 
-The build command is intentionally lightweight. It validates that `public/index.html` exists and then publishes the static file.
+The included `netlify.toml` already sets the same build and publish values.
 
 ## Suggested Git Commands
 
@@ -55,26 +83,14 @@ git remote add origin git@github.com:YOUR_ORG/YOUR_REPO.git
 git push -u origin main
 ```
 
-## Netlify Notes
-
-The included `netlify.toml` sets:
-
-- `publish = "public"`
-- `command = "npm run build"`
-- basic security headers for a static prototype
-- a fallback redirect to `/index.html`
-
 ## Date Terminology
 
-Use **Requested Start Date** or **requested start / commercial timing anchor** instead of generic **target date** until stakeholders confirm the official SFDC field mapping.
+Use **Opportunity Start Date** as the official MVP1 gate date.
 
-See:
+Use **RFP Requested Start Date** as source context that may explain or populate the Opportunity Start Date. It should not silently replace the gate date.
 
-```text
-docs/mvp1-target-date-clarification-and-context-note.md
-```
+See `docs/mvp1-target-date-clarification-and-context-note.md`.
 
 ## Source Caveat
 
-All opportunity, sponsor, site, and metric values in the UI are synthetic placeholders. The SFDC/RACE references are contextual and do not change the defined MVP1 scope.
-# scheduling-mvp1
+All opportunity, sponsor, site, and metric values in the UI are synthetic placeholders. The SFDC/RACE screenshots were used as design reference only and are not embedded in the deployable package because they include current customer and opportunity context.

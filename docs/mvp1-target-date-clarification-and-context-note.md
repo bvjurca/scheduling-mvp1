@@ -1,21 +1,34 @@
-# MVP1 Target Date Clarification and Context Note
+# MVP1 Date Clarification and Context Note
 
-Date: 2026-07-06
+Date: 2026-07-07
 
 ## Recommended wording
 
-Use **Requested Start Date** or **requested start / commercial timing anchor** in the MVP1 prototype instead of the generic phrase **target date**.
+Use **Opportunity Start Date** as the official MVP1 gate date, per the Blueprint.
 
-## What it means in MVP1
+Use **RFP Requested Start Date** or **requested timing context** only when describing the upstream customer/RFP signal that may populate, justify, or conflict with the Opportunity Start Date.
+
+Avoid the generic phrase **target date** in the UI unless it is accompanied by a source label.
+
+## What It Means In MVP1
 
 For MVP1, the date used by the four-month gate should mean:
 
-- the date or month the customer is asking Commercial to evaluate;
-- the commercial timing anchor captured during the SFDC Opportunity/RFP/Study workflow;
+- the SFDC Opportunity Start Date required by the Blueprint flow;
+- the commercial timing anchor used to decide whether the inquiry is more than four months out;
 - the input used to decide whether MVP1 can produce a site/month recommendation.
+
+Related dates should remain visible as context, but should not silently replace the gate:
+
+- RFP Requested Start Date;
+- customer-provided requested timing;
+- Management Triage Release;
+- test material available date;
+- LabSci method or bioanalysis timing.
 
 It is **not**:
 
+- Study Start Date;
 - a calculated LabSci lead-time date;
 - a test material availability date;
 - room availability;
@@ -23,38 +36,43 @@ It is **not**:
 - the final RPM execution date after award;
 - a SAP billing milestone.
 
-## Why this matters
+## Why This Matters
 
-Marjorie’s transcript distinguishes system roles:
+The Blueprint defines MVP1 as a Commercial Persona flow for "Just Say Yes" / "In The Know." It starts with SFDC intake, requires Opportunity Start Date, checks whether that date is more than four months out, asks for missing configuration data, calculates site/month options, and then returns either a green light or an off-ramp.
 
-- **SFDC** captures the customer request, initial study design, pricing/costing, quote/SOW context, and commercial commitment language.
-- **RPM** is the post-award system of record for study execution dates.
-- **SAP** consumes downstream financial/billing context.
-- **RACE / DSA dashboards** expose useful reference data such as General Timing, Just Say Yes, LabSci Lead Times, TCR Lead Times, and site capabilities.
+The latest VoC and screenshots add nuance without changing the scope:
 
-So MVP1 should avoid implying that Commercial is calculating or locking a final operational study date. The MVP1 promise is narrower: a time-bound, rules-supported **Site / Month-of-Timing** recommendation.
+- SFDC captures customer request, RFP, opportunity, study configuration, quote/SOW, and commercial commitment context.
+- RACE, PowerBI, DOT, and scheduling reference data provide useful current-state signals.
+- RPM remains the post-award system of record for execution scheduling.
+- A PowerBI/RACE timing answer is a snapshot, not a capacity reservation.
 
-## UI implication
+So MVP1 should avoid implying that Commercial is calculating or locking a final operational study date. The MVP1 promise is narrower: a time-bound, rules-supported **Site / Month-of-Timing** recommendation with caveats and expiry.
+
+## UI Implication
 
 In the prototype, the eligibility gate should read:
 
-1. Requested timing anchor known.
-2. Requested start is more than four months out.
+1. Opportunity Start Date known.
+2. Opportunity Start Date is more than four months out.
 3. Required SFDC/RFP/Study configuration is present.
-4. Configuration is transformed and standardized.
+4. Date meaning and timing precision are clear enough for Commercial guidance.
+5. Recommendation is valid only until expiry and is not reserved capacity.
 
-If the customer does not know timing, the UI should show a visibly labeled **business placeholder** rather than silently treating it as a real requested date.
+If the customer does not know timing, the UI should show a visibly labeled **business placeholder** rather than silently treating it as a real date.
 
-## Open stakeholder decision
+If RFP Requested Start Date differs from Opportunity Start Date, the UI should show a reconciliation warning before the decision console returns a stronger recommendation.
 
-Confirm the official SFDC field mapping:
+## Stakeholder Decision Still Needed
 
-- Is the MVP1 date field **Requested Start Date** from the RFP tab?
-- Is it **Opportunity Start Date** from the earlier handoff language?
-- Is it **Study Start Date** or **Anticipated Start Date** from the Study object in any scenarios?
-- Should the prototype support more than one date source, with a visible date-source label?
+Confirm the data mapping and governance rules:
 
-Until confirmed, the prototype should show both the user-facing label and the source:
+- Which field writes or updates Opportunity Start Date?
+- Should RFP Requested Start Date be allowed to populate Opportunity Start Date automatically?
+- What label should Commercial see when date meaning is unclear?
+- What status should represent month guidance versus confirmed operational timing?
 
-> Requested Start Date  
-> Source: SFDC RFP / commercial request
+Until then, the prototype should show both the gate and the source:
+
+> Opportunity Start Date  
+> Source: SFDC Opportunity, with RFP Requested Start Date shown as context
