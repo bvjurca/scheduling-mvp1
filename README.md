@@ -77,3 +77,4 @@ docs/mvp1-target-date-clarification-and-context-note.md
 ## Source Caveat
 
 All opportunity, sponsor, site, and metric values in the UI are synthetic placeholders. The SFDC/RACE references are contextual and do not change the defined MVP1 scope.
+# scheduling-mvp1
