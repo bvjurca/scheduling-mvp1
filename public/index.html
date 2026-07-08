@@ -10,8 +10,7 @@
   <div class="app">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Commercial Scheduling MVP1</p>
-        <h1>Scheduling readiness demo</h1>
+        <h1>Scheduling MVP1 (Commercial) - DEMO DATA ONLY</h1>
       </div>
     </header>
 
@@ -22,7 +21,6 @@
             <p class="eyebrow">Wizard</p>
             <h2 id="wizard-title">Populate scheduling inputs</h2>
           </div>
-          <span class="pill info">Synthetic</span>
         </div>
 
         <div class="scenario-bar state-tabs" aria-label="Wizard state tabs">
@@ -74,20 +72,6 @@
                 <span class="hint">Official MVP1 gate from the Blueprint. Not Study Start Date.</span>
               </label>
               <label>
-                RFP Requested Start Date
-                <input id="rfpRequestedStartDate" name="rfpRequestedStartDate" type="date" value="2027-02-15" />
-                <span class="hint">Context field that may populate or explain the Opportunity Start Date.</span>
-              </label>
-              <label>
-                Intent maturity
-                <select id="intentMaturity" name="intentMaturity">
-                  <option value="budgetary">Budgetary / exploratory</option>
-                  <option value="planning" selected>Planning / program shaping</option>
-                  <option value="ready">Ready to execute</option>
-                  <option value="awarded">Awarded / authorization pending</option>
-                </select>
-              </label>
-              <label>
                 Timing precision requested
                 <select id="timingPrecision" name="timingPrecision">
                   <option value="general">General lead time</option>
@@ -95,6 +79,11 @@
                   <option value="month" selected>Month-of timing</option>
                   <option value="exact">Specific date</option>
                 </select>
+              </label>
+              <label>
+                <span id="rfpTimingLabel">RFP Requested Month</span>
+                <input id="rfpRequestedStartDate" name="rfpRequestedStartDate" type="month" value="2027-02" />
+                <span id="rfpTimingHint" class="hint">Configured by timing precision. Captures customer/RFP timing context, not the official MVP1 gate.</span>
               </label>
               <label>
                 Date meaning
@@ -105,10 +94,7 @@
                   <option value="unclear">Unclear / mixed meaning</option>
                 </select>
               </label>
-              <label>
-                Proposal last checked
-                <input id="snapshotDate" name="snapshotDate" type="date" value="2026-07-07" />
-              </label>
+              <input id="snapshotDate" name="snapshotDate" type="hidden" value="2026-07-07" />
             </div>
           </fieldset>
 
@@ -178,17 +164,6 @@
             <legend>3. Site, LabSci, and material readiness</legend>
             <div class="field-grid">
               <label>
-                Preferred site
-                <select id="preferredSite" name="preferredSite">
-                  <option value="Mattawan" selected>Mattawan</option>
-                  <option value="Horsham">Horsham</option>
-                  <option value="Lyon">Lyon</option>
-                  <option value="Reno">Reno</option>
-                  <option value="Senneville">Senneville</option>
-                  <option value="Any qualified site">Any qualified site</option>
-                </select>
-              </label>
-              <label>
                 Site flexibility
                 <select id="siteFlexibility" name="siteFlexibility">
                   <option value="specific">Specific site required</option>
@@ -198,6 +173,18 @@
                   <option value="same_program">Keep program together</option>
                   <option value="fastest">Fastest start wins</option>
                 </select>
+              </label>
+              <label>
+                Preferred site
+                <select id="preferredSite" name="preferredSite">
+                  <option value="Mattawan" selected>Mattawan</option>
+                  <option value="Horsham">Horsham</option>
+                  <option value="Lyon">Lyon</option>
+                  <option value="Reno">Reno</option>
+                  <option value="Senneville">Senneville</option>
+                  <option value="Any qualified site">Any qualified site</option>
+                </select>
+                <span id="preferredSiteHint" class="hint">Used when the customer or Commercial has a site preference.</span>
               </label>
               <label>
                 Test material availability
@@ -243,10 +230,15 @@
               User cannot resolve with MVP1 rules
             </label>
           </fieldset>
+          <div class="wizard-actions">
+            <button id="saveDraft" type="button" class="ghost-button">Save</button>
+            <button id="checkResults" type="button" class="primary-button">Check results --&gt;</button>
+            <span id="draftStatus" class="action-status" role="status" aria-live="polite"></span>
+          </div>
         </form>
       </section>
 
-      <section class="console decision-console" aria-labelledby="console-title">
+      <section class="console decision-console" aria-labelledby="console-title" tabindex="-1">
         <div class="section-head">
           <div>
             <p class="eyebrow">Decision console</p>
@@ -294,10 +286,10 @@
                 <p class="eyebrow">Site / month-of-timing options</p>
                 <h3>Snapshot recommendation</h3>
               </div>
-              <span class="pill warn">Not reserved</span>
+              <p class="snapshot-meta">Proposal last checked <strong id="snapshot-label">-</strong></p>
             </div>
-            <div id="recommendations" class="recommendations"></div>
             <div id="selected-recommendation" class="selection-state" aria-live="polite"></div>
+            <div id="recommendations" class="recommendations"></div>
           </article>
 
           <article class="panel">

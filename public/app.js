@@ -34,8 +34,7 @@ const scenarios = {
     opportunityId: 'OPP-400610',
     opportunityStage: 'Negotiate',
     opportunityStartDate: '2027-02-15',
-    rfpRequestedStartDate: '2027-02-15',
-    intentMaturity: 'planning',
+    rfpRequestedStartDate: '2027-02',
     timingPrecision: 'month',
     dateMeaning: 'in_vivo',
     snapshotDate: '2026-07-07',
@@ -59,7 +58,6 @@ const scenarios = {
     opportunityStage: 'Proposal & Price',
     opportunityStartDate: '',
     rfpRequestedStartDate: '',
-    intentMaturity: 'planning',
     timingPrecision: 'month',
     dateMeaning: 'unclear',
     snapshotDate: '2026-07-07',
@@ -83,7 +81,6 @@ const scenarios = {
     opportunityStage: 'Negotiate',
     opportunityStartDate: '2026-09-15',
     rfpRequestedStartDate: '2026-09-15',
-    intentMaturity: 'ready',
     timingPrecision: 'exact',
     dateMeaning: 'in_vivo',
     snapshotDate: '2026-07-07',
@@ -106,8 +103,7 @@ const scenarios = {
     opportunityId: 'OPP-397025',
     opportunityStage: 'Forecast & commit',
     opportunityStartDate: '2027-01-20',
-    rfpRequestedStartDate: '2027-01-20',
-    intentMaturity: 'ready',
+    rfpRequestedStartDate: '2027-01',
     timingPrecision: 'month',
     dateMeaning: 'labsci',
     snapshotDate: '2026-07-07',
@@ -130,8 +126,7 @@ const scenarios = {
     opportunityId: 'OPP-398891',
     opportunityStage: 'Closed Won',
     opportunityStartDate: '2027-02-01',
-    rfpRequestedStartDate: '2027-02-01',
-    intentMaturity: 'awarded',
+    rfpRequestedStartDate: '2027-02',
     timingPrecision: 'month',
     dateMeaning: 'in_vivo',
     snapshotDate: '2026-06-01',
@@ -154,6 +149,8 @@ const scenarios = {
 
 const form = document.getElementById('scheduler-form');
 const stateTabs = [...document.querySelectorAll('[data-scenario]')];
+const decisionConsole = document.querySelector('.decision-console');
+const draftStatus = document.getElementById('draftStatus');
 let selectedRecommendationId = null;
 let currentRecommendations = [];
 
@@ -166,10 +163,31 @@ stateTabs.forEach((button) => {
 form.addEventListener('input', render);
 form.addEventListener('change', render);
 
+document.getElementById('saveDraft').addEventListener('click', () => {
+  const savedAt = new Date();
+  const payload = {
+    savedAt: savedAt.toISOString(),
+    values: values(),
+    selectedRecommendationId
+  };
+  try {
+    localStorage.setItem('dsaSchedulingMvp1Draft', JSON.stringify(payload));
+    draftStatus.textContent = `Saved ${savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. No SFDC writeback.`;
+  } catch {
+    draftStatus.textContent = 'Draft kept in this session only. No SFDC writeback.';
+  }
+});
+
+document.getElementById('checkResults').addEventListener('click', () => {
+  decisionConsole.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  decisionConsole.focus({ preventScroll: true });
+});
+
 function applyScenario(name) {
   const scenario = scenarios[name];
   selectedRecommendationId = null;
   Object.entries(scenario).forEach(([key, value]) => {
+    if (key === 'rfpRequestedStartDate') return;
     const el = document.getElementById(key);
     if (!el) return;
     if (el.type === 'checkbox') {
@@ -178,6 +196,12 @@ function applyScenario(name) {
       el.value = value;
     }
   });
+  configureRfpTimingControl();
+  const rfpInput = document.getElementById('rfpRequestedStartDate');
+  if (rfpInput && Object.hasOwn(scenario, 'rfpRequestedStartDate')) {
+    rfpInput.value = scenario.rfpRequestedStartDate;
+  }
+  updatePreferredSiteControl();
   render();
 }
 
@@ -186,6 +210,7 @@ function values() {
   new FormData(form).forEach((value, key) => {
     data[key] = value;
   });
+  data.preferredSite = document.getElementById('preferredSite').value;
   data.userCannotResolve = document.getElementById('userCannotResolve').checked;
   return data;
 }
@@ -280,7 +305,8 @@ function evaluate(data) {
   }
 
   const fatal = checks.some((item) => item.level === 'bad') || expired;
-  const needsScheduling = triage.includes('specific_date_requested') || triage.includes('start_date_inside_mvp1_window') || data.intentMaturity === 'awarded';
+  const commercialPosture = commercialPostureFor(data.opportunityStage);
+  const needsScheduling = triage.includes('specific_date_requested') || triage.includes('start_date_inside_mvp1_window') || commercialPosture === 'awarded';
   const outcome = decideOutcome({ fatal, needsScheduling, triage, warnings, data });
   const recommendations = buildRecommendations(data, siteResult, fatal, expiryDate, warnings);
   const statusKey = statusKeyFor({ triage, warnings, outcome });
@@ -298,6 +324,14 @@ function evaluate(data) {
 }
 
 function siteEvaluation(data) {
+  if (data.siteFlexibility === 'any') {
+    return {
+      check: check('good', 'Broad site search enabled', 'Any qualified site can be searched for feasible timing.'),
+      trace: rule('pass', 'Site Flexibility', 'No single preferred site is required. Recommend qualified site/month options.'),
+      triage: null
+    };
+  }
+
   const preferred = data.preferredSite === 'Any qualified site' ? 'Mattawan' : data.preferredSite;
   const site = siteCapabilities[preferred];
   if (!site) {
@@ -395,12 +429,15 @@ function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
 }
 
 function render() {
+  configureRfpTimingControl();
+  updatePreferredSiteControl();
   const data = values();
   const evaluation = evaluate(data);
   renderOutcome(evaluation);
   renderStateTabs(evaluation.statusKey);
   renderGate(data);
   renderReadiness(evaluation.checks);
+  renderSnapshotMeta(data, evaluation);
   renderRecommendations(evaluation.recommendations);
   renderTrace(evaluation.trace);
   renderPacket(data, evaluation);
@@ -431,6 +468,10 @@ function renderStateTabs(statusKey) {
 function renderGate(data) {
   document.getElementById('gate-date').textContent = data.opportunityStartDate || 'Missing';
   document.getElementById('precision-label').textContent = precisionLabel(data.timingPrecision);
+}
+
+function renderSnapshotMeta(data, evaluation) {
+  document.getElementById('snapshot-label').textContent = `${data.snapshotDate || 'Unknown'} · valid until ${formatDate(evaluation.expiryDate)} · not reserved`;
 }
 
 function renderReadiness(checks) {
@@ -532,6 +573,86 @@ function rule(status, name, copy) {
 
 function outcome(level, title, copy, code) {
   return { level, title, copy, code };
+}
+
+function commercialPostureFor(stage) {
+  const postureByStage = {
+    Target: 'early',
+    Qualify: 'early',
+    'Proposal & Price': 'budgetary',
+    Budgetary: 'budgetary',
+    Negotiate: 'ready',
+    'Forecast & commit': 'ready',
+    'Closed Won': 'awarded'
+  };
+  return postureByStage[stage] || 'planning';
+}
+
+function configureRfpTimingControl() {
+  const precision = document.getElementById('timingPrecision').value;
+  const input = document.getElementById('rfpRequestedStartDate');
+  const label = document.getElementById('rfpTimingLabel');
+  const hint = document.getElementById('rfpTimingHint');
+  const current = input.value;
+
+  if (precision === 'general') {
+    input.type = 'text';
+    input.placeholder = 'No date supplied';
+    input.value = current && !isIsoDate(current) && !isIsoMonth(current) ? current : '';
+    label.textContent = 'RFP Timing Context';
+    hint.textContent = 'General timing only. No date is required for the RFP context field.';
+    return;
+  }
+
+  if (precision === 'quarter') {
+    input.type = 'text';
+    input.placeholder = '2027 Q1';
+    input.value = current && !isIsoDate(current) && !isIsoMonth(current) ? current : '';
+    label.textContent = 'RFP Requested Quarter';
+    hint.textContent = 'Quarter guidance is less precise than the official Opportunity Start Date gate.';
+    return;
+  }
+
+  if (precision === 'exact') {
+    input.type = 'date';
+    input.placeholder = '';
+    input.value = isIsoDate(current) ? current : isIsoMonth(current) ? `${current}-15` : '';
+    label.textContent = 'RFP Requested Date';
+    hint.textContent = 'Specific dates imply stronger validation than MVP1 month-of guidance.';
+    return;
+  }
+
+  input.type = 'month';
+  input.placeholder = '';
+  input.value = isIsoMonth(current) ? current : isIsoDate(current) ? current.slice(0, 7) : '';
+  label.textContent = 'RFP Requested Month';
+  hint.textContent = 'Month-of timing fits MVP1. Opportunity Start Date remains the official gate.';
+}
+
+function updatePreferredSiteControl() {
+  const flexibility = document.getElementById('siteFlexibility').value;
+  const preferredSite = document.getElementById('preferredSite');
+  const hint = document.getElementById('preferredSiteHint');
+  if (flexibility === 'any') {
+    preferredSite.value = 'Any qualified site';
+    preferredSite.disabled = true;
+    hint.textContent = 'Disabled because Site flexibility is Any qualified site.';
+    return;
+  }
+
+  preferredSite.disabled = false;
+  if (preferredSite.value === 'Any qualified site') {
+    preferredSite.value = 'Mattawan';
+  }
+  hint.textContent = 'Used when the customer or Commercial has a site preference.';
+}
+
+function isIsoDate(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function isIsoMonth(value) {
+  return /^\d{4}-\d{2}$/.test(value);
 }
 
 function statusKeyFor({ triage, warnings, outcome }) {
