@@ -49,7 +49,7 @@
         <form id="scheduler-form">
           <fieldset>
             <legend>1. Opportunity and RFP</legend>
-            <div class="field-grid">
+            <div class="field-grid aligned-field-grid">
               <label>
                 Opportunity #
                 <input id="opportunityId" name="opportunityId" type="text" value="OPP-400610" />
@@ -162,29 +162,29 @@
 
           <fieldset>
             <legend>3. Site, LabSci, and material readiness</legend>
-            <div class="field-grid">
+            <div class="field-grid aligned-field-grid">
               <label>
                 Site flexibility
                 <select id="siteFlexibility" name="siteFlexibility">
                   <option value="specific">Specific site required</option>
-                  <option value="preferred" selected>Preferred, but flexible</option>
+                  <option value="preferred">Preferred, but flexible</option>
                   <option value="region">Region required</option>
-                  <option value="any">Any qualified site</option>
+                  <option value="any" selected>Any qualified site</option>
                   <option value="same_program">Keep program together</option>
                   <option value="fastest">Fastest start wins</option>
                 </select>
               </label>
               <label>
                 Preferred site
-                <select id="preferredSite" name="preferredSite">
-                  <option value="Mattawan" selected>Mattawan</option>
+                <select id="preferredSite" name="preferredSite" disabled>
+                  <option value="Mattawan">Mattawan</option>
                   <option value="Horsham">Horsham</option>
                   <option value="Lyon">Lyon</option>
                   <option value="Reno">Reno</option>
                   <option value="Senneville">Senneville</option>
-                  <option value="Any qualified site">Any qualified site</option>
+                  <option value="Any qualified site" selected>Any qualified site</option>
                 </select>
-                <span id="preferredSiteHint" class="hint">Used when the customer or Commercial has a site preference.</span>
+                <span id="preferredSiteHint" class="hint">Disabled because Site flexibility is Any qualified site.</span>
               </label>
               <label>
                 Test material availability
@@ -223,7 +223,7 @@
             <legend>4. Context capsule</legend>
             <label class="wide-label">
               Customer constraints, odd requests, notes, or email context
-              <textarea id="contextNotes" name="contextNotes" rows="4">Customer prefers Mattawan but is open to other North America sites if timing improves. No exact date promise has been made.</textarea>
+              <textarea id="contextNotes" name="contextNotes" rows="4">Customer is open to any qualified site if timing improves. No exact date promise has been made.</textarea>
             </label>
             <label class="checkbox-row">
               <input id="userCannotResolve" name="userCannotResolve" type="checkbox" />
@@ -253,7 +253,7 @@
         </div>
 
         <div class="console-grid">
-          <article class="panel">
+          <article class="panel span-2 gate-panel">
             <p class="eyebrow">MVP1 gate</p>
             <div class="stat-grid">
               <div class="stat">
@@ -275,7 +275,7 @@
             </div>
           </article>
 
-          <article class="panel">
+          <article class="panel span-2 readiness-panel">
             <p class="eyebrow">Readiness</p>
             <div id="readiness-list" class="check-list"></div>
           </article>
