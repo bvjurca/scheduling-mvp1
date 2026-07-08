@@ -25,7 +25,7 @@
 
         <div class="scenario-bar state-tabs" aria-label="Wizard state tabs">
           <button type="button" class="ghost-button state-tab" data-scenario="happy" data-status-key="happy" aria-pressed="false">
-            <span>Green light</span>
+            <span>Ideal case</span>
             <small>ready</small>
           </button>
           <button type="button" class="ghost-button state-tab" data-scenario="missing" data-status-key="missing" aria-pressed="false">
@@ -69,7 +69,7 @@
               <label>
                 Opportunity Start Date
                 <input id="opportunityStartDate" name="opportunityStartDate" type="text" value="15-Feb-2027" placeholder="DD-MMM-YYYY" />
-                <span class="hint">Official MVP1 gate from the Blueprint. Not Study Start Date.</span>
+                <span class="hint">Primary timing date for MVP1 rules. Not Study Start Date.</span>
               </label>
               <label>
                 Timing precision requested
@@ -83,7 +83,7 @@
               <label>
                 <span id="rfpTimingLabel">RFP Requested Month</span>
                 <input id="rfpRequestedStartDate" name="rfpRequestedStartDate" type="month" value="2027-02" />
-                <span id="rfpTimingHint" class="hint">Configured by timing precision. Captures customer/RFP timing context, not the official MVP1 gate.</span>
+                <span id="rfpTimingHint" class="hint">Configured by timing precision. Captures customer/RFP timing context, not the primary MVP1 timing date.</span>
               </label>
               <label>
                 Date meaning
@@ -220,19 +220,24 @@
           </fieldset>
 
           <fieldset>
-            <legend>4. Context capsule</legend>
+            <legend>4. Additional information</legend>
             <label class="wide-label">
               Customer constraints, odd requests, notes, or email context
               <textarea id="contextNotes" name="contextNotes" rows="4">Customer is open to any qualified site if timing improves. No exact date promise has been made.</textarea>
             </label>
             <label class="checkbox-row">
               <input id="userCannotResolve" name="userCannotResolve" type="checkbox" />
-              User cannot resolve with MVP1 rules
+              Offramp requested
             </label>
           </fieldset>
           <div class="wizard-actions">
             <button id="saveDraft" type="button" class="ghost-button">Save</button>
-            <button id="checkResults" type="button" class="primary-button">Check results --&gt;</button>
+            <button id="checkResults" type="button" class="primary-button">
+              <span>Check results</span>
+              <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </button>
             <span id="draftStatus" class="action-status" role="status" aria-live="polite"></span>
           </div>
         </form>
@@ -253,28 +258,6 @@
         </div>
 
         <div class="console-grid">
-          <article class="panel span-2 gate-panel">
-            <p class="eyebrow">MVP1 gate</p>
-            <div class="stat-grid">
-              <div class="stat">
-                <span>Official gate date</span>
-                <strong id="gate-date">-</strong>
-              </div>
-              <div class="stat">
-                <span>Gate source</span>
-                <strong>Opportunity Start Date</strong>
-              </div>
-              <div class="stat">
-                <span>Minimum window</span>
-                <strong>&gt; 4 months</strong>
-              </div>
-              <div class="stat">
-                <span>Timing precision</span>
-                <strong id="precision-label">-</strong>
-              </div>
-            </div>
-          </article>
-
           <article class="panel span-2 readiness-panel">
             <p class="eyebrow">Readiness</p>
             <div id="readiness-list" class="check-list"></div>
@@ -283,10 +266,9 @@
           <article class="panel span-2">
             <div class="panel-head">
               <div>
-                <p class="eyebrow">Site / month-of-timing options</p>
-                <h3>Snapshot recommendation</h3>
+                <h3>Recommendations</h3>
               </div>
-              <p class="snapshot-meta">Proposal last checked <strong id="snapshot-label">-</strong></p>
+              <p class="snapshot-meta">Last checked <strong id="snapshot-label">-</strong></p>
             </div>
             <div id="selected-recommendation" class="selection-state" aria-live="polite"></div>
             <div id="recommendations" class="recommendations"></div>
@@ -303,7 +285,7 @@
           </article>
 
           <article class="panel span-2">
-            <p class="eyebrow">Context capsule</p>
+            <p class="eyebrow">Additional information</p>
             <p id="context-capsule" class="context-copy"></p>
           </article>
         </div>

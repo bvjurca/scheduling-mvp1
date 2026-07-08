@@ -230,17 +230,17 @@ function evaluate(data) {
 
   if (!start) {
     checks.push(check('bad', 'Opportunity Start Date missing', 'Blueprint requires Opportunity Start Date before MVP1 can calculate options.'));
-    trace.push(rule('fail', 'Opportunity Start Date known', 'Missing mandatory MVP1 gate date.'));
+    trace.push(rule('fail', 'Opportunity Start Date known', 'Missing mandatory MVP1 timing date.'));
     triage.push('missing_opportunity_start_date');
   } else {
-    checks.push(check('good', 'Opportunity Start Date present', `${formatFullDate(data.opportunityStartDate)} is used as the MVP1 gate date.`));
+    checks.push(check('good', 'Opportunity Start Date present', `${formatFullDate(data.opportunityStartDate)} is used as the primary MVP1 timing date.`));
     if (start <= gateDate) {
-      checks.push(check('bad', 'Inside four-month MVP1 gate', 'Start date is too soon for the MVP1 happy path.'));
-      trace.push(rule('fail', 'MVP1 lead-time gate', 'Opportunity Start Date must be more than four months out.'));
+      checks.push(check('bad', 'Inside four-month MVP1 window', 'Start date is too soon for the MVP1 happy path.'));
+      trace.push(rule('fail', 'MVP1 lead-time window', 'Opportunity Start Date must be more than four months out.'));
       triage.push('start_date_inside_mvp1_window');
     } else {
       checks.push(check('good', 'More than four months out', 'Eligible to continue to rules engine.'));
-      trace.push(rule('pass', 'MVP1 lead-time gate', 'Opportunity Start Date is more than four months out.'));
+      trace.push(rule('pass', 'MVP1 lead-time window', 'Opportunity Start Date is more than four months out.'));
     }
   }
 
@@ -380,7 +380,7 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
     return outcome('bad', 'Off-ramp: capability mismatch', 'The specific site does not support this configuration. Modify site or escalate capabilities.', 'off_ramp_capability');
   }
   if (data.userCannotResolve) {
-    return outcome('bad', 'Request Central Scheduling assistance', 'User cannot resolve options with MVP1 rules. Send the packet and rule trace.', 'central_scheduling');
+    return outcome('bad', 'Request Central Scheduling assistance', 'Offramp requested. Send the packet and rule trace.', 'central_scheduling');
   }
   if (needsScheduling) {
     return outcome('warn', 'Scheduling validation required', 'A specific date, awarded state, or execution-level request needs stronger Scheduling validation.', 'scheduling_validation');
@@ -389,9 +389,9 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
     return outcome('warn', 'Fill missing configuration', 'Complete or standardize the missing SFDC/RFP/Study inputs before recommendation.', 'needs_missing_data');
   }
   if (warnings.length > 0) {
-    return outcome('warn', 'Green light with caveats', 'Commercial can share a caveated site/month option, with assumptions and expiry visible.', 'green_light_caveated');
+    return outcome('warn', 'Ideal case with caveats', 'Commercial can share a caveated site/month option, with assumptions and expiry visible.', 'green_light_caveated');
   }
-  return outcome('good', 'Green light to say yes', 'Commercial can share this site/month option based on the current snapshot, until expiry.', 'green_light');
+  return outcome('good', 'Ideal case', 'Commercial can share this site/month option based on the current snapshot, until expiry.', 'green_light');
 }
 
 function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
@@ -438,7 +438,6 @@ function render() {
   const evaluation = evaluate(data);
   renderOutcome(evaluation);
   renderStateTabs(evaluation.statusKey);
-  renderGate(data);
   renderReadiness(evaluation.checks);
   renderSnapshotMeta(data, evaluation);
   renderRecommendations(evaluation.recommendations);
@@ -468,11 +467,6 @@ function renderStateTabs(statusKey) {
   });
 }
 
-function renderGate(data) {
-  document.getElementById('gate-date').textContent = formatFullDate(data.opportunityStartDate) || 'Missing';
-  document.getElementById('precision-label').textContent = precisionLabel(data.timingPrecision);
-}
-
 function renderSnapshotMeta(data, evaluation) {
   const checkedDate = formatFullDate(data.snapshotDate) || 'Unknown';
   document.getElementById('snapshot-label').textContent = `${checkedDate} · valid until ${formatDate(evaluation.expiryDate)} · not reserved`;
@@ -483,7 +477,7 @@ function renderReadiness(checks) {
     <div class="check-item">
       <span class="dot ${item.level}"></span>
       <div>
-        <div class="item-title"><strong>${item.title}</strong><span class="pill ${item.level}">${labelForLevel(item.level)}</span></div>
+        <div class="item-title"><strong>${item.title}</strong></div>
         <p>${item.copy}</p>
       </div>
     </div>
@@ -613,7 +607,7 @@ function configureRfpTimingControl() {
     input.placeholder = '2027 Q1';
     input.value = current && !isFullDate(current) && !isIsoMonth(current) ? current : '';
     label.textContent = 'RFP Requested Quarter';
-    hint.textContent = 'Quarter guidance is less precise than the official Opportunity Start Date gate.';
+    hint.textContent = 'Quarter guidance is less precise than the Opportunity Start Date used by MVP1 rules.';
     return;
   }
 
@@ -630,7 +624,7 @@ function configureRfpTimingControl() {
   input.placeholder = '';
   input.value = isIsoMonth(current) ? current : monthFromFullDate(current) || '';
   label.textContent = 'RFP Requested Month';
-  hint.textContent = 'Month-of timing fits MVP1. Opportunity Start Date remains the official gate.';
+  hint.textContent = 'Month-of timing fits MVP1. Opportunity Start Date remains the primary timing date.';
 }
 
 function updatePreferredSiteControl() {
@@ -677,10 +671,6 @@ function precisionLabel(value) {
     exact: 'Specific date'
   };
   return labels[value] || value;
-}
-
-function labelForLevel(level) {
-  return level === 'good' ? 'Pass' : level === 'warn' ? 'Review' : 'Fail';
 }
 
 function addMonths(date, months) {

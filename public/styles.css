@@ -157,6 +157,10 @@ textarea:focus-visible {
 }
 
 .ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-150);
   min-height: 36px;
   border: 1px solid var(--line);
   border-radius: var(--radii-75);
@@ -169,6 +173,10 @@ textarea:focus-visible {
 }
 
 .primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-150);
   min-height: 36px;
   border: 1px solid var(--color-brand-default);
   border-radius: var(--radii-75);
@@ -187,6 +195,17 @@ textarea:focus-visible {
 
 .primary-button:hover {
   background: var(--color-info-text);
+}
+
+.button-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .scenario-bar.state-tabs {
@@ -335,6 +354,13 @@ textarea {
   text-overflow: ellipsis;
 }
 
+input:not([type="checkbox"]):not([type="hidden"]),
+select {
+  height: 38px;
+  min-height: 38px;
+  line-height: var(--line-height-1);
+}
+
 input:hover,
 select:hover,
 textarea:hover {
@@ -351,6 +377,7 @@ textarea:disabled {
 }
 
 textarea {
+  min-height: 96px;
   resize: vertical;
 }
 
@@ -472,10 +499,6 @@ textarea {
   gap: var(--space-200);
 }
 
-.gate-panel .stat-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .stat {
   border: 1px solid var(--line);
   border-radius: var(--radii-75);
@@ -530,8 +553,7 @@ textarea {
 }
 
 .readiness-panel .item-title {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: block;
 }
 
 .readiness-panel .check-item p {
@@ -659,7 +681,6 @@ textarea {
     grid-auto-rows: minmax(78px, auto);
   }
 
-  .gate-panel .stat-grid,
   .readiness-panel .check-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

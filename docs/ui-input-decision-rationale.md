@@ -23,7 +23,7 @@ The top pills represent the major states Commercial will need to explain in a st
 
 | State | Why it exists | Expected behavior |
 | --- | --- | --- |
-| Green light | Shows the MVP1 happy path: enough data, outside four-month gate, no material blocker, no unresolved LabSci blocker, capability supported. | Should light automatically when the wizard inputs meet green-light conditions. Clicking it can load the happy-path scenario. |
+| Ideal case | Shows the MVP1 happy path: enough data, outside four-month gate, no material blocker, no unresolved LabSci blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
 | Missing data | Shows that MVP1 should ask for data rather than inventing a date or recommendation. | Should light when Opportunity Start Date, species, configuration, or other required context is missing or ambiguous. |
 | Specific date | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is inside the four-month MVP1 window. |
 | LabSci risk | Captures the reality that method validation, bioanalysis, or LabSci sequencing may have a separate timeline. | Should light when the timing meaning is LabSci/method-related or LabSci timing is unresolved. |
@@ -38,7 +38,7 @@ The wizard is split into four groups because that mirrors the real decision path
 1. Opportunity and RFP: commercial request, gate date, timing precision, requested timing context, and date semantics.
 2. Study configuration: structured study metadata needed for capability and timing.
 3. Site, LabSci, and material readiness: the operational constraints that change recommendation confidence.
-4. Context capsule: human-readable context that should travel with the recommendation or escalation.
+4. Additional information: human-readable context that should travel with the recommendation or escalation.
 
 This grouping deliberately avoids copying the SFDC screen one-to-one. The goal is not to reproduce Salesforce; it is to synthesize scheduling-relevant context that is scattered across Opportunity, RFP, Study, Configurator, notes, and files.
 
@@ -230,7 +230,7 @@ Decision impact: unknown or not feasible states should caveat or block stronger 
 
 Why included: it prevents a simple site/month answer from masking method or bioanalysis uncertainty.
 
-## Context Capsule Inputs
+## Additional Information Inputs
 
 ### Customer Constraints / Notes / Email Context
 
@@ -240,7 +240,7 @@ Decision impact: rendered into the decision console and escalation packet.
 
 Why included: VoC called out that emails, Teams, notes, and descriptions can contain critical constraints not cleanly represented in SFDC fields.
 
-### User Cannot Resolve With MVP1 Rules
+### Offramp Requested
 
 Reason: explicit manual override for ambiguity, discomfort, or cases the rules cannot model.
 
@@ -258,13 +258,13 @@ Decision impact: none in MVP1. It is a local draft action in the prototype.
 
 Why included: Commercial users expect a way to pause work. The CTA should remain lower-commitment than a submit action.
 
-### Check results -->
+### Check results
 
 Reason: moves attention from input gathering to the decision console.
 
 Decision impact: runs the current evaluation and takes the user to the result area.
 
-Why included: it supports a natural wizard mental model without hiding the live-updating console.
+Why included: it supports a natural wizard mental model without hiding the live-updating console. The right-arrow icon communicates forward motion without leaving literal arrow characters in the label.
 
 ## Decision Console Elements
 
@@ -284,20 +284,15 @@ Decision impact: helps connect UI state to future workflow states or SFDC status
 
 Why included: useful for stakeholder conversation around future field mapping.
 
-### MVP1 Gate Panel
+### MVP1 Gate Logic
 
-Reason: makes the agreed gate visible:
+Reason: keeps the agreed Blueprint rule intact without making the user inspect implementation scaffolding.
 
-- Official gate date
-- Gate source
-- Minimum window
-- Timing precision
+Decision impact: Opportunity Start Date still drives the ideal-case path, missing-data state, specific-date caveat, and off-ramp behavior.
 
-Decision impact: explains whether the request is in the MVP1 happy path.
+Layout decision: the visible MVP1 Gate panel was removed from the console. It was behind-the-scenes logic rather than a decision the user needed to operate, and it pushed recommendations lower on the page.
 
-Layout decision: the panel spans the console row so the gate is scanned once, then the user immediately sees readiness and recommendations below it.
-
-Why included: this panel protects the team from drifting back into ambiguous "target date" language.
+Why retained behind the scenes: this protects the team from drifting back into ambiguous "target date" language while keeping the console focused on readiness and recommendations.
 
 ### Readiness List
 
@@ -309,7 +304,7 @@ Layout decision: readiness is a compact grid so pass/review/fail conditions cons
 
 Why included: Commercial needs to know what to fix, not just that the recommendation failed.
 
-### Site / Month-of-Timing Options
+### Recommendations
 
 Reason: represents the actual MVP1 output.
 
@@ -331,13 +326,13 @@ Reason: shows proposal freshness where the recommendation is being consumed.
 
 Displayed data:
 
-- Proposal last checked
+- Last checked
 - Valid-until date
 - Not reserved
 
 Decision impact: drives expiry and frames the recommendation as a snapshot rather than a promise.
 
-Why placed in the recommendation header: "Proposal last checked" is provenance for the snapshot recommendation, not an intake question the user should normally answer.
+Why placed in the recommendation header: "Last checked" is provenance for the snapshot recommendation, not an intake question the user should normally answer. It replaces the old top-right "Not reserved" emphasis because freshness is the first thing the user needs before trusting a recommendation.
 
 ### Non-Reservation Language
 
@@ -363,7 +358,7 @@ Decision impact: reduces rework when Commercial cannot resolve a request.
 
 Why included: MVP1 should not dead-end when rules fail; it should hand off cleanly.
 
-### Context Capsule Display
+### Additional Information Display
 
 Reason: mirrors the free-text input back into the console.
 
@@ -395,7 +390,7 @@ Decision impact: compact panels, controlled colors, and scan-friendly cards.
 
 Reason: avoids turning the page into a decorative card collage.
 
-Decision impact: panels map to work surfaces: wizard, gate, readiness, recommendation, trace, packet.
+Decision impact: panels map to work surfaces: wizard, readiness, recommendation, trace, packet, and additional information.
 
 Console clutter update: the decision console keeps one outer container, while direct child panels are visually unboxed so the page reads as one decision surface instead of a stack of competing cards.
 
@@ -403,7 +398,7 @@ Console clutter update: the decision console keeps one outer container, while di
 
 | Color | Meaning |
 | --- | --- |
-| Green | Pass / green light / selected safe option |
+| Green | Pass / ideal case / selected safe option |
 | Amber | Review / caveat / not reserved |
 | Red | Fail / off-ramp / expired |
 | Blue | Structural focus / active UI / information |
@@ -428,7 +423,7 @@ It does need lightweight auditability for saved or checked recommendations:
 - input snapshot;
 - selected recommendation, if any;
 - rule/data version;
-- proposal last checked;
+- last checked;
 - validity window;
 - off-ramp reason codes.
 
