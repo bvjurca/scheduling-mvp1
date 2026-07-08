@@ -2,7 +2,9 @@
 
 Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 prototype.
 
-The hosted artifact is intentionally narrow: `public/index.html` contains the scheduling wizard and decision console.
+The hosted artifact is intentionally narrow: `public/index.html` contains only the scheduling wizard and decision console.
+
+The stakeholder explanation lives beside the demo as a PDF: `docs/dsa-scheduling-mvp1-stakeholder-manual.pdf`.
 
 ## MVP1 Anchor
 
@@ -26,8 +28,10 @@ MVP1 does not reserve capacity, optimize room-level schedules, replace Central S
 │   ├── index.html
 │   └── styles.css
 ├── docs/
+│   ├── dsa-scheduling-mvp1-stakeholder-manual.pdf
 │   └── mvp1-target-date-clarification-and-context-note.md
 ├── scripts/
+│   ├── build-stakeholder-manual-pdf.py
 │   ├── serve-static.mjs
 │   └── validate-static-site.mjs
 ├── netlify.toml
@@ -51,7 +55,15 @@ Then open the local URL printed by the server. The site is static, so Netlify ca
 npm run build
 ```
 
-The build checks that the hosted demo, JavaScript, and CSS files contain the expected MVP1 content.
+The build checks that the hosted demo, JavaScript, CSS, and side PDF are present and aligned with the expected MVP1 content.
+
+## Rebuild The Side PDF
+
+```bash
+npm run manual:pdf
+```
+
+The PDF is intentionally not linked from the hosted demo UI.
 
 ## Deploy To Netlify From GitHub
 

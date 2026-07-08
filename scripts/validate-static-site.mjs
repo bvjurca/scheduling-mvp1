@@ -1,4 +1,10 @@
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+
+const removedPublicManual = new URL('../public/manual.html', import.meta.url);
+
+if (existsSync(removedPublicManual)) {
+  throw new Error('public/manual.html should not be part of the hosted demo surface.');
+}
 
 const checks = [
   {
@@ -41,8 +47,8 @@ const checks = [
 
 for (const check of checks) {
   const filePath = new URL(check.path, import.meta.url);
-  const text = readFileSync(filePath, 'utf8');
   const stats = statSync(filePath);
+  const text = check.binary ? '' : readFileSync(filePath, 'utf8');
   const missing = check.requiredText.filter((snippet) => !text.includes(snippet));
 
   if (stats.size < check.minBytes) {
