@@ -1,5 +1,7 @@
 const today = new Date('2026-07-07T12:00:00Z');
 const expiryBusinessDays = 5;
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monthLookup = Object.fromEntries(monthNames.map((month, index) => [month.toLowerCase(), index]));
 
 const siteCapabilities = {
   Mattawan: {
@@ -33,11 +35,11 @@ const scenarios = {
   happy: {
     opportunityId: 'OPP-400610',
     opportunityStage: 'Negotiate',
-    opportunityStartDate: '2027-02-15',
+    opportunityStartDate: '15-Feb-2027',
     rfpRequestedStartDate: '2027-02',
     timingPrecision: 'month',
     dateMeaning: 'in_vivo',
-    snapshotDate: '2026-07-07',
+    snapshotDate: '07-Jul-2026',
     studyType1: 'Toxicology',
     studyType2: 'General tox',
     species: 'rat',
@@ -47,7 +49,7 @@ const scenarios = {
     preferredSite: 'Mattawan',
     siteFlexibility: 'preferred',
     testMaterial: 'available',
-    testMaterialDate: '2026-11-01',
+    testMaterialDate: '01-Nov-2026',
     labsciRequired: 'none',
     labsciTiming: 'not_applicable',
     contextNotes: 'Customer prefers Mattawan but is open to other North America sites if timing improves. No exact date promise has been made.',
@@ -60,7 +62,7 @@ const scenarios = {
     rfpRequestedStartDate: '',
     timingPrecision: 'month',
     dateMeaning: 'unclear',
-    snapshotDate: '2026-07-07',
+    snapshotDate: '07-Jul-2026',
     studyType1: 'Toxicology',
     studyType2: 'General tox',
     species: '',
@@ -79,11 +81,11 @@ const scenarios = {
   specific: {
     opportunityId: 'OPP-419206',
     opportunityStage: 'Negotiate',
-    opportunityStartDate: '2026-09-15',
-    rfpRequestedStartDate: '2026-09-15',
+    opportunityStartDate: '15-Sep-2026',
+    rfpRequestedStartDate: '15-Sep-2026',
     timingPrecision: 'exact',
     dateMeaning: 'in_vivo',
-    snapshotDate: '2026-07-07',
+    snapshotDate: '07-Jul-2026',
     studyType1: 'Toxicology',
     studyType2: 'General tox',
     species: 'NHP',
@@ -93,7 +95,7 @@ const scenarios = {
     preferredSite: 'Mattawan',
     siteFlexibility: 'specific',
     testMaterial: 'future',
-    testMaterialDate: '2026-08-28',
+    testMaterialDate: '28-Aug-2026',
     labsciRequired: 'bioanalysis',
     labsciTiming: 'unknown',
     contextNotes: 'Customer asked for a specific September 15 in-life start. This should not be promised from snapshot data.',
@@ -102,11 +104,11 @@ const scenarios = {
   labsci: {
     opportunityId: 'OPP-397025',
     opportunityStage: 'Forecast & commit',
-    opportunityStartDate: '2027-01-20',
+    opportunityStartDate: '20-Jan-2027',
     rfpRequestedStartDate: '2027-01',
     timingPrecision: 'month',
     dateMeaning: 'labsci',
-    snapshotDate: '2026-07-07',
+    snapshotDate: '07-Jul-2026',
     studyType1: 'Toxicology',
     studyType2: 'General tox',
     species: 'dog',
@@ -116,7 +118,7 @@ const scenarios = {
     preferredSite: 'Any qualified site',
     siteFlexibility: 'any',
     testMaterial: 'future',
-    testMaterialDate: '2026-11-15',
+    testMaterialDate: '15-Nov-2026',
     labsciRequired: 'method_validation',
     labsciTiming: 'unknown',
     contextNotes: 'Two timelines may run together: method validation and in vivo. Commercial needs a caveated month recommendation.',
@@ -125,11 +127,11 @@ const scenarios = {
   expired: {
     opportunityId: 'OPP-398891',
     opportunityStage: 'Closed Won',
-    opportunityStartDate: '2027-02-01',
+    opportunityStartDate: '01-Feb-2027',
     rfpRequestedStartDate: '2027-02',
     timingPrecision: 'month',
     dateMeaning: 'in_vivo',
-    snapshotDate: '2026-06-01',
+    snapshotDate: '01-Jun-2026',
     studyType1: 'Services',
     studyType2: 'Pathology slide scanning',
     species: 'Not Applicable',
@@ -139,7 +141,7 @@ const scenarios = {
     preferredSite: 'Reno',
     siteFlexibility: 'specific',
     testMaterial: 'available',
-    testMaterialDate: '2026-08-01',
+    testMaterialDate: '01-Aug-2026',
     labsciRequired: 'none',
     labsciTiming: 'not_applicable',
     contextNotes: 'Previously shared month-of timing has aged out. Recheck before customer communication.',
@@ -220,9 +222,10 @@ function evaluate(data) {
   const trace = [];
   const triage = [];
   const warnings = [];
-  const start = data.opportunityStartDate ? new Date(`${data.opportunityStartDate}T12:00:00Z`) : null;
+  const start = parseFullDate(data.opportunityStartDate);
   const gateDate = addMonths(today, 4);
-  const expiryDate = addBusinessDays(new Date(`${data.snapshotDate || '2026-07-07'}T12:00:00Z`), expiryBusinessDays);
+  const snapshotDate = parseFullDate(data.snapshotDate) || parseFullDate('07-Jul-2026');
+  const expiryDate = addBusinessDays(snapshotDate, expiryBusinessDays);
   const expired = expiryDate < today;
 
   if (!start) {
@@ -230,7 +233,7 @@ function evaluate(data) {
     trace.push(rule('fail', 'Opportunity Start Date known', 'Missing mandatory MVP1 gate date.'));
     triage.push('missing_opportunity_start_date');
   } else {
-    checks.push(check('good', 'Opportunity Start Date present', `${data.opportunityStartDate} is used as the MVP1 gate date.`));
+    checks.push(check('good', 'Opportunity Start Date present', `${formatFullDate(data.opportunityStartDate)} is used as the MVP1 gate date.`));
     if (start <= gateDate) {
       checks.push(check('bad', 'Inside four-month MVP1 gate', 'Start date is too soon for the MVP1 happy path.'));
       trace.push(rule('fail', 'MVP1 lead-time gate', 'Opportunity Start Date must be more than four months out.'));
@@ -274,7 +277,7 @@ function evaluate(data) {
     checks.push(check('warn', 'Test material unknown', 'Material availability should be clarified or carried as an assumption.'));
     warnings.push('test_material_unknown');
   } else if (data.testMaterial === 'future') {
-    checks.push(check('warn', 'Future test material', `Material availability depends on ${data.testMaterialDate || 'a future date'}.`));
+    checks.push(check('warn', 'Future test material', `Material availability depends on ${formatFullDate(data.testMaterialDate) || 'a future date'}.`));
     warnings.push('test_material_future');
   } else {
     checks.push(check('good', 'Test material available', 'No material timing blocker captured.'));
@@ -393,7 +396,7 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
 
 function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
   if (fatal) return [];
-  const month = data.opportunityStartDate ? data.opportunityStartDate.slice(0, 7) : 'TBD';
+  const month = monthFromFullDate(data.opportunityStartDate) || 'TBD';
   const preferred = data.preferredSite === 'Any qualified site' ? 'Mattawan' : data.preferredSite;
   const cards = [];
   const confidence = warnings.length > 1 ? 'Medium' : warnings.length === 1 ? 'Medium-high' : 'High';
@@ -466,12 +469,13 @@ function renderStateTabs(statusKey) {
 }
 
 function renderGate(data) {
-  document.getElementById('gate-date').textContent = data.opportunityStartDate || 'Missing';
+  document.getElementById('gate-date').textContent = formatFullDate(data.opportunityStartDate) || 'Missing';
   document.getElementById('precision-label').textContent = precisionLabel(data.timingPrecision);
 }
 
 function renderSnapshotMeta(data, evaluation) {
-  document.getElementById('snapshot-label').textContent = `${data.snapshotDate || 'Unknown'} · valid until ${formatDate(evaluation.expiryDate)} · not reserved`;
+  const checkedDate = formatFullDate(data.snapshotDate) || 'Unknown';
+  document.getElementById('snapshot-label').textContent = `${checkedDate} · valid until ${formatDate(evaluation.expiryDate)} · not reserved`;
 }
 
 function renderReadiness(checks) {
@@ -598,7 +602,7 @@ function configureRfpTimingControl() {
   if (precision === 'general') {
     input.type = 'text';
     input.placeholder = 'No date supplied';
-    input.value = current && !isIsoDate(current) && !isIsoMonth(current) ? current : '';
+    input.value = current && !isFullDate(current) && !isIsoMonth(current) ? current : '';
     label.textContent = 'RFP Timing Context';
     hint.textContent = 'General timing only. No date is required for the RFP context field.';
     return;
@@ -607,16 +611,16 @@ function configureRfpTimingControl() {
   if (precision === 'quarter') {
     input.type = 'text';
     input.placeholder = '2027 Q1';
-    input.value = current && !isIsoDate(current) && !isIsoMonth(current) ? current : '';
+    input.value = current && !isFullDate(current) && !isIsoMonth(current) ? current : '';
     label.textContent = 'RFP Requested Quarter';
     hint.textContent = 'Quarter guidance is less precise than the official Opportunity Start Date gate.';
     return;
   }
 
   if (precision === 'exact') {
-    input.type = 'date';
-    input.placeholder = '';
-    input.value = isIsoDate(current) ? current : isIsoMonth(current) ? `${current}-15` : '';
+    input.type = 'text';
+    input.placeholder = '15-Feb-2027';
+    input.value = isFullDate(current) ? formatFullDate(current) : isIsoMonth(current) ? formatFullDate(`${current}-15`) : '';
     label.textContent = 'RFP Requested Date';
     hint.textContent = 'Specific dates imply stronger validation than MVP1 month-of guidance.';
     return;
@@ -624,7 +628,7 @@ function configureRfpTimingControl() {
 
   input.type = 'month';
   input.placeholder = '';
-  input.value = isIsoMonth(current) ? current : isIsoDate(current) ? current.slice(0, 7) : '';
+  input.value = isIsoMonth(current) ? current : monthFromFullDate(current) || '';
   label.textContent = 'RFP Requested Month';
   hint.textContent = 'Month-of timing fits MVP1. Opportunity Start Date remains the official gate.';
 }
@@ -647,8 +651,8 @@ function updatePreferredSiteControl() {
   hint.textContent = 'Used when the customer or Commercial has a site preference.';
 }
 
-function isIsoDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+function isFullDate(value) {
+  return Boolean(parseFullDate(value));
 }
 
 function isIsoMonth(value) {
@@ -697,7 +701,39 @@ function addBusinessDays(date, days) {
 }
 
 function formatDate(date) {
-  return date.toISOString().slice(0, 10);
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = monthNames[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatFullDate(value) {
+  const date = parseFullDate(value);
+  return date ? formatDate(date) : '';
+}
+
+function parseFullDate(value) {
+  if (!value) return null;
+  const trimmed = String(value).trim();
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const [, year, month, day] = iso;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12));
+  }
+  const display = trimmed.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+  if (!display) return null;
+  const [, day, month, year] = display;
+  const monthIndex = monthLookup[month.toLowerCase()];
+  if (monthIndex === undefined) return null;
+  return new Date(Date.UTC(Number(year), monthIndex, Number(day), 12));
+}
+
+function monthFromFullDate(value) {
+  const date = parseFullDate(value);
+  if (!date) return '';
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${month}`;
 }
 
 function shiftMonth(month, delta) {

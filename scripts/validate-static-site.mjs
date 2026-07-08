@@ -15,7 +15,8 @@ const checks = [
       'Opportunity Start Date',
       'Official MVP1 gate from the Blueprint',
       'Decision console',
-      'Populate scheduling inputs',
+      'Request details',
+      'DD-MMM-YYYY',
       'Check results --&gt;'
     ]
   },
@@ -28,7 +29,8 @@ const checks = [
       'green_light',
       'Snapshot-based recommendation, not capacity reservation',
       'commercialPostureFor',
-      'Selected snapshot option'
+      'Selected snapshot option',
+      'formatFullDate'
     ]
   },
   {
