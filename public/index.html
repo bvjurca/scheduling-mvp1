@@ -72,7 +72,7 @@
                 <span class="hint">Primary timing date for MVP1 rules. Not Study Start Date.</span>
               </label>
               <label>
-                Timing precision requested
+                Timing precision (OUT OF SCOPE)
                 <select id="timingPrecision" name="timingPrecision">
                   <option value="general">General lead time</option>
                   <option value="quarter">Quarter guidance</option>
@@ -91,6 +91,7 @@
                   <option value="in_vivo" selected>In-life / in vivo start</option>
                   <option value="labsci">LabSci / method start</option>
                   <option value="submission">Customer submission deadline</option>
+                  <option value="budgetary_quote">Budgetary/Quote</option>
                   <option value="unclear">Unclear / mixed meaning</option>
                 </select>
               </label>
@@ -271,7 +272,7 @@
               <p class="snapshot-meta">Last checked <strong id="snapshot-label">-</strong></p>
             </div>
             <div id="selected-recommendation" class="selection-state" aria-live="polite"></div>
-            <div id="recommendations" class="recommendations"></div>
+            <div id="recommendations" class="recommendations" role="radiogroup" aria-label="Recommendation options"></div>
           </article>
 
           <article class="panel">
