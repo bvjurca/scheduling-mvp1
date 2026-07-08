@@ -456,7 +456,7 @@ function renderRecommendations(cards) {
     return;
   }
   if (!cards.some((card) => card.id === selectedRecommendationId)) {
-    selectedRecommendationId = cards[0].id;
+    selectedRecommendationId = null;
   }
   const selectedCard = cards.find((card) => card.id === selectedRecommendationId);
   container.innerHTML = cards.map((card) => `
@@ -474,7 +474,10 @@ function renderRecommendations(cards) {
       <p>${card.rationale}</p>
     </button>
   `).join('');
-  selectedState.innerHTML = `<strong>Selected snapshot option:</strong> ${selectedCard.site} / ${selectedCard.month}. This is a UI state only and does not route, reserve, or commit capacity.`;
+  selectedState.className = `selection-state ${selectedCard ? 'has-selection' : ''}`;
+  selectedState.innerHTML = selectedCard
+    ? `<strong>Selected snapshot option:</strong> ${selectedCard.site} / ${selectedCard.month}. This is a UI state only and does not route, reserve, or commit capacity.`
+    : 'No option selected. Choose a snapshot option to mark it for discussion; this does not route, reserve, or commit capacity.';
   container.querySelectorAll('[data-rec-id]').forEach((button) => {
     button.addEventListener('click', () => {
       selectedRecommendationId = button.dataset.recId;

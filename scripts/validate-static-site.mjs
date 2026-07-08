@@ -36,9 +36,7 @@ const checks = [
       '.demo-grid',
       '.wizard',
       '.decision-console',
-      '.state-tab',
-      '.option-card',
-      '.selection-state'
+      '.state-tabs'
     ]
   },
   {

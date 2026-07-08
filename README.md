@@ -1,6 +1,6 @@
 # DSA Commercial Scheduling MVP1
 
-Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 stakeholder prototype.
+Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 prototype.
 
 The hosted artifact is intentionally narrow: `public/index.html` contains only the scheduling wizard and decision console.
 
@@ -98,6 +98,14 @@ Use **Opportunity Start Date** as the official MVP1 gate date.
 Use **RFP Requested Start Date** as source context that may explain or populate the Opportunity Start Date. It should not silently replace the gate date.
 
 See `docs/mvp1-target-date-clarification-and-context-note.md`.
+
+## UI Rationale
+
+The reasoning behind each wizard input, status pill, and decision-console element is captured in:
+
+```text
+docs/ui-input-decision-rationale.md
+```
 
 ## Source Caveat
 
