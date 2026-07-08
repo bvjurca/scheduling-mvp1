@@ -46,13 +46,13 @@ const scenarios = {
     route: 'Oral gavage',
     configurationComplete: 'complete',
     configuratorDepth: 'configured',
-    preferredSite: 'Mattawan',
-    siteFlexibility: 'preferred',
+    preferredSite: 'Any qualified site',
+    siteFlexibility: 'any',
     testMaterial: 'available',
     testMaterialDate: '01-Nov-2026',
     labsciRequired: 'none',
     labsciTiming: 'not_applicable',
-    contextNotes: 'Customer prefers Mattawan but is open to other North America sites if timing improves. No exact date promise has been made.',
+    contextNotes: 'Customer is open to any qualified site if timing improves. No exact date promise has been made.',
     userCannotResolve: false
   },
   missing: {

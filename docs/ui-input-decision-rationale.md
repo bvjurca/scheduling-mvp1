@@ -184,6 +184,8 @@ Options represent common commercial constraints:
 
 Decision impact: flexible requests can generate alternate site/month options; specific-site requests carry higher risk.
 
+Default: "Any qualified site" is the starting state because it preserves recommendation breadth and avoids accidentally encoding a site constraint before the user has stated one.
+
 Why it appears before Preferred site: site flexibility is the parent choice. If the request is "Any qualified site," asking for a required preferred site creates false constraint.
 
 ### Preferred Site
@@ -293,6 +295,8 @@ Reason: makes the agreed gate visible:
 
 Decision impact: explains whether the request is in the MVP1 happy path.
 
+Layout decision: the panel spans the console row so the gate is scanned once, then the user immediately sees readiness and recommendations below it.
+
 Why included: this panel protects the team from drifting back into ambiguous "target date" language.
 
 ### Readiness List
@@ -300,6 +304,8 @@ Why included: this panel protects the team from drifting back into ambiguous "ta
 Reason: shows each evaluated condition as pass/review/fail.
 
 Decision impact: gives the user an actionable checklist.
+
+Layout decision: readiness is a compact grid so pass/review/fail conditions consume less vertical space and do not push the recommendation too far down.
 
 Why included: Commercial needs to know what to fix, not just that the recommendation failed.
 
