@@ -2,7 +2,7 @@
   "name": "dsa-commercial-scheduling-mvp1-prototype",
   "version": "0.2.0",
   "private": true,
-  "description": "Static Netlify demo and stakeholder manual for DSA Commercial Scheduling MVP1.",
+  "description": "Static Netlify demo for DSA Commercial Scheduling MVP1.",
   "scripts": {
     "build": "node scripts/validate-static-site.mjs",
     "serve": "node scripts/serve-static.mjs"

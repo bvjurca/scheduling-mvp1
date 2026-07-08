@@ -13,16 +13,6 @@ const checks = [
     ]
   },
   {
-    path: '../public/manual.html',
-    minBytes: 4000,
-    requiredText: [
-      'Stakeholder manual',
-      'Blueprint anchor',
-      'Snapshot, not promise',
-      'Opportunity Start Date'
-    ]
-  },
-  {
     path: '../public/app.js',
     minBytes: 10000,
     requiredText: [
@@ -39,7 +29,7 @@ const checks = [
       '.demo-grid',
       '.wizard',
       '.decision-console',
-      '.manual-layout'
+      '.state-tabs'
     ]
   }
 ];

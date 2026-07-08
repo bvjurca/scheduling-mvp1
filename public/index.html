@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DSA Scheduling MVP1 Demo</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=nova-20260708" />
 </head>
 <body>
   <div class="app">
@@ -13,10 +13,6 @@
         <p class="eyebrow">Commercial Scheduling MVP1</p>
         <h1>Scheduling readiness demo</h1>
       </div>
-      <nav class="nav" aria-label="Prototype navigation">
-        <a class="nav-link active" href="./index.html">Demo</a>
-        <a class="nav-link" href="./manual.html">Stakeholder manual</a>
-      </nav>
     </header>
 
     <main class="demo-grid">
@@ -29,12 +25,27 @@
           <span class="pill info">Synthetic</span>
         </div>
 
-        <div class="scenario-bar" aria-label="Scenario presets">
-          <button type="button" class="ghost-button" data-scenario="happy">Green light</button>
-          <button type="button" class="ghost-button" data-scenario="missing">Missing data</button>
-          <button type="button" class="ghost-button" data-scenario="specific">Specific date</button>
-          <button type="button" class="ghost-button" data-scenario="labsci">LabSci risk</button>
-          <button type="button" class="ghost-button" data-scenario="expired">Expired</button>
+        <div class="scenario-bar state-tabs" aria-label="Wizard state tabs">
+          <button type="button" class="ghost-button state-tab" data-scenario="happy" data-status-key="happy" aria-pressed="false">
+            <span>Green light</span>
+            <small>ready</small>
+          </button>
+          <button type="button" class="ghost-button state-tab" data-scenario="missing" data-status-key="missing" aria-pressed="false">
+            <span>Missing data</span>
+            <small>incomplete</small>
+          </button>
+          <button type="button" class="ghost-button state-tab" data-scenario="specific" data-status-key="specific" aria-pressed="false">
+            <span>Specific date</span>
+            <small>off-ramp</small>
+          </button>
+          <button type="button" class="ghost-button state-tab" data-scenario="labsci" data-status-key="labsci" aria-pressed="false">
+            <span>LabSci risk</span>
+            <small>caveat</small>
+          </button>
+          <button type="button" class="ghost-button state-tab" data-scenario="expired" data-status-key="expired" aria-pressed="false">
+            <span>Expired</span>
+            <small>recheck</small>
+          </button>
         </div>
 
         <form id="scheduler-form">
@@ -286,6 +297,7 @@
               <span class="pill warn">Not reserved</span>
             </div>
             <div id="recommendations" class="recommendations"></div>
+            <div id="selected-recommendation" class="selection-state" aria-live="polite"></div>
           </article>
 
           <article class="panel">

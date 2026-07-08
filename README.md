@@ -1,11 +1,8 @@
 # DSA Commercial Scheduling MVP1
 
-Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 stakeholder prototype.
+Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 prototype.
 
-This package intentionally splits the artifact into two surfaces:
-
-- **Demo:** `public/index.html` contains only the scheduling wizard and decision console.
-- **Stakeholder manual:** `public/manual.html` carries the explanatory story, VoC synthesis, scope guardrails, and implementation notes.
+The hosted artifact is intentionally narrow: `public/index.html` contains the scheduling wizard and decision console.
 
 ## MVP1 Anchor
 
@@ -27,7 +24,6 @@ MVP1 does not reserve capacity, optimize room-level schedules, replace Central S
 ├── public/
 │   ├── app.js
 │   ├── index.html
-│   ├── manual.html
 │   └── styles.css
 ├── docs/
 │   └── mvp1-target-date-clarification-and-context-note.md
@@ -55,7 +51,7 @@ Then open the local URL printed by the server. The site is static, so Netlify ca
 npm run build
 ```
 
-The build checks that the demo, manual, JavaScript, and CSS files contain the expected MVP1 content.
+The build checks that the hosted demo, JavaScript, and CSS files contain the expected MVP1 content.
 
 ## Deploy To Netlify From GitHub
 

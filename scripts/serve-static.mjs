@@ -19,11 +19,21 @@ const server = createServer((request, response) => {
   const requestedPath = new URL(request.url, `http://${request.headers.host}`).pathname;
   const safePath = normalize(decodeURIComponent(requestedPath)).replace(/^(\.\.[/\\])+/, '');
   const filePath = join(publicDir, safePath === '/' ? 'index.html' : safePath);
-  const resolvedPath = existsSync(filePath) && statSync(filePath).isFile() ? filePath : join(publicDir, 'index.html');
+  if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+    response.writeHead(404, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store, max-age=0',
+      'X-Content-Type-Options': 'nosniff'
+    });
+    response.end('Not found');
+    return;
+  }
+  const resolvedPath = filePath;
   const type = mimeTypes[extname(resolvedPath)] || 'application/octet-stream';
 
   response.writeHead(200, {
     'Content-Type': type,
+    'Cache-Control': 'no-store, max-age=0',
     'X-Content-Type-Options': 'nosniff'
   });
   createReadStream(resolvedPath).pipe(response);

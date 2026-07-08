@@ -153,8 +153,11 @@ const scenarios = {
 };
 
 const form = document.getElementById('scheduler-form');
+const stateTabs = [...document.querySelectorAll('[data-scenario]')];
+let selectedRecommendationId = null;
+let currentRecommendations = [];
 
-document.querySelectorAll('[data-scenario]').forEach((button) => {
+stateTabs.forEach((button) => {
   button.addEventListener('click', () => {
     applyScenario(button.dataset.scenario);
   });
@@ -165,6 +168,7 @@ form.addEventListener('change', render);
 
 function applyScenario(name) {
   const scenario = scenarios[name];
+  selectedRecommendationId = null;
   Object.entries(scenario).forEach(([key, value]) => {
     const el = document.getElementById(key);
     if (!el) return;
@@ -279,6 +283,7 @@ function evaluate(data) {
   const needsScheduling = triage.includes('specific_date_requested') || triage.includes('start_date_inside_mvp1_window') || data.intentMaturity === 'awarded';
   const outcome = decideOutcome({ fatal, needsScheduling, triage, warnings, data });
   const recommendations = buildRecommendations(data, siteResult, fatal, expiryDate, warnings);
+  const statusKey = statusKeyFor({ triage, warnings, outcome });
 
   return {
     checks,
@@ -287,7 +292,8 @@ function evaluate(data) {
     warnings: [...new Set(warnings)],
     outcome,
     recommendations,
-    expiryDate
+    expiryDate,
+    statusKey
   };
 }
 
@@ -359,6 +365,7 @@ function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
   const confidence = warnings.length > 1 ? 'Medium' : warnings.length === 1 ? 'Medium-high' : 'High';
 
   cards.push({
+    id: '',
     site: preferred,
     month,
     precision: data.timingPrecision === 'exact' ? 'Specific date requested - validate' : precisionLabel(data.timingPrecision),
@@ -370,6 +377,7 @@ function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
   if (data.siteFlexibility !== 'specific') {
     const alternate = preferred === 'Mattawan' ? 'Senneville' : 'Mattawan';
     cards.push({
+      id: '',
       site: alternate,
       month: shiftMonth(month, data.siteFlexibility === 'fastest' ? -1 : 1),
       precision: 'Month-of timing',
@@ -379,7 +387,8 @@ function buildRecommendations(data, siteResult, fatal, expiryDate, warnings) {
     });
   }
 
-  cards.forEach((card) => {
+  cards.forEach((card, index) => {
+    card.id = `${card.site}-${card.month}-${index}`.replaceAll(' ', '-');
     card.expires = formatDate(expiryDate);
   });
   return cards;
@@ -389,6 +398,7 @@ function render() {
   const data = values();
   const evaluation = evaluate(data);
   renderOutcome(evaluation);
+  renderStateTabs(evaluation.statusKey);
   renderGate(data);
   renderReadiness(evaluation.checks);
   renderRecommendations(evaluation.recommendations);
@@ -405,6 +415,17 @@ function renderOutcome(evaluation) {
   pill.textContent = evaluation.outcome.code.replaceAll('_', ' ');
   document.getElementById('outcome-title').textContent = evaluation.outcome.title;
   document.getElementById('outcome-copy').textContent = evaluation.outcome.copy;
+}
+
+function renderStateTabs(statusKey) {
+  stateTabs.forEach((button) => {
+    const active = button.dataset.statusKey === statusKey;
+    button.classList.toggle('is-active', active);
+    button.classList.toggle('good', active && statusKey === 'happy');
+    button.classList.toggle('warn', active && (statusKey === 'missing' || statusKey === 'labsci'));
+    button.classList.toggle('bad', active && (statusKey === 'specific' || statusKey === 'expired'));
+    button.setAttribute('aria-pressed', String(active));
+  });
 }
 
 function renderGate(data) {
@@ -426,13 +447,24 @@ function renderReadiness(checks) {
 
 function renderRecommendations(cards) {
   const container = document.getElementById('recommendations');
+  const selectedState = document.getElementById('selected-recommendation');
+  currentRecommendations = cards;
   if (!cards.length) {
+    selectedRecommendationId = null;
     container.innerHTML = '<div class="rec-card"><strong>No recommendation generated</strong><p>Complete missing data, modify selections, or off-ramp to Central Scheduling.</p></div>';
+    selectedState.textContent = 'No option selected.';
     return;
   }
+  if (!cards.some((card) => card.id === selectedRecommendationId)) {
+    selectedRecommendationId = null;
+  }
+  const selectedCard = cards.find((card) => card.id === selectedRecommendationId);
   container.innerHTML = cards.map((card) => `
-    <div class="rec-card">
-      <div class="item-title"><strong>${card.site} / ${card.month}</strong><span class="pill info">${card.status}</span></div>
+    <button type="button" class="rec-card option-card ${card.id === selectedRecommendationId ? 'selected' : ''}" data-rec-id="${card.id}" aria-pressed="${card.id === selectedRecommendationId}">
+      <div class="item-title">
+        <strong>${card.site} / ${card.month}</strong>
+        <span class="pill ${card.id === selectedRecommendationId ? 'good' : 'info'}">${card.id === selectedRecommendationId ? 'Selected' : card.status}</span>
+      </div>
       <div class="rec-meta">
         <div class="stat"><span>Precision</span><strong>${card.precision}</strong></div>
         <div class="stat"><span>Confidence</span><strong>${card.confidence}</strong></div>
@@ -440,8 +472,18 @@ function renderRecommendations(cards) {
         <div class="stat"><span>Commitment</span><strong>Not reserved</strong></div>
       </div>
       <p>${card.rationale}</p>
-    </div>
+    </button>
   `).join('');
+  selectedState.className = `selection-state ${selectedCard ? 'has-selection' : ''}`;
+  selectedState.innerHTML = selectedCard
+    ? `<strong>Selected snapshot option:</strong> ${selectedCard.site} / ${selectedCard.month}. This is a UI state only and does not route, reserve, or commit capacity.`
+    : 'No option selected. Choose a snapshot option to mark it for discussion; this does not route, reserve, or commit capacity.';
+  container.querySelectorAll('[data-rec-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedRecommendationId = button.dataset.recId;
+      renderRecommendations(currentRecommendations);
+    });
+  });
 }
 
 function renderTrace(trace) {
@@ -490,6 +532,16 @@ function rule(status, name, copy) {
 
 function outcome(level, title, copy, code) {
   return { level, title, copy, code };
+}
+
+function statusKeyFor({ triage, warnings, outcome }) {
+  if (triage.includes('offer_expired')) return 'expired';
+  if (triage.includes('start_date_inside_mvp1_window') || triage.includes('specific_date_requested')) return 'specific';
+  if (warnings.includes('labsci_dependency_unresolved') || warnings.includes('date_is_labsci_or_method_start')) return 'labsci';
+  if (triage.includes('missing_opportunity_start_date') || triage.includes('missing_configuration_metadata')) return 'missing';
+  if (warnings.includes('date_semantics_ambiguous') || warnings.includes('test_material_unknown')) return 'missing';
+  if (outcome.code === 'green_light' || outcome.code === 'green_light_caveated') return 'happy';
+  return 'missing';
 }
 
 function precisionLabel(value) {
