@@ -5,11 +5,12 @@ const checks = [
     path: '../public/index.html',
     minBytes: 8000,
     requiredText: [
-      'Scheduling readiness demo',
+      'Scheduling MVP1 (Commercial) - DEMO DATA ONLY',
       'Opportunity Start Date',
       'Official MVP1 gate from the Blueprint',
       'Decision console',
-      'Populate scheduling inputs'
+      'Populate scheduling inputs',
+      'Check results --&gt;'
     ]
   },
   {
@@ -19,7 +20,9 @@ const checks = [
       'Opportunity Start Date known',
       'specific_date_requested',
       'green_light',
-      'Snapshot-based recommendation, not capacity reservation'
+      'Snapshot-based recommendation, not capacity reservation',
+      'commercialPostureFor',
+      'Selected snapshot option'
     ]
   },
   {
@@ -29,7 +32,9 @@ const checks = [
       '.demo-grid',
       '.wizard',
       '.decision-console',
-      '.state-tabs'
+      '.state-tabs',
+      '.wizard-actions',
+      '.snapshot-meta'
     ]
   }
 ];

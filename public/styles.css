@@ -167,10 +167,25 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
+.primary-button {
+  min-height: 36px;
+  border: 1px solid var(--color-brand-default);
+  border-radius: var(--radii-75);
+  background: var(--color-brand-default);
+  color: #ffffff;
+  padding: var(--space-200) var(--space-300);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .ghost-button:hover {
   border-color: var(--blue);
   background: var(--blue-soft);
   color: var(--blue);
+}
+
+.primary-button:hover {
+  background: var(--color-info-text);
 }
 
 .scenario-bar.state-tabs {
@@ -305,6 +320,15 @@ textarea:hover {
   border-color: var(--color-border-strong);
 }
 
+input:disabled,
+select:disabled,
+textarea:disabled {
+  border-color: var(--color-border-subtle);
+  background: #eeeeee;
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
 textarea {
   resize: vertical;
 }
@@ -324,6 +348,21 @@ textarea {
 .checkbox-row input {
   width: auto;
   min-height: auto;
+}
+
+.wizard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-200);
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: var(--space-100);
+}
+
+.action-status {
+  min-height: var(--line-height-1);
+  color: var(--muted);
+  font-size: var(--font-size-0);
 }
 
 .pill {
@@ -489,6 +528,19 @@ textarea {
   margin-bottom: var(--space-100);
 }
 
+.snapshot-meta {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: var(--font-size-0);
+  text-align: right;
+}
+
+.snapshot-meta strong {
+  display: block;
+  color: var(--ink);
+  font-size: var(--font-size-2);
+}
+
 .small,
 .check-item p,
 .trace-item p,
@@ -523,7 +575,7 @@ textarea {
 }
 
 .selection-state {
-  margin-top: var(--space-250);
+  margin-bottom: var(--space-250);
   border: 1px solid var(--color-info-border);
   border-radius: var(--radii-75);
   background: var(--violet-soft);
@@ -580,6 +632,14 @@ textarea {
   .panel-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .wizard-actions {
+    justify-content: flex-start;
+  }
+
+  .snapshot-meta {
+    text-align: left;
   }
 
   .field-grid,

@@ -1,6 +1,6 @@
 # UI and Input Decision Rationale
 
-Date: 2026-07-07
+Date: 2026-07-08
 
 ## Purpose
 
@@ -35,7 +35,7 @@ Design reason: the tabs are not just demo presets. They should be connected to t
 
 The wizard is split into four groups because that mirrors the real decision path:
 
-1. Opportunity and RFP: commercial request, gate date, maturity, and date semantics.
+1. Opportunity and RFP: commercial request, gate date, timing precision, requested timing context, and date semantics.
 2. Study configuration: structured study metadata needed for capability and timing.
 3. Site, LabSci, and material readiness: the operational constraints that change recommendation confidence.
 4. Context capsule: human-readable context that should travel with the recommendation or escalation.
@@ -54,11 +54,13 @@ Why not hide it: stakeholders expect to see a recognizable SFDC reference, and C
 
 ### Opportunity Stage
 
-Reason: stage changes how strong the recommendation can be.
+Reason: stage is the SFDC-owned sales-process signal and the best available proxy for commercial posture.
 
 Decision impact: later-stage or awarded work should receive stricter language because Commercial may be closer to customer commitment or operational execution.
 
 Why included in MVP1: the screenshots show stage as a dominant SFDC signal. The VoC also distinguishes budgetary from ready-to-execute requests.
+
+Why **Intent Maturity** was removed: it was too redundant with Opportunity Stage. If the team needs a richer maturity concept later, it should be derived from Opportunity Stage plus RFP/study signals and shown as read-only "Commercial posture," not entered by the user as another field.
 
 ### Opportunity Start Date
 
@@ -68,29 +70,35 @@ Decision impact: required. The happy path only continues when this date is known
 
 Why the label is explicit: "target date" is too vague. "Study Start Date" is too operational. "Opportunity Start Date" keeps MVP1 aligned to the agreed commercial flow.
 
-### RFP Requested Start Date
+### Timing Precision Requested
 
-Reason: captures the customer/RFP date that may explain, populate, or conflict with Opportunity Start Date.
+Reason: defines the kind of timing the customer/RFP actually supplied before the UI asks for requested timing details.
+
+Options:
+
+- General lead time
+- Quarter guidance
+- Month-of timing
+- Specific date
+
+Decision impact: month-of timing fits MVP1. Exact date requests should be caveated or off-ramped because they imply a stronger promise.
+
+Why it appears before RFP requested timing: the precision determines the correct input control. A customer who says "Q2" should not be forced into a fake exact date.
+
+### RFP Requested Timing
+
+Reason: captures the customer/RFP timing context that may explain, populate, or conflict with Opportunity Start Date.
+
+Control behavior:
+
+- General lead time: no date required; free timing context is acceptable.
+- Quarter guidance: requested quarter text, such as `2027 Q1`.
+- Month-of timing: requested month input.
+- Specific date: requested date input.
 
 Decision impact: context and reconciliation, not the primary gate.
 
 Why separate from Opportunity Start Date: VoC made clear that requested start can mean different things. Keeping this field visible prevents silent date substitution.
-
-### Intent Maturity
-
-Reason: captures whether the request is budgetary, planning, ready-to-execute, or awarded.
-
-Decision impact: budgetary/planning requests can tolerate broader timing; ready/awarded states need stronger validation and may require Scheduling involvement.
-
-Why it matters: Zach's VoC sharply separated budgetary estimates from execution-level asks.
-
-### Timing Precision Requested
-
-Reason: distinguishes general lead time, quarter guidance, month-of timing, and specific date.
-
-Decision impact: month-of timing fits MVP1. Exact date requests should be caveated or off-ramped because they imply a stronger promise.
-
-Why it is a select: precision is categorical, not free text. A controlled field lets the console produce stable recommendation language.
 
 ### Date Meaning
 
@@ -106,14 +114,6 @@ Options:
 Decision impact: only in-life/in vivo date meaning supports a straightforward commercial timing recommendation. LabSci, submission, or unclear timing should create caveats.
 
 Why included: "requested start" was identified as ambiguous. This field makes ambiguity visible and discussable.
-
-### Proposal Last Checked
-
-Reason: records the snapshot date for the recommendation.
-
-Decision impact: drives expiry. If the snapshot is too old, the recommendation must be recalculated before customer communication.
-
-Why included: this is the core "snapshot, not promise" mechanism.
 
 ## Study Configuration Inputs
 
@@ -167,17 +167,9 @@ Why included: it acknowledges that a simple study outline and a deeply configure
 
 ## Site, LabSci, and Material Inputs
 
-### Preferred Site
-
-Reason: captures the commercial or customer-preferred site.
-
-Decision impact: checked against mock site capabilities. A mismatch can produce a warning or off-ramp depending on flexibility.
-
-Why included: site preference is one of the strongest levers in scheduling feasibility.
-
 ### Site Flexibility
 
-Reason: determines whether the system can recommend alternatives.
+Reason: governs whether a preferred site matters at all and whether the system can recommend alternatives.
 
 Options represent common commercial constraints:
 
@@ -190,7 +182,17 @@ Options represent common commercial constraints:
 
 Decision impact: flexible requests can generate alternate site/month options; specific-site requests carry higher risk.
 
-Why included: the VoC made clear that broader site flexibility can unlock earlier timing.
+Why it appears before Preferred site: site flexibility is the parent choice. If the request is "Any qualified site," asking for a required preferred site creates false constraint.
+
+### Preferred Site
+
+Reason: captures the commercial or customer-preferred site when one exists.
+
+Decision impact: checked against mock site capabilities. A mismatch can produce a warning or off-ramp depending on flexibility.
+
+Conditional behavior: disabled when Site flexibility is "Any qualified site." In that state, the site preference should not constrain the recommendation.
+
+Why included: site preference is one of the strongest levers in scheduling feasibility, but only when it is a real constraint or preference.
 
 ### Test Material Availability
 
@@ -241,6 +243,24 @@ Reason: explicit manual override for ambiguity, discomfort, or cases the rules c
 Decision impact: should off-ramp to Central Scheduling assistance.
 
 Why included: MVP1 must support human judgment rather than pretending the rules cover every scenario.
+
+## Wizard CTAs
+
+### Save
+
+Reason: lets the user preserve the current draft state without implying workflow submission or SFDC writeback.
+
+Decision impact: none in MVP1. It is a local draft action in the prototype.
+
+Why included: Commercial users expect a way to pause work. The CTA should remain lower-commitment than a submit action.
+
+### Check results -->
+
+Reason: moves attention from input gathering to the decision console.
+
+Decision impact: runs the current evaluation and takes the user to the result area.
+
+Why included: it supports a natural wizard mental model without hiding the live-updating console.
 
 ## Decision Console Elements
 
@@ -297,7 +317,21 @@ Decision impact: selection should update the page state only. It must not route,
 
 Why included: stakeholders can see how Commercial might choose between options without overclaiming workflow integration.
 
-### "Not Reserved" Pill
+### Snapshot Metadata
+
+Reason: shows proposal freshness where the recommendation is being consumed.
+
+Displayed data:
+
+- Proposal last checked
+- Valid-until date
+- Not reserved
+
+Decision impact: drives expiry and frames the recommendation as a snapshot rather than a promise.
+
+Why placed in the recommendation header: "Proposal last checked" is provenance for the snapshot recommendation, not an intake question the user should normally answer.
+
+### Non-Reservation Language
 
 Reason: keeps the non-commitment caveat visible at the point of recommendation.
 
@@ -363,7 +397,32 @@ Decision impact: panels map to work surfaces: wizard, gate, readiness, recommend
 | Amber | Review / caveat / not reserved |
 | Red | Fail / off-ramp / expired |
 | Blue | Structural focus / active UI / information |
-| Violet | Synthetic/demo context |
+| Violet | Informational context |
+
+### Demo Data Label
+
+Reason: stakeholders still need to know the prototype uses demo data.
+
+Decision impact: none.
+
+Why the **Synthetic** pill was removed: it was prototype metadata sitting inside the workflow. The H1-level "DEMO DATA ONLY" label is enough for the prototype and avoids suggesting that "Synthetic" is a future product state.
+
+## Wizard Version Control
+
+The wizard does not need full user-facing version control in MVP1.
+
+It does need lightweight auditability for saved or checked recommendations:
+
+- timestamp;
+- user or owner when authenticated;
+- input snapshot;
+- selected recommendation, if any;
+- rule/data version;
+- proposal last checked;
+- validity window;
+- off-ramp reason codes.
+
+Reason: Commercial and Scheduling need to know what recommendation was made and under which assumptions. They do not need a full version history for every keystroke in the wizard.
 
 ## Deliberate Non-Decisions
 
@@ -386,4 +445,4 @@ These are intentionally not in MVP1:
 4. Decide which Scheduling Status values should map to recommendation state, timing precision, validity, and off-ramp reason.
 5. Decide whether selected recommendation state should eventually write to SFDC, remain ephemeral, or generate a task.
 6. Decide how Central Scheduling packet contents should be formatted for handoff.
-
+7. Decide what audit payload should be stored when a user clicks Save or Check results.
