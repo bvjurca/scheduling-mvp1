@@ -254,7 +254,7 @@ function evaluate(data) {
     trace.push(rule('pass', 'Configuration completeness', 'Required SFDC/RFP/Study fields are present.'));
   }
 
-  if (data.dateMeaning === 'unclear' || data.dateMeaning === 'submission') {
+  if (data.dateMeaning === 'unclear' || data.dateMeaning === 'submission' || data.dateMeaning === 'budgetary_quote') {
     checks.push(check('warn', 'Date meaning needs review', 'Requested timing may not mean in-life start.'));
     trace.push(rule('warning', 'Date semantics', 'Date meaning should be clarified before customer-facing language.'));
     warnings.push('date_semantics_ambiguous');
@@ -499,10 +499,15 @@ function renderRecommendations(cards) {
   }
   const selectedCard = cards.find((card) => card.id === selectedRecommendationId);
   container.innerHTML = cards.map((card) => `
-    <button type="button" class="rec-card option-card ${card.id === selectedRecommendationId ? 'selected' : ''}" data-rec-id="${card.id}" aria-pressed="${card.id === selectedRecommendationId}">
-      <div class="item-title">
+    <button type="button" class="rec-card option-card ${card.id === selectedRecommendationId ? 'selected' : ''}" data-rec-id="${card.id}" role="radio" aria-checked="${card.id === selectedRecommendationId}">
+      <div class="item-title rec-title">
         <strong>${card.site} / ${card.month}</strong>
-        <span class="pill ${card.id === selectedRecommendationId ? 'good' : 'info'}">${card.id === selectedRecommendationId ? 'Selected' : card.status}</span>
+        <span class="rec-header-actions">
+          <span class="pill info">${card.status}</span>
+          <span class="rec-select">
+            <span class="rec-radio" aria-hidden="true"></span>
+          </span>
+        </span>
       </div>
       <div class="rec-meta">
         <div class="stat"><span>Precision</span><strong>${card.precision}</strong></div>

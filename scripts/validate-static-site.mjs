@@ -17,6 +17,8 @@ const checks = [
       'Decision console',
       'Request details',
       'DD-MMM-YYYY',
+      'Timing precision (OUT OF SCOPE)',
+      'Budgetary/Quote',
       'Additional information',
       'Offramp requested',
       'Recommendations',
@@ -34,6 +36,7 @@ const checks = [
       'Snapshot-based recommendation, not capacity reservation',
       'commercialPostureFor',
       'Selected snapshot option',
+      'budgetary_quote',
       'formatFullDate'
     ]
   },
@@ -46,6 +49,7 @@ const checks = [
       '.decision-console',
       '.state-tabs',
       '.wizard-actions',
+      '.rec-radio',
       '.snapshot-meta'
     ]
   }

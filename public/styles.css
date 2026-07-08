@@ -590,6 +590,7 @@ textarea {
 .item-title {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: var(--space-200);
   margin-bottom: var(--space-100);
 }
@@ -625,9 +626,49 @@ textarea {
 
 .option-card {
   width: 100%;
+  border-left: 4px solid transparent;
+  background: var(--color-surface-default);
   color: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.rec-title strong {
+  min-width: 0;
+}
+
+.rec-header-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-200);
+}
+
+.rec-select {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-150);
+  color: var(--muted);
+  font-size: var(--font-size-0);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rec-radio {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radii-round);
+  background: var(--color-surface-default);
+}
+
+.rec-radio::after {
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--radii-round);
+  background: transparent;
+  content: '';
 }
 
 .option-card:hover,
@@ -637,7 +678,19 @@ textarea {
 }
 
 .option-card.selected {
-  box-shadow: inset 4px 0 0 var(--green);
+  border-left-color: var(--blue);
+}
+
+.option-card.selected .rec-select {
+  color: var(--blue);
+}
+
+.option-card.selected .rec-radio {
+  border-color: var(--blue);
+}
+
+.option-card.selected .rec-radio::after {
+  background: var(--blue);
 }
 
 .selection-state {
