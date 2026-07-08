@@ -70,6 +70,8 @@ Decision impact: required. The happy path only continues when this date is known
 
 Why the label is explicit: "target date" is too vague. "Study Start Date" is too operational. "Opportunity Start Date" keeps MVP1 aligned to the agreed commercial flow.
 
+Format: full dates are displayed as `DD-MMM-YYYY` so the prototype does not mix ISO date strings with business-facing date language.
+
 ### Timing Precision Requested
 
 Reason: defines the kind of timing the customer/RFP actually supplied before the UI asks for requested timing details.
@@ -371,11 +373,11 @@ Reason: keeps input and output visible at the same time.
 
 Decision impact: users can see the console change as they edit inputs.
 
-### Single-column layout on mobile/tablet
+### Tablet-minimum viewport
 
-Reason: prevents horizontal overflow and keeps controls usable.
+Reason: this workflow is an SFDC-adjacent commercial decision tool and will not be used as a phone-first experience.
 
-Decision impact: the wizard stacks above the console.
+Decision impact: the hosted demo preserves an 800px minimum working width and does not introduce phone-specific layout compromises. Tablet portrait may stack major work areas, but controls should remain dense and operational.
 
 ### Enterprise, restrained styling
 
@@ -388,6 +390,8 @@ Decision impact: compact panels, controlled colors, and scan-friendly cards.
 Reason: avoids turning the page into a decorative card collage.
 
 Decision impact: panels map to work surfaces: wizard, gate, readiness, recommendation, trace, packet.
+
+Console clutter update: the decision console keeps one outer container, while direct child panels are visually unboxed so the page reads as one decision surface instead of a stack of competing cards.
 
 ### Color meaning
 
