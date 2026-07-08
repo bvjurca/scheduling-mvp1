@@ -13,11 +13,15 @@ const checks = [
     requiredText: [
       'Scheduling MVP1 (Commercial) - DEMO DATA ONLY',
       'Opportunity Start Date',
-      'Official MVP1 gate from the Blueprint',
+      'Primary timing date for MVP1 rules',
       'Decision console',
       'Request details',
       'DD-MMM-YYYY',
-      'Check results --&gt;'
+      'Additional information',
+      'Offramp requested',
+      'Recommendations',
+      'Last checked',
+      'Check results'
     ]
   },
   {
