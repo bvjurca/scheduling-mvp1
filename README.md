@@ -91,6 +91,14 @@ Use **RFP Requested Start Date** as source context that may explain or populate 
 
 See `docs/mvp1-target-date-clarification-and-context-note.md`.
 
+## UI Rationale
+
+The reasoning behind each wizard input, status pill, and decision-console element is captured in:
+
+```text
+docs/ui-input-decision-rationale.md
+```
+
 ## Source Caveat
 
 All opportunity, sponsor, site, and metric values in the UI are synthetic placeholders. The SFDC/RACE screenshots were used as design reference only and are not embedded in the deployable package because they include current customer and opportunity context.
