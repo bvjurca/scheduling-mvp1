@@ -1,8 +1,8 @@
 # DSA Commercial Scheduling MVP1
 
-Static Netlify/GitHub package for the DSA Commercial Scheduling MVP1 prototype.
+React Aria Netlify/GitHub package for the DSA Commercial Scheduling MVP1 prototype.
 
-The hosted artifact is intentionally narrow: `public/index.html` contains only the scheduling wizard and decision console.
+The hosted artifact is intentionally narrow: the Vite app contains only the scheduling wizard and decision console.
 
 The stakeholder explanation lives beside the demo as a PDF: `docs/dsa-scheduling-mvp1-stakeholder-manual.pdf`.
 
@@ -15,7 +15,7 @@ The Blueprint remains the source of truth for scope. MVP1 is a Commercial Person
 - checks whether the Opportunity Start Date is more than four months out;
 - asks for missing configuration data;
 - calculates site/month options;
-- gives Commercial a green light, caveated recommendation, or off-ramp.
+- gives Commercial an eligible proposal window, caveated recommendation, or off-ramp.
 
 MVP1 does not reserve capacity, optimize room-level schedules, replace Central Scheduling, or create a final RPM execution date.
 
@@ -23,19 +23,21 @@ MVP1 does not reserve capacity, optimize room-level schedules, replace Central S
 
 ```text
 .
-├── public/
-│   ├── app.js
-│   ├── index.html
+├── index.html
+├── src/
+│   ├── App.jsx
+│   ├── main.jsx
 │   └── styles.css
 ├── docs/
 │   ├── dsa-scheduling-mvp1-stakeholder-manual.pdf
 │   └── mvp1-target-date-clarification-and-context-note.md
 ├── scripts/
 │   ├── build-stakeholder-manual-pdf.py
-│   ├── serve-static.mjs
 │   └── validate-static-site.mjs
 ├── netlify.toml
+├── package-lock.json
 ├── package.json
+├── vite.config.js
 └── .github/
     └── workflows/
         └── validate.yml
@@ -47,7 +49,7 @@ MVP1 does not reserve capacity, optimize room-level schedules, replace Central S
 npm run serve
 ```
 
-Then open the local URL printed by the server. The site is static, so Netlify can publish the `public` directory directly after validation.
+Then open the local URL printed by the server. The Vite build writes the deployable static artifact to `dist`.
 
 ## Validate
 
@@ -55,7 +57,7 @@ Then open the local URL printed by the server. The site is static, so Netlify ca
 npm run build
 ```
 
-The build checks that the hosted demo, JavaScript, CSS, and side PDF are present and aligned with the expected MVP1 content.
+The build compiles the React app and checks that the hosted demo is aligned with the expected MVP1 content.
 
 ## Rebuild The Side PDF
 
@@ -75,7 +77,7 @@ The PDF is intentionally not linked from the hosted demo UI.
 
 ```text
 Build command: npm run build
-Publish directory: public
+Publish directory: dist
 ```
 
 The included `netlify.toml` already sets the same build and publish values.

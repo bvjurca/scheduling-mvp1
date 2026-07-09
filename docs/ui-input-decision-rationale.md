@@ -1,6 +1,6 @@
 # UI and Input Decision Rationale
 
-Date: 2026-07-08
+Date: 2026-07-10
 
 ## Purpose
 
@@ -11,9 +11,9 @@ The prototype is not a scheduling engine, room optimizer, or capacity reservatio
 ## Product Principles
 
 1. **Keep the hosted demo narrow.** The demo should be a wizard plus a decision console. Stakeholder narrative belongs in a side document or PDF, not inside the app surface.
-2. **Make the date source explicit.** The MVP1 gate is Opportunity Start Date. Other dates are context and must not silently replace the gate.
-3. **Separate recommendation from commitment.** The UI can recommend a site/month option, but it must always say the option is not reserved capacity.
-4. **Expose ambiguity instead of hiding it.** If the request means LabSci start, customer submission timing, exact date, or unclear timing, the console should show that risk.
+2. **Make the date source explicit.** The >4 months rule uses Opportunity Start Date. Other dates are context and must not silently replace it.
+3. **Separate recommendation from commitment.** The UI can recommend a site/month option, but it must always say the option creates no capacity hold.
+4. **Expose ambiguity instead of hiding it.** If the request means LabSci start, customer submission timing, Reporting/SEND timing, exact date, or unclear timing, the console should show that risk.
 5. **Preserve the human context.** Email, Teams, notes, and free text can contain constraints the rules do not parse.
 6. **Show the rule path.** Commercial and Scheduling should be able to see why the system recommended, caveated, blocked, or escalated.
 
@@ -23,13 +23,15 @@ The top pills represent the major states Commercial will need to explain in a st
 
 | State | Why it exists | Expected behavior |
 | --- | --- | --- |
-| Ideal case | Shows the MVP1 happy path: enough data, outside four-month gate, no material blocker, no unresolved LabSci blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
+| Ideal case | Shows the happy path: enough data, >4 months out, no material blocker, no unresolved dependency blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
 | Missing data | Shows that MVP1 should ask for data rather than inventing a date or recommendation. | Should light when Opportunity Start Date, species, configuration, or other required context is missing or ambiguous. |
-| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is inside the four-month MVP1 window. |
-| LabSci risk | Captures the reality that method validation, bioanalysis, or LabSci sequencing may have a separate timeline. | Should light when the timing meaning is LabSci/method-related or LabSci timing is unresolved. |
+| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is not >4 months out. |
+| Dependency risk | Captures the reality that LabSci, Reporting/SEND, or related dependencies may have a separate timeline. | Should light when the timing meaning is LabSci/method-related, LabSci timing is unresolved, or Reporting/SEND requires validation. |
 | Expired | Makes the "snapshot, not promise" principle visible. | Should light when the recommendation validity window has elapsed. |
 
 Design reason: the tabs are not just demo presets. They should be connected to the evaluated wizard state so the top of the page reflects the same logic as the bottom decision console.
+
+State priority: missing required data should outrank dependency risk. If a scenario has missing Opportunity Start Date, species, configuration, or core timing semantics, the Missing Data tab should stay selected even if Reporting/SEND is also unknown. Dependency Risk should describe a review path only after the request has enough basic data to evaluate. Manual "Off-ramp required" maps to the off-ramp tab because it is a user decision to route the case outside the self-serve path, not a missing-field condition.
 
 ## Wizard Structure
 
@@ -37,7 +39,7 @@ The wizard is split into four groups because that mirrors the real decision path
 
 1. Opportunity and RFP: commercial request, gate date, timing precision, requested timing context, and date semantics.
 2. Study configuration: structured study metadata needed for capability and timing.
-3. Site, LabSci, and material readiness: the operational constraints that change recommendation confidence.
+3. Site, dependencies, and material readiness: the operational constraints that change recommendation confidence.
 4. Additional information: human-readable context that should travel with the recommendation or escalation.
 
 This grouping deliberately avoids copying the SFDC screen one-to-one. The goal is not to reproduce Salesforce; it is to synthesize scheduling-relevant context that is scattered across Opportunity, RFP, Study, Configurator, notes, and files.
@@ -64,7 +66,7 @@ Why **Intent Maturity** was removed: it was too redundant with Opportunity Stage
 
 ### Opportunity Start Date
 
-Reason: this is the official MVP1 gate date from the Blueprint.
+Reason: this is the date used by the agreed >4 months rule from the Blueprint.
 
 Decision impact: required. The happy path only continues when this date is known and more than four months out from the current evaluation date.
 
@@ -111,9 +113,10 @@ Options:
 - In-life / in vivo start
 - LabSci / method start
 - Customer submission deadline
+- Budgetary/Quote
 - Unclear / mixed meaning
 
-Decision impact: only in-life/in vivo date meaning supports a straightforward commercial timing recommendation. LabSci, submission, or unclear timing should create caveats.
+Decision impact: only in-life/in vivo date meaning supports a straightforward commercial timing recommendation. LabSci, submission, budgetary/quote, or unclear timing should create caveats.
 
 Why included: "requested start" was identified as ambiguous. This field makes ambiguity visible and discussable.
 
@@ -167,7 +170,7 @@ Decision impact: currently contextual. Complex custom endpoints should lower con
 
 Why included: it acknowledges that a simple study outline and a deeply configured study are not the same scheduling risk.
 
-## Site, LabSci, and Material Inputs
+## Site, Dependencies, and Material Inputs
 
 ### Site Flexibility
 
@@ -230,6 +233,34 @@ Decision impact: unknown or not feasible states should caveat or block stronger 
 
 Why included: it prevents a simple site/month answer from masking method or bioanalysis uncertainty.
 
+### Reporting/SEND Dependency
+
+Reason: captures whether reporting, SEND, or reporting review affects the proposal timing window.
+
+Options:
+
+- No Reporting/SEND dependency
+- Standard Reporting/SEND expected
+- SEND package required
+- Reporting/SEND review required
+- Unknown / needs check
+
+Decision impact: unknown or review-required states produce a Needs Validation outcome and a structured off-ramp reason code. SEND-required can remain eligible when the target date is captured, but the card still carries a Reporting/SEND caveat and recheck trigger.
+
+Why included: Reporting/SEND is not LabSci and not site capacity. Treating it as a separate dependency prevents the recommendation from becoming a false booking confirmation while still allowing Commercial to carry the right caveat.
+
+### Reporting/SEND Target Date
+
+Reason: if Reporting/SEND is required or under review, the UI needs the customer-facing report, SEND, or submission target date.
+
+Conditional behavior: hidden unless Reporting/SEND dependency is `SEND package required` or `Reporting/SEND review required`.
+
+Decision impact: missing target date creates a readiness warning, a rule-trace warning, and the `REPORTING_SEND_REVIEW_REQUIRED` packet reason code. A captured date becomes an assumption, data source, and recheck trigger.
+
+Why this is conditional: the UI should not ask every request for another date. The field appears only when the dependency makes the date relevant. It is not the MVP1 gate date and should not replace Opportunity Start Date.
+
+Scrutiny: a generic "Reporting/SEND required" flag is too weak by itself. If Commercial is going to tell a customer that a proposal window is viable while Reporting/SEND is in play, the console needs either the dependency target date or an explicit validation path.
+
 ## Additional Information Inputs
 
 ### Customer Constraints / Notes / Email Context
@@ -284,16 +315,6 @@ Decision impact: helps connect UI state to future workflow states or SFDC status
 
 Why included: useful for stakeholder conversation around future field mapping.
 
-### MVP1 Gate Logic
-
-Reason: keeps the agreed Blueprint rule intact without making the user inspect implementation scaffolding.
-
-Decision impact: Opportunity Start Date still drives the ideal-case path, missing-data state, specific-date caveat, and off-ramp behavior.
-
-Layout decision: the visible MVP1 Gate panel was removed from the console. It was behind-the-scenes logic rather than a decision the user needed to operate, and it pushed recommendations lower on the page.
-
-Why retained behind the scenes: this protects the team from drifting back into ambiguous "target date" language while keeping the console focused on readiness and recommendations.
-
 ### Readiness List
 
 Reason: shows each evaluated condition as pass/review/fail.
@@ -309,7 +330,7 @@ Relationship to Rule Trace: Readiness and Rule Trace intentionally use the same 
 - Readiness answers: "Can I proceed, and what input or assumption needs attention?"
 - Rule Trace answers: "Which rule fired, and why did the console produce this outcome or recommendation?"
 
-Readiness is the user-facing checklist tied to the wizard state. It compresses conditions into practical labels such as missing date, configuration incomplete, LabSci unresolved, material unknown, or site capability supported. Rule Trace is the audit/debug layer. It exposes the rule provenance behind the outcome, recommendation, off-ramp, and Central Scheduling packet.
+Readiness is the user-facing checklist tied to the wizard state. It compresses conditions into practical labels such as missing date, configuration incomplete, LabSci unresolved, Reporting/SEND review required, material unknown, or site capability supported. Rule Trace is the audit/debug layer. It exposes the rule provenance behind the outcome, recommendation, off-ramp, and Central Scheduling packet.
 
 Why both exist: removing Readiness would make the user hunt through rules to know what to fix. Removing Rule Trace would make the console feel like a black box and weaken stakeholder review. The two should stay linked, but not visually identical: Readiness is operational; Rule Trace is explanatory.
 
@@ -320,6 +341,8 @@ Reason: represents the actual MVP1 output.
 Decision impact: suggests preferred and alternate site/month options when rules permit.
 
 Why month-of rather than exact date: MVP1 should support commercial guidance, not promise operational start dates.
+
+Ideal-case behavior: when the request reaches `ELIGIBLE_TO_PROPOSE` with no unresolved warnings and site flexibility is not specific-site-only, the console shows three recommendation options instead of two. Reason: a clean MVP1 case is the moment when Commercial can safely compare more than the minimum preferred/alternate pair without implying that any option is reserved.
 
 ### Recommendation Card Metadata
 
@@ -337,9 +360,9 @@ Decision impact: prevents a site/month recommendation from being misread as a co
 
 Reason: gives Commercial a quick sense of how clean or caveated the recommendation is.
 
-Source in the prototype: a simple heuristic based on open warning count. No warnings yields High. One warning yields Medium-high. More than one warning yields Medium. Alternate-site recommendations are set to Medium because they are presented as tradeoff options rather than the primary read of the request.
+Source in the prototype: a simple heuristic based on open warning count. No warnings yields HIGH. One warning yields MEDIUM. More than one warning yields LOW. Alternate-site recommendations inherit the same caveat profile because they are proposal options, not committed capacity.
 
-What it is not: not a statistical probability, not a capacity confidence score, and not a site commitment. It is a readability layer over unresolved assumptions such as date semantics, future/unknown material, LabSci uncertainty, or other caveats.
+What it is not: not a statistical probability, not a capacity confidence score, and not a site commitment. It is a readability layer over unresolved assumptions such as date semantics, future/unknown material, LabSci uncertainty, Reporting/SEND review, or other caveats.
 
 Why this deserves scrutiny: the current rule is intentionally simple for MVP1. A production version should likely weight warnings differently. For example, unresolved LabSci timing should probably reduce confidence more than a harmless note; a site capability mismatch should block or off-ramp rather than merely lower confidence.
 
@@ -355,7 +378,7 @@ Decision impact: forces the user to recheck if the recommendation has aged out, 
 
 Reason: keeps the strongest guardrail visible inside every recommendation card.
 
-Source: fixed to "Not reserved" in MVP1.
+Source: fixed to "No capacity hold" in MVP1.
 
 Decision impact: prevents the recommendation from being interpreted as capacity reservation, room-level scheduling, final RPM execution timing, or a replacement for Central Scheduling.
 
@@ -375,11 +398,11 @@ Displayed data:
 
 - Last checked
 - Valid-until date
-- Not reserved
+- No capacity hold
 
 Decision impact: drives expiry and frames the recommendation as a snapshot rather than a promise.
 
-Why placed in the recommendation header: "Last checked" is provenance for the snapshot recommendation, not an intake question the user should normally answer. It replaces the old top-right "Not reserved" emphasis because freshness is the first thing the user needs before trusting a recommendation.
+Why placed in the recommendation header: "Last checked" is provenance for the snapshot recommendation, not an intake question the user should normally answer. It replaces the old top-right commitment emphasis because freshness is the first thing the user needs before trusting a recommendation.
 
 ### Non-Reservation Language
 
@@ -388,6 +411,14 @@ Reason: keeps the non-commitment caveat visible at the point of recommendation.
 Decision impact: none mechanically, but it changes interpretation.
 
 Why included: this is one of the most important VoC lessons. A snapshot recommendation is not a capacity hold.
+
+### Caveat Badges, Data Used, and Recheck Triggers
+
+Reason: makes a recommendation behave like a decision contract rather than a booking confirmation.
+
+Decision impact: dependency badges expose why the card is caveated; Data used shows which source types informed the card; Recheck if lists conditions that invalidate the answer.
+
+Reporting/SEND impact: if Reporting/SEND is required, under review, unknown, or missing a target date, the recommendation card should carry a Reporting/SEND caveat and the packet should carry structured reason codes. This allows Commercial to discuss a proposal window while preserving the boundary that operational scheduling has not happened.
 
 ### Rule Trace
 
@@ -433,6 +464,14 @@ Reason: this is an operational Commercial/SFDC-adjacent tool, not a marketing pa
 
 Decision impact: compact panels, controlled colors, and scan-friendly cards.
 
+### Form control styling
+
+Reason: native browser selects, native month/date pickers, and default checkboxes varied by operating system and made the prototype look unfinished.
+
+Decision impact: the hosted app now uses `react-aria-components` for Select, Checkbox, Button, RadioGroup/Radio, Tooltip, TextField, Input, and TextArea. This gives the wizard one interaction model for focus, hover, disabled, selected, and open states instead of relying on browser-specific widgets.
+
+Date control decision: full-date fields use React Aria date picker controls with calendar popovers, while the stored/displayed business value remains `DD-MMM-YYYY`. Month and quarter requests are still captured as business text (`Feb-2027`, `2027 Q1`) rather than native `type="month"` controls. This avoids broken native datepicker behavior while preserving the distinction between precision, requested timing context, and Opportunity Start Date.
+
 ### Cards only for actual panels and repeated options
 
 Reason: avoids turning the page into a decorative card collage.
@@ -446,7 +485,7 @@ Console clutter update: the decision console keeps one outer container, while di
 | Color | Meaning |
 | --- | --- |
 | Green | Pass / ideal case / selected safe option |
-| Amber | Review / caveat / not reserved |
+| Amber | Review / caveat / no capacity hold |
 | Red | Fail / off-ramp / expired |
 | Blue | Structural focus / active UI / information |
 | Violet | Informational context |
@@ -498,3 +537,4 @@ These are intentionally not in MVP1:
 5. Decide whether selected recommendation state should eventually write to SFDC, remain ephemeral, or generate a task.
 6. Decide how Central Scheduling packet contents should be formatted for handoff.
 7. Decide what audit payload should be stored when a user clicks Save or Check results.
+8. Decide whether Reporting/SEND target date should map to an existing SFDC/RFP field or remain a derived wizard field in MVP1.

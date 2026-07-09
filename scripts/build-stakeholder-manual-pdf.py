@@ -121,7 +121,7 @@ def build():
             'MVP1 is a Commercial Persona workflow for "Just Say Yes" / "In The Know." '
             "It begins with SFDC intake, uses Opportunity Start Date as the mandatory gate date, "
             "checks whether the target start is more than four months out, asks for missing "
-            "configuration data, calculates site/month options, and gives Commercial a green light or an off-ramp.",
+            "configuration data, calculates site/month options, and gives Commercial an eligible proposal window or an off-ramp.",
             styles["BodyTight"],
         ),
         p(
@@ -152,7 +152,7 @@ def build():
             styles["BodyTight"],
         ),
         p(
-            "Screenshots are not embedded in the public deployable package because they include current SFDC context and customer/opportunity examples. They were used as design reference only.",
+            "Screenshots are not embedded in the hosted deployable package because they include current SFDC context and customer/opportunity examples. They were used as design reference only.",
             styles["Callout"],
         ),
         PageBreak(),
