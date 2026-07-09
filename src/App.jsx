@@ -1,7 +1,17 @@
 import { useMemo, useRef, useState } from 'react';
 import {
   Button,
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  CalendarGridBody,
+  CalendarGridHeader,
+  CalendarHeaderCell,
   Checkbox,
+  DatePicker,
+  Dialog,
+  Group,
+  Heading,
   Input,
   Label,
   ListBox,
@@ -12,10 +22,9 @@ import {
   Select,
   SelectValue,
   TextArea,
-  TextField,
-  Tooltip,
-  TooltipTrigger
+  TextField
 } from 'react-aria-components';
+import { parseDate } from '@internationalized/date';
 
 const today = new Date('2026-07-07T12:00:00Z');
 const expiryBusinessDays = 5;
@@ -378,12 +387,12 @@ export default function App() {
                   options={options.opportunityStage}
                   onChange={updateField}
                 />
-                <TextInputField
+                <DatePickerField
                   label="Opportunity Start Date"
                   name="opportunityStartDate"
                   value={data.opportunityStartDate}
                   placeholder="DD-MMM-YYYY"
-                  info="Primary timing date for MVP1 rules. Not Study Start Date."
+                  info="Primary timing date for the >4 months rule. Not Study Start Date."
                   onChange={updateField}
                 />
                 <SelectField
@@ -393,14 +402,25 @@ export default function App() {
                   options={options.timingPrecision}
                   onChange={updateField}
                 />
-                <TextInputField
-                  label={rfpTiming.label}
-                  name="rfpRequestedStartDate"
-                  value={data.rfpRequestedStartDate}
-                  placeholder={rfpTiming.placeholder}
-                  info={rfpTiming.info}
-                  onChange={updateField}
-                />
+                {data.timingPrecision === 'exact' ? (
+                  <DatePickerField
+                    label={rfpTiming.label}
+                    name="rfpRequestedStartDate"
+                    value={data.rfpRequestedStartDate}
+                    placeholder={rfpTiming.placeholder}
+                    info={rfpTiming.info}
+                    onChange={updateField}
+                  />
+                ) : (
+                  <TextInputField
+                    label={rfpTiming.label}
+                    name="rfpRequestedStartDate"
+                    value={data.rfpRequestedStartDate}
+                    placeholder={rfpTiming.placeholder}
+                    info={rfpTiming.info}
+                    onChange={updateField}
+                  />
+                )}
                 <SelectField
                   label="Date meaning"
                   name="dateMeaning"
@@ -485,7 +505,7 @@ export default function App() {
                   options={options.testMaterial}
                   onChange={updateField}
                 />
-                <TextInputField
+                <DatePickerField
                   label="Test material available date"
                   name="testMaterialDate"
                   value={data.testMaterialDate}
@@ -515,12 +535,12 @@ export default function App() {
                   onChange={updateField}
                 />
                 {requiresReportingTarget ? (
-                  <TextInputField
+                  <DatePickerField
                     label="Reporting/SEND target date"
                     name="reportingSendTargetDate"
                     value={data.reportingSendTargetDate}
                     placeholder="DD-MMM-YYYY"
-                    info="Customer-facing report, SEND, or submission target. This is a dependency date, not the MVP1 gate date."
+                    info="Customer-facing report, SEND, or submission target. This is a dependency date, not the >4 months rule date."
                     onChange={updateField}
                   />
                 ) : (
@@ -570,7 +590,7 @@ export default function App() {
               <p className="eyebrow">Decision console</p>
               <h2 id="console-title">Scheduling readiness and recommendation</h2>
             </div>
-            <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.code.replaceAll('_', ' ')}</span>
+            <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.label}</span>
           </div>
 
           <div className={`outcome-banner ${evaluation.outcome.level}`}>
@@ -698,6 +718,52 @@ function TextInputField({ label, name, value, onChange, placeholder, info, disab
   );
 }
 
+function DatePickerField({ label, name, value, onChange, placeholder, info, disabled = false }) {
+  const dateValue = toCalendarDate(value);
+
+  return (
+    <DatePicker
+      className="field date-picker-field"
+      value={dateValue}
+      isDisabled={disabled}
+      onChange={(nextValue) => onChange(name, fromCalendarDate(nextValue))}
+    >
+      <FieldLabel label={label} info={info} />
+      <Group className="date-group">
+        <span className={`date-display ${value ? '' : 'is-placeholder'}`}>
+          {formatFullDate(value) || placeholder}
+        </span>
+        <Button className="date-button" aria-label={`Choose ${label}`}>
+          <CalendarIcon />
+        </Button>
+      </Group>
+      <Popover className="calendar-popover">
+        <Dialog className="calendar-dialog">
+          <Calendar className="calendar">
+            <header className="calendar-header">
+              <Button className="calendar-nav" slot="previous" aria-label="Previous month">
+                <ChevronLeftIcon />
+              </Button>
+              <Heading className="calendar-heading" />
+              <Button className="calendar-nav" slot="next" aria-label="Next month">
+                <ChevronRightIcon />
+              </Button>
+            </header>
+            <CalendarGrid className="calendar-grid">
+              <CalendarGridHeader>
+                {(day) => <CalendarHeaderCell className="calendar-header-cell">{day}</CalendarHeaderCell>}
+              </CalendarGridHeader>
+              <CalendarGridBody>
+                {(date) => <CalendarCell className="calendar-cell" date={date} />}
+              </CalendarGridBody>
+            </CalendarGrid>
+          </Calendar>
+        </Dialog>
+      </Popover>
+    </DatePicker>
+  );
+}
+
 function TextAreaField({ label, name, value, onChange }) {
   return (
     <TextField className="field wide-field" value={value} onChange={(nextValue) => onChange(name, nextValue)}>
@@ -745,13 +811,25 @@ function FieldLabel({ label, info }) {
 }
 
 function InfoButton({ copy }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <TooltipTrigger delay={200}>
-      <Button className="info-button" aria-label={copy}>
+    <span
+      className="info-wrapper"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+      onFocus={() => setIsOpen(true)}
+      onBlur={() => setIsOpen(false)}
+    >
+      <Button className="info-button" aria-label={copy} aria-expanded={isOpen} onPress={() => setIsOpen((current) => !current)}>
         i
       </Button>
-      <Tooltip className="tooltip">{copy}</Tooltip>
-    </TooltipTrigger>
+      {isOpen ? (
+        <span className="tooltip" role="tooltip">
+          {copy}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
@@ -817,18 +895,18 @@ function evaluate(data) {
   const expired = expiryDate < today;
 
   if (!start) {
-    checks.push(check('bad', 'Opportunity Start Date missing', 'Blueprint requires Opportunity Start Date before MVP1 can calculate options.'));
-    trace.push(rule('fail', 'Opportunity Start Date known', 'Missing mandatory MVP1 timing date.'));
+    checks.push(check('bad', 'Opportunity Start Date missing', 'Blueprint requires Opportunity Start Date before calculating options.'));
+    trace.push(rule('fail', 'Opportunity Start Date known', 'Missing mandatory timing date.'));
     triage.push('missing_opportunity_start_date');
   } else {
-    checks.push(check('good', 'Opportunity Start Date present', `${formatFullDate(data.opportunityStartDate)} is used as the primary MVP1 timing date.`));
+    checks.push(check('good', 'Opportunity Start Date present', `${formatFullDate(data.opportunityStartDate)} is used as the primary >4 months rule date.`));
     if (start <= gateDate) {
-      checks.push(check('bad', 'Inside four-month MVP1 window', 'Start date is too soon for the MVP1 happy path.'));
-      trace.push(rule('fail', 'MVP1 lead-time window', 'Opportunity Start Date must be more than four months out.'));
+      checks.push(check('bad', 'Not >4 months out', 'Start date is too soon for the self-serve path.'));
+      trace.push(rule('fail', '>4 months out', 'Opportunity Start Date must be more than 4 months out.'));
       triage.push('start_date_inside_mvp1_window');
     } else {
       checks.push(check('good', 'More than four months out', 'Eligible to continue to rules engine.'));
-      trace.push(rule('pass', 'MVP1 lead-time window', 'Opportunity Start Date is more than four months out.'));
+      trace.push(rule('pass', '>4 months out', 'Opportunity Start Date is more than 4 months out.'));
     }
   }
 
@@ -858,7 +936,7 @@ function evaluate(data) {
     trace.push(rule('warning', 'Timing precision', 'Specific date request should off-ramp or receive Scheduling validation.'));
     triage.push('specific_date_requested');
   } else {
-    checks.push(check('good', 'Precision fits MVP1', 'General, quarter, or month-of timing can be handled as a Commercial recommendation.'));
+    checks.push(check('good', 'Precision fits', 'General, quarter, or month-of timing can be handled as a Commercial recommendation.'));
   }
 
   if (data.testMaterial === 'unknown') {
@@ -876,7 +954,7 @@ function evaluate(data) {
     trace.push(rule('warning', 'LabSci dependency', 'Method or bioanalysis timing is not fully validated.'));
     warnings.push('labsci_dependency_unresolved');
   } else {
-    checks.push(check('good', 'LabSci dependency acceptable', 'No unresolved LabSci timing blocker for MVP1.'));
+    checks.push(check('good', 'LabSci dependency acceptable', 'No unresolved LabSci timing blocker for this proposal window.'));
   }
 
   const reportingResult = reportingSendEvaluation(data);
@@ -975,7 +1053,7 @@ function reportingSendEvaluation(data) {
 
   return {
     check: check('good', 'Reporting/SEND dependency checked', 'No reporting or SEND timing dependency captured.'),
-    trace: rule('pass', 'Reporting/SEND dependency', 'No reporting/SEND dependency affects the MVP1 proposal window.'),
+    trace: rule('pass', 'Reporting/SEND dependency', 'No reporting/SEND dependency affects the proposal window.'),
     warning: null,
     triage: null
   };
@@ -1029,13 +1107,13 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
     return outcome('bad', 'Expired: recheck required', 'The prior site/month recommendation must be recalculated before customer communication.', 'expired_recheck_required');
   }
   if (triage.includes('missing_opportunity_start_date')) {
-    return outcome('warn', 'Not enough information', 'MVP1 needs Opportunity Start Date or a business-approved placeholder before calculating options.', 'not_enough_information');
+    return outcome('warn', 'Not enough information', 'Need Opportunity Start Date or a business-approved placeholder before calculating options.', 'not_enough_information');
   }
   if (triage.includes('start_date_inside_mvp1_window')) {
-    return outcome('bad', 'Not in MVP1 scope', 'This inquiry is inside the MVP1 lead-time window and requires Central Scheduling assistance.', 'not_in_mvp_scope');
+    return outcome('bad', 'Needs Central Scheduling', 'This inquiry is not >4 months out and requires Central Scheduling assistance.', 'not_in_mvp_scope', 'needs_central_scheduling');
   }
   if (triage.includes('site_capability_mismatch')) {
-    return outcome('bad', 'Not in MVP1 scope', 'The specific site does not support this configuration. Modify site or escalate capabilities.', 'not_in_mvp_scope');
+    return outcome('bad', 'Needs Central Scheduling', 'The specific site does not support this configuration. Modify site or escalate capabilities.', 'not_in_mvp_scope', 'needs_central_scheduling');
   }
   if (data.userCannotResolve) {
     return outcome('bad', 'Needs validation', 'Off-ramp required. Send the packet and rule trace.', 'needs_validation');
@@ -1203,7 +1281,7 @@ function rfpTimingProps(precision) {
     return {
       label: 'RFP Requested Quarter',
       placeholder: '2027 Q1',
-      info: 'Quarter guidance is less precise than the Opportunity Start Date used by MVP1 rules.'
+      info: 'Quarter guidance is less precise than the Opportunity Start Date used by the >4 months rule.'
     };
   }
 
@@ -1211,14 +1289,14 @@ function rfpTimingProps(precision) {
     return {
       label: 'RFP Requested Date',
       placeholder: 'DD-MMM-YYYY',
-      info: 'Specific dates imply stronger validation than MVP1 month-of guidance.'
+      info: 'Specific dates imply stronger validation than month-of guidance.'
     };
   }
 
   return {
     label: 'RFP Requested Month',
     placeholder: 'Feb-2027',
-    info: 'Month-of timing fits MVP1. Opportunity Start Date remains the primary timing date.'
+    info: 'Month-of timing fits the proposal-window check. Opportunity Start Date remains the primary timing date.'
   };
 }
 
@@ -1266,8 +1344,8 @@ function rule(status, name, copy) {
   return { level, status, rule: name, copy };
 }
 
-function outcome(level, title, copy, code) {
-  return { level, title, copy, code };
+function outcome(level, title, copy, code, label = code.replaceAll('_', ' ')) {
+  return { level, title, copy, code, label };
 }
 
 function commercialPostureFor(stage) {
@@ -1311,6 +1389,22 @@ function formatDate(date) {
 function formatFullDate(value) {
   const date = parseFullDate(value);
   return date ? formatDate(date) : '';
+}
+
+function toCalendarDate(value) {
+  const date = parseFullDate(value);
+  if (!date) return null;
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return parseDate(`${year}-${month}-${day}`);
+}
+
+function fromCalendarDate(value) {
+  if (!value) return '';
+  const day = String(value.day).padStart(2, '0');
+  const month = monthNames[value.month - 1];
+  return `${day}-${month}-${value.year}`;
 }
 
 function parseFullDate(value) {
@@ -1375,6 +1469,33 @@ function ChevronDownIcon() {
   return (
     <svg className="control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg className="control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <path d="M3 10h18" />
+      <path d="M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg className="control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg className="control-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m9 18 6-6-6-6" />
     </svg>
   );
 }

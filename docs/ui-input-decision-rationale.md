@@ -1,6 +1,6 @@
 # UI and Input Decision Rationale
 
-Date: 2026-07-09
+Date: 2026-07-10
 
 ## Purpose
 
@@ -11,7 +11,7 @@ The prototype is not a scheduling engine, room optimizer, or capacity reservatio
 ## Product Principles
 
 1. **Keep the hosted demo narrow.** The demo should be a wizard plus a decision console. Stakeholder narrative belongs in a side document or PDF, not inside the app surface.
-2. **Make the date source explicit.** The MVP1 gate is Opportunity Start Date. Other dates are context and must not silently replace the gate.
+2. **Make the date source explicit.** The >4 months rule uses Opportunity Start Date. Other dates are context and must not silently replace it.
 3. **Separate recommendation from commitment.** The UI can recommend a site/month option, but it must always say the option creates no capacity hold.
 4. **Expose ambiguity instead of hiding it.** If the request means LabSci start, customer submission timing, Reporting/SEND timing, exact date, or unclear timing, the console should show that risk.
 5. **Preserve the human context.** Email, Teams, notes, and free text can contain constraints the rules do not parse.
@@ -23,9 +23,9 @@ The top pills represent the major states Commercial will need to explain in a st
 
 | State | Why it exists | Expected behavior |
 | --- | --- | --- |
-| Ideal case | Shows the MVP1 happy path: enough data, outside four-month gate, no material blocker, no unresolved dependency blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
+| Ideal case | Shows the happy path: enough data, >4 months out, no material blocker, no unresolved dependency blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
 | Missing data | Shows that MVP1 should ask for data rather than inventing a date or recommendation. | Should light when Opportunity Start Date, species, configuration, or other required context is missing or ambiguous. |
-| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is inside the four-month MVP1 window. |
+| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is not >4 months out. |
 | Dependency risk | Captures the reality that LabSci, Reporting/SEND, or related dependencies may have a separate timeline. | Should light when the timing meaning is LabSci/method-related, LabSci timing is unresolved, or Reporting/SEND requires validation. |
 | Expired | Makes the "snapshot, not promise" principle visible. | Should light when the recommendation validity window has elapsed. |
 
@@ -66,7 +66,7 @@ Why **Intent Maturity** was removed: it was too redundant with Opportunity Stage
 
 ### Opportunity Start Date
 
-Reason: this is the official MVP1 gate date from the Blueprint.
+Reason: this is the date used by the agreed >4 months rule from the Blueprint.
 
 Decision impact: required. The happy path only continues when this date is known and more than four months out from the current evaluation date.
 
@@ -315,16 +315,6 @@ Decision impact: helps connect UI state to future workflow states or SFDC status
 
 Why included: useful for stakeholder conversation around future field mapping.
 
-### MVP1 Gate Logic
-
-Reason: keeps the agreed Blueprint rule intact without making the user inspect implementation scaffolding.
-
-Decision impact: Opportunity Start Date still drives the ideal-case path, missing-data state, specific-date caveat, and off-ramp behavior.
-
-Layout decision: the visible MVP1 Gate panel was removed from the console. It was behind-the-scenes logic rather than a decision the user needed to operate, and it pushed recommendations lower on the page.
-
-Why retained behind the scenes: this protects the team from drifting back into ambiguous "target date" language while keeping the console focused on readiness and recommendations.
-
 ### Readiness List
 
 Reason: shows each evaluated condition as pass/review/fail.
@@ -480,7 +470,7 @@ Reason: native browser selects, native month/date pickers, and default checkboxe
 
 Decision impact: the hosted app now uses `react-aria-components` for Select, Checkbox, Button, RadioGroup/Radio, Tooltip, TextField, Input, and TextArea. This gives the wizard one interaction model for focus, hover, disabled, selected, and open states instead of relying on browser-specific widgets.
 
-Date control decision: full dates remain text-based `DD-MMM-YYYY` fields instead of native date pickers because the business format is explicit and native pickers do not reliably present `DD-MMM-YYYY`. Month and quarter requests are captured as business text (`Feb-2027`, `2027 Q1`) rather than native `type="month"` controls. This avoids broken datepicker behavior while preserving the MVP1 distinction between precision, requested timing context, and Opportunity Start Date.
+Date control decision: full-date fields use React Aria date picker controls with calendar popovers, while the stored/displayed business value remains `DD-MMM-YYYY`. Month and quarter requests are still captured as business text (`Feb-2027`, `2027 Q1`) rather than native `type="month"` controls. This avoids broken native datepicker behavior while preserving the distinction between precision, requested timing context, and Opportunity Start Date.
 
 ### Cards only for actual panels and repeated options
 
