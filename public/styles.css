@@ -283,6 +283,46 @@ textarea:focus-visible {
   margin-bottom: var(--space-300);
 }
 
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-200);
+  margin-bottom: var(--space-150);
+}
+
+.panel-title-row .eyebrow {
+  margin-bottom: 0;
+}
+
+.title-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-150);
+}
+
+.panel-icon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-150);
+  color: var(--blue);
+}
+
+.panel-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.warning-icon {
+  color: var(--amber);
+}
+
 .scenario-bar {
   display: flex;
   flex-wrap: wrap;
@@ -539,6 +579,20 @@ textarea {
   gap: var(--space-300);
 }
 
+.support-divider {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+  height: 0;
+  margin-top: var(--space-100);
+}
+
+.support-panel {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radii-75) !important;
+  background: var(--panel) !important;
+  padding: var(--space-300) !important;
+}
+
 .span-2 {
   grid-column: span 2;
 }
@@ -577,13 +631,22 @@ textarea {
 }
 
 .check-item,
-.trace-item,
-.packet-item,
 .rec-card {
   border: 1px solid var(--line);
   border-radius: var(--radii-75);
   padding: var(--space-250);
   background: var(--color-surface-subtle);
+}
+
+.trace,
+.packet {
+  gap: 0;
+}
+
+.trace-item,
+.packet-item {
+  padding: var(--space-250) 0;
+  border-top: 1px solid var(--line);
 }
 
 .check-item {
@@ -667,6 +730,10 @@ textarea {
   margin-bottom: 0;
   color: var(--muted);
   font-size: var(--font-size-2);
+}
+
+.selection-state[hidden] {
+  display: none;
 }
 
 .rec-card {
