@@ -87,7 +87,7 @@ body {
   background: var(--color-bg-canvas);
   color: var(--ink);
   font-family: var(--font-family-base);
-  font-size: var(--font-size-2);
+  font-size: var(--font-size-0);
   line-height: 1.45;
 }
 
@@ -708,6 +708,11 @@ textarea {
   margin-bottom: var(--space-100);
 }
 
+.trace-item .item-title,
+.packet-item > strong {
+  font-size: var(--font-size-2);
+}
+
 .snapshot-meta {
   margin-bottom: 0;
   color: var(--muted);
@@ -752,6 +757,7 @@ textarea {
 
 .rec-title strong {
   min-width: 0;
+  font-size: var(--font-size-2);
 }
 
 .rec-header-actions {
