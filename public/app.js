@@ -491,9 +491,12 @@ function renderRecommendations(cards) {
   if (!cards.length) {
     selectedRecommendationId = null;
     container.innerHTML = '<div class="rec-card"><strong>No recommendation generated</strong><p>Complete missing data, modify selections, or off-ramp to Central Scheduling.</p></div>';
-    selectedState.textContent = 'No option selected.';
+    selectedState.hidden = true;
+    selectedState.className = 'selection-state';
+    selectedState.textContent = '';
     return;
   }
+  selectedState.hidden = false;
   if (!cards.some((card) => card.id === selectedRecommendationId)) {
     selectedRecommendationId = null;
   }

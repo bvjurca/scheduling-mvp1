@@ -21,6 +21,8 @@ const checks = [
       'Specific date (Off-ramp)',
       'Budgetary/Quote',
       'Additional information',
+      'Open packet in new tab',
+      'Important context',
       'Off-ramp required',
       'Recommendations',
       'Last checked',
@@ -51,6 +53,10 @@ const checks = [
       '.state-tabs',
       '.wizard-actions',
       '.info-icon',
+      '.panel-icon',
+      '.support-divider',
+      '.support-panel',
+      '.title-with-icon',
       '.rec-radio',
       '.snapshot-meta'
     ]

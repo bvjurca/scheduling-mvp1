@@ -304,6 +304,15 @@ Layout decision: readiness is a compact grid so pass/review/fail conditions cons
 
 Why included: Commercial needs to know what to fix, not just that the recommendation failed.
 
+Relationship to Rule Trace: Readiness and Rule Trace intentionally use the same underlying evaluation, but they are not meant to answer the same question.
+
+- Readiness answers: "Can I proceed, and what input or assumption needs attention?"
+- Rule Trace answers: "Which rule fired, and why did the console produce this outcome or recommendation?"
+
+Readiness is the user-facing checklist tied to the wizard state. It compresses conditions into practical labels such as missing date, configuration incomplete, LabSci unresolved, material unknown, or site capability supported. Rule Trace is the audit/debug layer. It exposes the rule provenance behind the outcome, recommendation, off-ramp, and Central Scheduling packet.
+
+Why both exist: removing Readiness would make the user hunt through rules to know what to fix. Removing Rule Trace would make the console feel like a black box and weaken stakeholder review. The two should stay linked, but not visually identical: Readiness is operational; Rule Trace is explanatory.
+
 ### Recommendations
 
 Reason: represents the actual MVP1 output.
@@ -311,6 +320,44 @@ Reason: represents the actual MVP1 output.
 Decision impact: suggests preferred and alternate site/month options when rules permit.
 
 Why month-of rather than exact date: MVP1 should support commercial guidance, not promise operational start dates.
+
+### Recommendation Card Metadata
+
+Each recommendation repeats four parameters because cards are intended to be compared side by side. The user should not have to infer whether the preferred option and alternate option carry the same caveats.
+
+#### Precision
+
+Reason: tells the user what kind of timing answer the card represents.
+
+Source: derived from Timing precision. General, quarter, and month-of requests are translated into their corresponding business-facing precision label. If the request is a specific date, the card explicitly says it needs validation instead of implying an exact start promise.
+
+Decision impact: prevents a site/month recommendation from being misread as a committed date.
+
+#### Confidence
+
+Reason: gives Commercial a quick sense of how clean or caveated the recommendation is.
+
+Source in the prototype: a simple heuristic based on open warning count. No warnings yields High. One warning yields Medium-high. More than one warning yields Medium. Alternate-site recommendations are set to Medium because they are presented as tradeoff options rather than the primary read of the request.
+
+What it is not: not a statistical probability, not a capacity confidence score, and not a site commitment. It is a readability layer over unresolved assumptions such as date semantics, future/unknown material, LabSci uncertainty, or other caveats.
+
+Why this deserves scrutiny: the current rule is intentionally simple for MVP1. A production version should likely weight warnings differently. For example, unresolved LabSci timing should probably reduce confidence more than a harmless note; a site capability mismatch should block or off-ramp rather than merely lower confidence.
+
+#### Valid Until
+
+Reason: makes the snapshot nature of the answer visible at the point of recommendation.
+
+Source: calculated from the proposal snapshot date plus the prototype validity window.
+
+Decision impact: forces the user to recheck if the recommendation has aged out, because site timing, material readiness, scope, or customer preference may have changed.
+
+#### Commitment
+
+Reason: keeps the strongest guardrail visible inside every recommendation card.
+
+Source: fixed to "Not reserved" in MVP1.
+
+Decision impact: prevents the recommendation from being interpreted as capacity reservation, room-level scheduling, final RPM execution timing, or a replacement for Central Scheduling.
 
 ### Snapshot Recommendation Card Selection
 

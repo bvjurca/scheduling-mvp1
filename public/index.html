@@ -276,18 +276,40 @@
             <div id="recommendations" class="recommendations" role="radiogroup" aria-label="Recommendation options"></div>
           </article>
 
-          <article class="panel">
-            <p class="eyebrow">Rule trace</p>
+          <div class="support-divider" aria-hidden="true"></div>
+
+          <article class="panel support-panel rule-panel">
+            <div class="panel-title-row">
+              <p class="eyebrow">Rule trace</p>
+            </div>
             <div id="rule-trace" class="trace"></div>
           </article>
 
-          <article class="panel">
-            <p class="eyebrow">Central Scheduling packet</p>
+          <article class="panel support-panel packet-panel">
+            <div class="panel-title-row">
+              <p class="eyebrow">Central Scheduling packet</p>
+              <span class="panel-icon-group" role="img" aria-label="Open packet in new tab">
+                <svg class="panel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M14 4h6v6" />
+                  <path d="M10 14 20 4" />
+                  <path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" />
+                </svg>
+              </span>
+            </div>
             <div id="triage-packet" class="packet"></div>
           </article>
 
-          <article class="panel span-2">
-            <p class="eyebrow">Additional information</p>
+          <article class="panel span-2 context-panel">
+            <div class="panel-title-row">
+              <div class="title-with-icon">
+                <svg class="panel-icon warning-icon" viewBox="0 0 24 24" role="img" aria-label="Important context" focusable="false">
+                  <path d="M12 3 2 21h20L12 3z" />
+                  <path d="M12 9v5" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <p class="eyebrow">Additional information</p>
+              </div>
+            </div>
             <p id="context-capsule" class="context-copy"></p>
           </article>
         </div>
