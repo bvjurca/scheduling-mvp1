@@ -25,7 +25,7 @@ The top pills represent the major states Commercial will need to explain in a st
 | --- | --- | --- |
 | Ideal case | Shows the MVP1 happy path: enough data, outside four-month gate, no material blocker, no unresolved LabSci blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
 | Missing data | Shows that MVP1 should ask for data rather than inventing a date or recommendation. | Should light when Opportunity Start Date, species, configuration, or other required context is missing or ambiguous. |
-| Specific date | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is inside the four-month MVP1 window. |
+| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is inside the four-month MVP1 window. |
 | LabSci risk | Captures the reality that method validation, bioanalysis, or LabSci sequencing may have a separate timeline. | Should light when the timing meaning is LabSci/method-related or LabSci timing is unresolved. |
 | Expired | Makes the "snapshot, not promise" principle visible. | Should light when the recommendation validity window has elapsed. |
 
@@ -240,7 +240,7 @@ Decision impact: rendered into the decision console and escalation packet.
 
 Why included: VoC called out that emails, Teams, notes, and descriptions can contain critical constraints not cleanly represented in SFDC fields.
 
-### Offramp Requested
+### Off-ramp Required
 
 Reason: explicit manual override for ambiguity, discomfort, or cases the rules cannot model.
 
