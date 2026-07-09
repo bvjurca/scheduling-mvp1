@@ -380,7 +380,7 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
     return outcome('bad', 'Off-ramp: capability mismatch', 'The specific site does not support this configuration. Modify site or escalate capabilities.', 'off_ramp_capability');
   }
   if (data.userCannotResolve) {
-    return outcome('bad', 'Request Central Scheduling assistance', 'Offramp requested. Send the packet and rule trace.', 'central_scheduling');
+    return outcome('bad', 'Request Central Scheduling assistance', 'Off-ramp required. Send the packet and rule trace.', 'central_scheduling');
   }
   if (needsScheduling) {
     return outcome('warn', 'Scheduling validation required', 'A specific date, awarded state, or execution-level request needs stronger Scheduling validation.', 'scheduling_validation');
@@ -591,11 +591,17 @@ function commercialPostureFor(stage) {
   return postureByStage[stage] || 'planning';
 }
 
+function setInfoTooltip(element, copy) {
+  element.dataset.tooltip = copy;
+  element.setAttribute('aria-label', copy);
+  element.setAttribute('title', copy);
+}
+
 function configureRfpTimingControl() {
   const precision = document.getElementById('timingPrecision').value;
   const input = document.getElementById('rfpRequestedStartDate');
   const label = document.getElementById('rfpTimingLabel');
-  const hint = document.getElementById('rfpTimingHint');
+  const info = document.getElementById('rfpTimingInfo');
   const current = input.value;
 
   if (precision === 'general') {
@@ -603,7 +609,7 @@ function configureRfpTimingControl() {
     input.placeholder = 'No date supplied';
     input.value = current && !isFullDate(current) && !isIsoMonth(current) ? current : '';
     label.textContent = 'RFP Timing Context';
-    hint.textContent = 'General timing only. No date is required for the RFP context field.';
+    setInfoTooltip(info, 'General timing only. No date is required for the RFP context field.');
     return;
   }
 
@@ -612,7 +618,7 @@ function configureRfpTimingControl() {
     input.placeholder = '2027 Q1';
     input.value = current && !isFullDate(current) && !isIsoMonth(current) ? current : '';
     label.textContent = 'RFP Requested Quarter';
-    hint.textContent = 'Quarter guidance is less precise than the Opportunity Start Date used by MVP1 rules.';
+    setInfoTooltip(info, 'Quarter guidance is less precise than the Opportunity Start Date used by MVP1 rules.');
     return;
   }
 
@@ -621,7 +627,7 @@ function configureRfpTimingControl() {
     input.placeholder = '15-Feb-2027';
     input.value = isFullDate(current) ? formatFullDate(current) : isIsoMonth(current) ? formatFullDate(`${current}-15`) : '';
     label.textContent = 'RFP Requested Date';
-    hint.textContent = 'Specific dates imply stronger validation than MVP1 month-of guidance.';
+    setInfoTooltip(info, 'Specific dates imply stronger validation than MVP1 month-of guidance.');
     return;
   }
 
@@ -629,17 +635,17 @@ function configureRfpTimingControl() {
   input.placeholder = '';
   input.value = isIsoMonth(current) ? current : monthFromFullDate(current) || '';
   label.textContent = 'RFP Requested Month';
-  hint.textContent = 'Month-of timing fits MVP1. Opportunity Start Date remains the primary timing date.';
+  setInfoTooltip(info, 'Month-of timing fits MVP1. Opportunity Start Date remains the primary timing date.');
 }
 
 function updatePreferredSiteControl() {
   const flexibility = document.getElementById('siteFlexibility').value;
   const preferredSite = document.getElementById('preferredSite');
-  const hint = document.getElementById('preferredSiteHint');
+  const info = document.getElementById('preferredSiteInfo');
   if (flexibility === 'any') {
     preferredSite.value = 'Any qualified site';
     preferredSite.disabled = true;
-    hint.textContent = 'Disabled because Site flexibility is Any qualified site.';
+    setInfoTooltip(info, 'Disabled because Site flexibility is Any qualified site.');
     return;
   }
 
@@ -647,7 +653,7 @@ function updatePreferredSiteControl() {
   if (preferredSite.value === 'Any qualified site') {
     preferredSite.value = 'Mattawan';
   }
-  hint.textContent = 'Used when the customer or Commercial has a site preference.';
+  setInfoTooltip(info, 'Used when the customer or Commercial has a site preference.');
 }
 
 function isFullDate(value) {

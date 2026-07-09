@@ -23,26 +23,21 @@
           </div>
         </div>
 
-        <div class="scenario-bar state-tabs" aria-label="Wizard state tabs">
+        <div class="scenario-bar state-tabs" aria-label="Request examples">
           <button type="button" class="ghost-button state-tab" data-scenario="happy" data-status-key="happy" aria-pressed="false">
             <span>Ideal case</span>
-            <small>ready</small>
           </button>
           <button type="button" class="ghost-button state-tab" data-scenario="missing" data-status-key="missing" aria-pressed="false">
             <span>Missing data</span>
-            <small>incomplete</small>
           </button>
           <button type="button" class="ghost-button state-tab" data-scenario="specific" data-status-key="specific" aria-pressed="false">
-            <span>Specific date</span>
-            <small>off-ramp</small>
+            <span>Specific date (Off-ramp)</span>
           </button>
           <button type="button" class="ghost-button state-tab" data-scenario="labsci" data-status-key="labsci" aria-pressed="false">
             <span>LabSci risk</span>
-            <small>caveat</small>
           </button>
           <button type="button" class="ghost-button state-tab" data-scenario="expired" data-status-key="expired" aria-pressed="false">
             <span>Expired</span>
-            <small>recheck</small>
           </button>
         </div>
 
@@ -67,9 +62,11 @@
                 </select>
               </label>
               <label>
-                Opportunity Start Date
+                <span class="label-row">
+                  <span>Opportunity Start Date</span>
+                  <span class="info-icon" tabindex="0" role="img" aria-label="Primary timing date for MVP1 rules. Not Study Start Date." title="Primary timing date for MVP1 rules. Not Study Start Date." data-tooltip="Primary timing date for MVP1 rules. Not Study Start Date.">i</span>
+                </span>
                 <input id="opportunityStartDate" name="opportunityStartDate" type="text" value="15-Feb-2027" placeholder="DD-MMM-YYYY" />
-                <span class="hint">Primary timing date for MVP1 rules. Not Study Start Date.</span>
               </label>
               <label>
                 Timing precision (OUT OF SCOPE)
@@ -81,9 +78,11 @@
                 </select>
               </label>
               <label>
-                <span id="rfpTimingLabel">RFP Requested Month</span>
+                <span class="label-row">
+                  <span id="rfpTimingLabel">RFP Requested Month</span>
+                  <span id="rfpTimingInfo" class="info-icon" tabindex="0" role="img" aria-label="Configured by timing precision. Captures customer/RFP timing context, not the primary MVP1 timing date." title="Configured by timing precision. Captures customer/RFP timing context, not the primary MVP1 timing date." data-tooltip="Configured by timing precision. Captures customer/RFP timing context, not the primary MVP1 timing date.">i</span>
+                </span>
                 <input id="rfpRequestedStartDate" name="rfpRequestedStartDate" type="month" value="2027-02" />
-                <span id="rfpTimingHint" class="hint">Configured by timing precision. Captures customer/RFP timing context, not the primary MVP1 timing date.</span>
               </label>
               <label>
                 Date meaning
@@ -176,7 +175,10 @@
                 </select>
               </label>
               <label>
-                Preferred site
+                <span class="label-row">
+                  <span>Preferred site</span>
+                  <span id="preferredSiteInfo" class="info-icon" tabindex="0" role="img" aria-label="Disabled because Site flexibility is Any qualified site." title="Disabled because Site flexibility is Any qualified site." data-tooltip="Disabled because Site flexibility is Any qualified site.">i</span>
+                </span>
                 <select id="preferredSite" name="preferredSite" disabled>
                   <option value="Mattawan">Mattawan</option>
                   <option value="Horsham">Horsham</option>
@@ -185,7 +187,6 @@
                   <option value="Senneville">Senneville</option>
                   <option value="Any qualified site" selected>Any qualified site</option>
                 </select>
-                <span id="preferredSiteHint" class="hint">Disabled because Site flexibility is Any qualified site.</span>
               </label>
               <label>
                 Test material availability
@@ -228,7 +229,7 @@
             </label>
             <label class="checkbox-row">
               <input id="userCannotResolve" name="userCannotResolve" type="checkbox" />
-              Offramp requested
+              Off-ramp required
             </label>
           </fieldset>
           <div class="wizard-actions">

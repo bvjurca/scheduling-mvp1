@@ -18,9 +18,10 @@ const checks = [
       'Request details',
       'DD-MMM-YYYY',
       'Timing precision (OUT OF SCOPE)',
+      'Specific date (Off-ramp)',
       'Budgetary/Quote',
       'Additional information',
-      'Offramp requested',
+      'Off-ramp required',
       'Recommendations',
       'Last checked',
       'Check results'
@@ -49,6 +50,7 @@ const checks = [
       '.decision-console',
       '.state-tabs',
       '.wizard-actions',
+      '.info-icon',
       '.rec-radio',
       '.snapshot-meta'
     ]
