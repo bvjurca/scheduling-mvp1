@@ -38,7 +38,7 @@ It is **not**:
 
 ## Why This Matters
 
-The Blueprint defines MVP1 as a Commercial Persona flow for "Just Say Yes" / "In The Know." It starts with SFDC intake, requires Opportunity Start Date, checks whether that date is more than four months out, asks for missing configuration data, calculates site/month options, and then returns either a green light or an off-ramp.
+The Blueprint defines MVP1 as a Commercial Persona flow for "Just Say Yes" / "In The Know." It starts with SFDC intake, requires Opportunity Start Date, checks whether that date is more than four months out, asks for missing configuration data, calculates site/month options, and then returns either an eligible proposal window or an off-ramp.
 
 The latest VoC and screenshots add nuance without changing the scope:
 
