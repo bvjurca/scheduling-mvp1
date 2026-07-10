@@ -25,7 +25,7 @@ The top pills represent the major states Commercial will need to explain in a st
 | --- | --- | --- |
 | Ideal case | Shows the happy path: enough data, >4 months out, no material blocker, no unresolved dependency blocker, capability supported. | Should light automatically when the wizard inputs meet ideal-case conditions. Clicking it can load the happy-path scenario. |
 | Missing data | Shows that MVP1 should ask for data rather than inventing a date or recommendation. | Should light when Opportunity Start Date, species, configuration, or other required context is missing or ambiguous. |
-| Specific date (Off-ramp) | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is not >4 months out. |
+| Date off-ramp | Captures the VoC point that a specific date is materially different from month-of timing. | Should light when exact timing is requested or the start date is not >4 months out. The console label should say off-ramp rather than implying the request is simply unavailable or reserved. |
 | Dependency risk | Captures the reality that LabSci, Reporting/SEND, or related dependencies may have a separate timeline. | Should light when the timing meaning is LabSci/method-related, LabSci timing is unresolved, or Reporting/SEND requires validation. |
 | Expired | Makes the "snapshot, not promise" principle visible. | Should light when the recommendation validity window has elapsed. |
 
@@ -97,12 +97,14 @@ Control behavior:
 
 - General lead time: no date required; free timing context is acceptable.
 - Quarter guidance: requested quarter text, such as `2027 Q1`.
-- Month-of timing: requested month input.
+- Month-of timing: requested month picker.
 - Specific date: requested date input.
 
 Decision impact: context and reconciliation, not the primary gate.
 
 Why separate from Opportunity Start Date: VoC made clear that requested start can mean different things. Keeping this field visible prevents silent date substitution.
+
+Control decision: full-date fields use React Aria date picker controls. The visible display text is the trigger, not just the calendar icon, because users naturally click the text area of an input. Month-of timing uses a matching month picker instead of a free text field so `RFP Requested Month` stays constrained to `MMM-YYYY` without pretending the user supplied an exact date.
 
 ### Date Meaning
 

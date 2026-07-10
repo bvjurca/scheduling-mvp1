@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
   Calendar,
@@ -10,6 +10,7 @@ import {
   Checkbox,
   DatePicker,
   Dialog,
+  DialogTrigger,
   Group,
   Heading,
   Input,
@@ -190,7 +191,7 @@ const scenarios = {
 const scenarioTabs = [
   { key: 'happy', label: 'Ideal case', statusKey: 'happy' },
   { key: 'missing', label: 'Missing data', statusKey: 'missing' },
-  { key: 'specific', label: 'Specific date (Off-ramp)', statusKey: 'specific' },
+  { key: 'specific', label: 'Date off-ramp', statusKey: 'specific' },
   { key: 'labsci', label: 'Dependency risk', statusKey: 'labsci' },
   { key: 'expired', label: 'Expired', statusKey: 'expired' }
 ];
@@ -404,6 +405,15 @@ export default function App() {
                 />
                 {data.timingPrecision === 'exact' ? (
                   <DatePickerField
+                    label={rfpTiming.label}
+                    name="rfpRequestedStartDate"
+                    value={data.rfpRequestedStartDate}
+                    placeholder={rfpTiming.placeholder}
+                    info={rfpTiming.info}
+                    onChange={updateField}
+                  />
+                ) : data.timingPrecision === 'month' ? (
+                  <MonthPickerField
                     label={rfpTiming.label}
                     name="rfpRequestedStartDate"
                     value={data.rfpRequestedStartDate}
@@ -730,11 +740,13 @@ function DatePickerField({ label, name, value, onChange, placeholder, info, disa
     >
       <FieldLabel label={label} info={info} />
       <Group className="date-group">
-        <span className={`date-display ${value ? '' : 'is-placeholder'}`}>
-          {formatFullDate(value) || placeholder}
-        </span>
-        <Button className="date-button" aria-label={`Choose ${label}`}>
-          <CalendarIcon />
+        <Button className="date-trigger" aria-label={`Choose ${label}`}>
+          <span className={`date-display ${value ? '' : 'is-placeholder'}`}>
+            {formatFullDate(value) || placeholder}
+          </span>
+          <span className="date-button-icon" aria-hidden="true">
+            <CalendarIcon />
+          </span>
         </Button>
       </Group>
       <Popover className="calendar-popover">
@@ -761,6 +773,79 @@ function DatePickerField({ label, name, value, onChange, placeholder, info, disa
         </Dialog>
       </Popover>
     </DatePicker>
+  );
+}
+
+function MonthPickerField({ label, name, value, onChange, placeholder, info, disabled = false }) {
+  const selected = parseMonthSelection(value);
+  const selectedYear = selected?.year ?? today.getUTCFullYear() + 1;
+  const [viewYear, setViewYear] = useState(selectedYear);
+  const [isOpen, setIsOpen] = useState(false);
+  const displayValue = selected ? formatMonthSelection(selected.month, selected.year) : '';
+
+  useEffect(() => {
+    setViewYear(selectedYear);
+  }, [selectedYear]);
+
+  function chooseMonth(monthIndex) {
+    onChange(name, formatMonthSelection(monthIndex, viewYear));
+    setIsOpen(false);
+  }
+
+  return (
+    <div className={`field month-picker-field ${disabled ? 'is-disabled' : ''}`}>
+      <FieldLabel label={label} info={info} />
+      <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
+        <Button className="month-trigger" isDisabled={disabled} aria-label={`Choose ${label}`}>
+          <span className={`date-display ${displayValue ? '' : 'is-placeholder'}`}>
+            {displayValue || placeholder}
+          </span>
+          <span className="date-button-icon" aria-hidden="true">
+            <CalendarIcon />
+          </span>
+        </Button>
+        <Popover className="month-popover">
+          <Dialog className="month-dialog" aria-label={`${label} picker`}>
+            <header className="calendar-header">
+              <Button
+                className="calendar-nav"
+                type="button"
+                aria-label="Previous year"
+                onPress={() => setViewYear((year) => year - 1)}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Heading className="calendar-heading">{viewYear}</Heading>
+              <Button
+                className="calendar-nav"
+                type="button"
+                aria-label="Next year"
+                onPress={() => setViewYear((year) => year + 1)}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </header>
+            <div className="month-grid">
+              {monthNames.map((month, index) => {
+                const isSelected = selected?.month === index && selected?.year === viewYear;
+                return (
+                  <Button
+                    key={month}
+                    className="month-option"
+                    type="button"
+                    aria-pressed={isSelected}
+                    data-selected={isSelected || undefined}
+                    onPress={() => chooseMonth(index)}
+                  >
+                    {month}
+                  </Button>
+                );
+              })}
+            </div>
+          </Dialog>
+        </Popover>
+      </DialogTrigger>
+    </div>
   );
 }
 
@@ -1110,7 +1195,10 @@ function decideOutcome({ fatal, needsScheduling, triage, warnings, data }) {
     return outcome('warn', 'Not enough information', 'Need Opportunity Start Date or a business-approved placeholder before calculating options.', 'not_enough_information');
   }
   if (triage.includes('start_date_inside_mvp1_window')) {
-    return outcome('bad', 'Needs Central Scheduling', 'This inquiry is not >4 months out and requires Central Scheduling assistance.', 'not_in_mvp_scope', 'needs_central_scheduling');
+    return outcome('bad', 'Date off-ramp', 'This inquiry is not >4 months out and requires Central Scheduling assistance.', 'not_in_mvp_scope', 'off-ramp');
+  }
+  if (triage.includes('specific_date_requested')) {
+    return outcome('warn', 'Date off-ramp', 'Specific date requests need Scheduling validation before customer-facing timing language.', 'needs_validation', 'off-ramp');
   }
   if (triage.includes('site_capability_mismatch')) {
     return outcome('bad', 'Needs Central Scheduling', 'The specific site does not support this configuration. Modify site or escalate capabilities.', 'not_in_mvp_scope', 'needs_central_scheduling');
@@ -1435,6 +1523,21 @@ function monthLabelFromKey(value) {
   if (!match) return '';
   const [, year, month] = match;
   return `${monthNames[Number(month) - 1]}-${year}`;
+}
+
+function parseMonthSelection(value) {
+  const fullDateMonth = monthLabelFromFullDate(value);
+  const normalizedValue = fullDateMonth || monthLabelFromKey(value) || String(value || '').trim();
+  const match = normalizedValue.match(/^([A-Za-z]{3})-(\d{4})$/);
+  if (!match) return null;
+  const [, month, year] = match;
+  const monthIndex = monthLookup[month.toLowerCase()];
+  if (monthIndex === undefined) return null;
+  return { month: monthIndex, year: Number(year) };
+}
+
+function formatMonthSelection(monthIndex, year) {
+  return `${monthNames[monthIndex]}-${year}`;
 }
 
 function shiftMonthLabel(monthLabel, delta) {
