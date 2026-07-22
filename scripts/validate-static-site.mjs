@@ -100,6 +100,26 @@ const checks = [
     ]
   },
   {
+    path: '../netlify/edge-functions/basic-auth.ts',
+    minBytes: 1000,
+    requiredText: [
+      "context.env.get('BASIC_AUTH_USER')",
+      "context.env.get('BASIC_AUTH_PASSWORD')",
+      'WWW-Authenticate',
+      'context.next()',
+      'safeEqual'
+    ]
+  },
+  {
+    path: '../netlify.toml',
+    minBytes: 200,
+    requiredText: [
+      '[[edge_functions]]',
+      'path = "/*"',
+      'function = "basic-auth"'
+    ]
+  },
+  {
     path: '../docs/ui-input-decision-rationale.md',
     minBytes: 10000,
     requiredText: [
