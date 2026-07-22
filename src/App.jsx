@@ -196,6 +196,70 @@ const scenarioTabs = [
   { key: 'expired', label: 'Expired', statusKey: 'expired' }
 ];
 
+const initialRequestRecords = [
+  {
+    id: 'REQ-400610',
+    source: 'Saved request',
+    owner: 'Commercial',
+    savedAt: '07-Jul-2026 09:12',
+    values: scenarios.happy
+  },
+  {
+    id: 'REQ-700600',
+    source: 'Draft request',
+    owner: 'Commercial',
+    savedAt: '07-Jul-2026 09:40',
+    values: scenarios.missing
+  },
+  {
+    id: 'REQ-419206',
+    source: 'Needs validation',
+    owner: 'Commercial',
+    savedAt: '07-Jul-2026 10:15',
+    values: scenarios.specific
+  },
+  {
+    id: 'REQ-397025',
+    source: 'Dependency review',
+    owner: 'Commercial',
+    savedAt: '07-Jul-2026 10:52',
+    values: scenarios.labsci
+  },
+  {
+    id: 'REQ-398891',
+    source: 'Expired snapshot',
+    owner: 'Commercial',
+    savedAt: '07-Jul-2026 11:08',
+    values: scenarios.expired
+  }
+];
+
+const newRequestDefaults = {
+  ...scenarios.happy,
+  opportunityId: 'OPP-DRAFT',
+  opportunityStage: 'Target',
+  opportunityStartDate: '',
+  rfpRequestedStartDate: '',
+  timingPrecision: 'month',
+  dateMeaning: 'unclear',
+  studyType1: '',
+  studyType2: '',
+  species: '',
+  route: 'Unknown',
+  configurationComplete: 'missing',
+  configuratorDepth: 'basic',
+  preferredSite: 'Any qualified site',
+  siteFlexibility: 'any',
+  testMaterial: 'unknown',
+  testMaterialDate: '',
+  labsciRequired: 'none',
+  labsciTiming: 'not_applicable',
+  reportingSendDependency: 'unknown',
+  reportingSendTargetDate: '',
+  contextNotes: '',
+  userCannotResolve: false
+};
+
 const options = {
   opportunityStage: ['Target', 'Qualify', 'Proposal & Price', 'Budgetary', 'Negotiate', 'Forecast & commit', 'Closed Won'].map(toOption),
   timingPrecision: [
@@ -279,20 +343,57 @@ const options = {
 };
 
 export default function App() {
+  const [requestRecords, setRequestRecords] = useState(initialRequestRecords);
+  const [activeRequestId, setActiveRequestId] = useState(null);
+  const [screen, setScreen] = useState('workspace');
+  const [requestOrigin, setRequestOrigin] = useState('saved');
   const [formData, setFormData] = useState(scenarios.happy);
   const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
   const [draftStatus, setDraftStatus] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
   const consoleRef = useRef(null);
+  const loadingTimerRef = useRef(null);
 
   const data = normalizeData(formData);
   const evaluation = useMemo(() => evaluate(data), [data]);
+  const requestSummaries = useMemo(() => {
+    return requestRecords.map((record) => {
+      const recordData = normalizeData(record.values);
+      return {
+        record,
+        data: recordData,
+        evaluation: evaluate(recordData)
+      };
+    });
+  }, [requestRecords]);
   const selectedRecommendation = evaluation.recommendations.find((card) => card.id === selectedRecommendationId);
+  const activeRequest = requestSummaries.find((item) => item.record.id === activeRequestId);
   const preferredSiteDisabled = data.siteFlexibility === 'any';
   const rfpTiming = rfpTimingProps(data.timingPrecision);
   const requiresReportingTarget = reportingSendRequiresTargetDate(data.reportingSendDependency);
+  const isWorkspace = screen === 'workspace';
+  const isNewRequest = requestOrigin === 'new';
+  const showPendingConsole = screen === 'details' && !isNewRequest;
+  const showLoadingConsole = screen === 'checking';
+  const showDecisionConsole = screen === 'results';
+  const wizardOnly = screen === 'details' && isNewRequest;
+
+  useEffect(() => {
+    return () => {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (screen !== 'results') return;
+    requestAnimationFrame(() => {
+      consoleRef.current?.focus({ preventScroll: true });
+    });
+  }, [screen]);
 
   function updateField(name, value) {
     setSelectedRecommendationId(null);
+    if (screen === 'results') setScreen('details');
     setFormData((current) => {
       const next = { ...current, [name]: value };
 
@@ -316,36 +417,107 @@ export default function App() {
     setFormData(scenarios[name]);
     setSelectedRecommendationId(null);
     setDraftStatus('');
+    setScreen('details');
+    setRequestOrigin('saved');
   }
 
   function saveDraft() {
     const savedAt = new Date();
+    const recordId = activeRequestId || requestIdFromData(data);
+    const savedRecord = {
+      id: recordId,
+      source: activeRequestId ? 'Saved request' : 'New draft',
+      owner: 'Commercial',
+      savedAt: formatTimestamp(savedAt),
+      values: data
+    };
     const payload = {
       savedAt: savedAt.toISOString(),
       values: data,
       selectedRecommendationId
     };
 
+    setRequestRecords((current) => {
+      const existingIndex = current.findIndex((record) => record.id === recordId);
+      if (existingIndex < 0) return [savedRecord, ...current];
+      return current.map((record) => (record.id === recordId ? savedRecord : record));
+    });
+    setActiveRequestId(recordId);
+    setRequestOrigin('saved');
+
     try {
       localStorage.setItem('dsaSchedulingMvp1Draft', JSON.stringify(payload));
-      setDraftStatus(`Saved ${savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. No SFDC writeback.`);
+      setDraftStatus(`Saved ${savedRecord.savedAt}. No SFDC writeback.`);
     } catch {
       setDraftStatus('Draft kept in this session only. No SFDC writeback.');
     }
   }
 
+  function openRequest(requestId) {
+    const request = requestRecords.find((record) => record.id === requestId);
+    if (!request) return;
+
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    setActiveRequestId(request.id);
+    setFormData(request.values);
+    setSelectedRecommendationId(null);
+    setDraftStatus('');
+    setIsChecking(false);
+    setRequestOrigin('saved');
+    setScreen('details');
+  }
+
+  function createRequest() {
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    setActiveRequestId(null);
+    setFormData(newRequestDefaults);
+    setSelectedRecommendationId(null);
+    setDraftStatus('');
+    setIsChecking(false);
+    setRequestOrigin('new');
+    setScreen('details');
+  }
+
+  function goHome() {
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    setIsChecking(false);
+    setScreen('workspace');
+  }
+
   function checkResults() {
-    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    consoleRef.current?.focus({ preventScroll: true });
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    setSelectedRecommendationId(null);
+    setIsChecking(true);
+    setScreen('checking');
+    loadingTimerRef.current = setTimeout(() => {
+      setIsChecking(false);
+      setScreen('results');
+    }, 650);
   }
 
   return (
     <div className="app">
       <header className="topbar">
         <h1>Scheduling MVP1 (Commercial) - DEMO DATA ONLY</h1>
+        {!isWorkspace ? (
+          <div className="topbar-actions">
+            <Button type="button" className="ghost-button" onPress={goHome}>
+              Home
+            </Button>
+          </div>
+        ) : null}
       </header>
 
-      <main className="demo-grid">
+      {isWorkspace ? (
+        <RequestWorkspace
+          requestSummaries={requestSummaries}
+          activeRequestId={activeRequestId}
+          onOpenRequest={openRequest}
+          onCreateRequest={createRequest}
+        />
+      ) : (
+      <main className={`demo-grid sequenced-grid ${wizardOnly ? 'is-wizard-only' : ''}`}>
+        <WorkflowStrip screen={screen} />
         <section className="wizard" aria-labelledby="wizard-title">
           <div className="section-head">
             <div>
@@ -594,6 +766,15 @@ export default function App() {
           </form>
         </section>
 
+        {showPendingConsole ? (
+          <PendingConsole activeRequest={activeRequest} onCheckResults={checkResults} />
+        ) : null}
+
+        {showLoadingConsole ? (
+          <LoadingConsole data={data} isChecking={isChecking} />
+        ) : null}
+
+        {showDecisionConsole ? (
         <section className="console decision-console" aria-labelledby="console-title" tabIndex="-1" ref={consoleRef}>
           <div className="section-head">
             <div>
@@ -714,8 +895,159 @@ export default function App() {
             </article>
           </div>
         </section>
+        ) : null}
       </main>
+      )}
     </div>
+  );
+}
+
+function RequestWorkspace({ requestSummaries, activeRequestId, onOpenRequest, onCreateRequest }) {
+  return (
+    <main className="request-workspace" aria-labelledby="workspace-title">
+      <section className="workspace-hero">
+        <div>
+          <p className="eyebrow">Home</p>
+          <h2 id="workspace-title">Request workspace</h2>
+          <p>
+            Open a saved scheduling request or start a new one. Recommendations stay downstream of
+            the request details and only appear after Check results.
+          </p>
+        </div>
+        <Button type="button" className="primary-button workspace-cta" onPress={onCreateRequest}>
+          <span>New request</span>
+          <ArrowRightIcon />
+        </Button>
+      </section>
+
+      <section className="request-list-panel" aria-labelledby="saved-requests-title">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Requests</p>
+            <h3 id="saved-requests-title">Saved scheduling requests</h3>
+          </div>
+          <span className="request-count">{requestSummaries.length} requests</span>
+        </div>
+        <div className="request-list">
+          {requestSummaries.map((item) => (
+            <RequestCard
+              key={item.record.id}
+              item={item}
+              isActive={item.record.id === activeRequestId}
+              onOpenRequest={onOpenRequest}
+            />
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function RequestCard({ item, isActive, onOpenRequest }) {
+  const { record, data, evaluation } = item;
+  const timing = requestTimingFor(data);
+
+  return (
+    <Button
+      type="button"
+      className={`request-card ${isActive ? 'is-active' : ''}`}
+      onPress={() => onOpenRequest(record.id)}
+    >
+      <div className="request-card-head">
+        <div>
+          <span>{record.id}</span>
+          <strong>{requestTitleFor(data)}</strong>
+        </div>
+        <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.label}</span>
+      </div>
+      <div className="request-card-meta">
+        <span>
+          Timing <strong>{timing}</strong>
+        </span>
+        <span>
+          Stage <strong>{data.opportunityStage}</strong>
+        </span>
+        <span>
+          Source <strong>{record.source}</strong>
+        </span>
+        <span>
+          Saved <strong>{record.savedAt}</strong>
+        </span>
+      </div>
+    </Button>
+  );
+}
+
+function WorkflowStrip({ screen }) {
+  const steps = [
+    { key: 'workspace', label: 'Request workspace' },
+    { key: 'details', label: 'Request details' },
+    { key: 'results', label: 'Decision console' }
+  ];
+  const activeIndex = screen === 'checking' ? 2 : steps.findIndex((step) => step.key === screen);
+
+  return (
+    <nav className="workflow-strip" aria-label="Scheduling request workflow">
+      {steps.map((step, index) => {
+        const stateClass = index === activeIndex ? 'is-active' : index < activeIndex ? 'is-complete' : '';
+        return (
+          <div className={`workflow-step ${stateClass}`} key={step.key}>
+            <span>{index + 1}</span>
+            <strong>{step.label}</strong>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+function PendingConsole({ activeRequest, onCheckResults }) {
+  return (
+    <section className="console pending-console" aria-labelledby="pending-console-title">
+      <div className="section-head">
+        <div>
+          <p className="eyebrow">Decision console</p>
+          <h2 id="pending-console-title">Ready to check</h2>
+        </div>
+        <span className="pill info">Pending</span>
+      </div>
+      <div className="pending-panel">
+        <strong>{activeRequest ? requestTitleFor(activeRequest.data) : 'Request loaded'}</strong>
+        <p>
+          Review or edit the request details. The readiness list, rule trace, and recommendation
+          options will generate only after Check results.
+        </p>
+        <Button type="button" className="primary-button" onPress={onCheckResults}>
+          <span>Check results</span>
+          <ArrowRightIcon />
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function LoadingConsole({ data }) {
+  return (
+    <section className="console loading-console" aria-labelledby="loading-console-title" aria-live="polite">
+      <div className="section-head">
+        <div>
+          <p className="eyebrow">Decision console</p>
+          <h2 id="loading-console-title">Checking scheduling readiness</h2>
+        </div>
+        <span className="spinner" aria-hidden="true" />
+      </div>
+      <div className="loading-copy">
+        <strong>{requestTitleFor(data)}</strong>
+        <p>Evaluating readiness, rule trace, dependency caveats, and proposal-window options.</p>
+      </div>
+      <div className="skeleton-grid" aria-hidden="true">
+        <span className="skeleton-line wide" />
+        <span className="skeleton-tile" />
+        <span className="skeleton-tile" />
+        <span className="skeleton-card" />
+        <span className="skeleton-card" />
+      </div>
+    </section>
   );
 }
 
@@ -1339,6 +1671,32 @@ function recheckTriggersFor(data) {
   if (data.reportingSendDependency && data.reportingSendDependency !== 'none') triggers.push('Reporting/SEND change or review');
   if (data.timingPrecision === 'exact') triggers.push('Specific date requested');
   return [...new Set(triggers)];
+}
+
+function requestTitleFor(data) {
+  const study = data.studyType2 || 'Study configuration pending';
+  return `${data.opportunityId || 'OPP-DRAFT'} - ${study}`;
+}
+
+function requestTimingFor(data) {
+  return formatFullDate(data.opportunityStartDate)
+    || monthLabelFromFullDate(data.rfpRequestedStartDate)
+    || monthLabelFromKey(data.rfpRequestedStartDate)
+    || data.rfpRequestedStartDate
+    || 'Timing missing';
+}
+
+function requestIdFromData(data) {
+  const opportunityId = String(data.opportunityId || '').trim();
+  if (opportunityId && opportunityId !== 'OPP-DRAFT') {
+    return opportunityId.replace(/^OPP-/, 'REQ-');
+  }
+
+  return `REQ-${Date.now().toString().slice(-6)}`;
+}
+
+function formatTimestamp(date) {
+  return `${formatDate(date)} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
 function normalizeData(data) {
