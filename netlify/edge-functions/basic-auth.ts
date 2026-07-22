@@ -1,8 +1,14 @@
 const realm = 'DSA Scheduling MVP1';
 
+declare const Netlify: {
+  env: {
+    get(name: string): string | undefined;
+  };
+} | undefined;
+
 export default async function basicAuth(request: Request, context: any) {
-  const expectedUser = context.env.get('BASIC_AUTH_USER');
-  const expectedPassword = context.env.get('BASIC_AUTH_PASSWORD');
+  const expectedUser = getEnv('BASIC_AUTH_USER');
+  const expectedPassword = getEnv('BASIC_AUTH_PASSWORD');
 
   if (!expectedUser || !expectedPassword) {
     return new Response('Authentication is not configured.', {
@@ -21,6 +27,10 @@ export default async function basicAuth(request: Request, context: any) {
   }
 
   return context.next();
+}
+
+function getEnv(name: string) {
+  return typeof Netlify === 'undefined' ? undefined : Netlify.env.get(name);
 }
 
 function unauthorized() {
