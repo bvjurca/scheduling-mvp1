@@ -196,6 +196,65 @@ const scenarioTabs = [
   { key: 'expired', label: 'Expired', statusKey: 'expired' }
 ];
 
+const initialRequestRecords = [
+  {
+    id: 'REQ-400610',
+    source: 'Saved request',
+    savedAt: '07-Jul-2026 09:12',
+    values: scenarios.happy
+  },
+  {
+    id: 'REQ-700600',
+    source: 'Draft request',
+    savedAt: '07-Jul-2026 09:40',
+    values: scenarios.missing
+  },
+  {
+    id: 'REQ-419206',
+    source: 'Needs validation',
+    savedAt: '07-Jul-2026 10:15',
+    values: scenarios.specific
+  },
+  {
+    id: 'REQ-397025',
+    source: 'Dependency review',
+    savedAt: '07-Jul-2026 10:52',
+    values: scenarios.labsci
+  },
+  {
+    id: 'REQ-398891',
+    source: 'Expired snapshot',
+    savedAt: '07-Jul-2026 11:08',
+    values: scenarios.expired
+  }
+];
+
+const newRequestDefaults = {
+  ...scenarios.happy,
+  opportunityId: 'OPP-DRAFT',
+  opportunityStage: 'Target',
+  opportunityStartDate: '',
+  rfpRequestedStartDate: '',
+  timingPrecision: 'month',
+  dateMeaning: 'unclear',
+  studyType1: '',
+  studyType2: '',
+  species: '',
+  route: 'Unknown',
+  configurationComplete: 'missing',
+  configuratorDepth: 'basic',
+  preferredSite: 'Any qualified site',
+  siteFlexibility: 'any',
+  testMaterial: 'unknown',
+  testMaterialDate: '',
+  labsciRequired: 'none',
+  labsciTiming: 'not_applicable',
+  reportingSendDependency: 'unknown',
+  reportingSendTargetDate: '',
+  contextNotes: '',
+  userCannotResolve: false
+};
+
 const options = {
   opportunityStage: ['Target', 'Qualify', 'Proposal & Price', 'Budgetary', 'Negotiate', 'Forecast & commit', 'Closed Won'].map(toOption),
   timingPrecision: [
@@ -279,6 +338,9 @@ const options = {
 };
 
 export default function App() {
+  const [view, setView] = useState('workspace');
+  const [requestRecords, setRequestRecords] = useState(initialRequestRecords);
+  const [activeRequestId, setActiveRequestId] = useState(null);
   const [formData, setFormData] = useState(scenarios.happy);
   const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
   const [draftStatus, setDraftStatus] = useState('');
@@ -286,6 +348,16 @@ export default function App() {
 
   const data = normalizeData(formData);
   const evaluation = useMemo(() => evaluate(data), [data]);
+  const requestSummaries = useMemo(() => {
+    return requestRecords.map((record) => {
+      const recordData = normalizeData(record.values);
+      return {
+        record,
+        data: recordData,
+        evaluation: evaluate(recordData)
+      };
+    });
+  }, [requestRecords]);
   const selectedRecommendation = evaluation.recommendations.find((card) => card.id === selectedRecommendationId);
   const preferredSiteDisabled = data.siteFlexibility === 'any';
   const rfpTiming = rfpTimingProps(data.timingPrecision);
@@ -320,18 +392,56 @@ export default function App() {
 
   function saveDraft() {
     const savedAt = new Date();
+    const recordId = activeRequestId || requestIdFromData(data);
+    const savedRecord = {
+      id: recordId,
+      source: activeRequestId ? 'Saved request' : 'New draft',
+      savedAt: formatTimestamp(savedAt),
+      values: data
+    };
     const payload = {
       savedAt: savedAt.toISOString(),
       values: data,
       selectedRecommendationId
     };
 
+    setRequestRecords((current) => {
+      const hasRecord = current.some((record) => record.id === recordId);
+      return hasRecord
+        ? current.map((record) => (record.id === recordId ? savedRecord : record))
+        : [savedRecord, ...current];
+    });
+    setActiveRequestId(recordId);
+
     try {
       localStorage.setItem('dsaSchedulingMvp1Draft', JSON.stringify(payload));
-      setDraftStatus(`Saved ${savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. No SFDC writeback.`);
+      setDraftStatus(`Saved ${savedRecord.savedAt}. No SFDC writeback.`);
     } catch {
       setDraftStatus('Draft kept in this session only. No SFDC writeback.');
     }
+  }
+
+  function openRequest(requestId) {
+    const request = requestRecords.find((record) => record.id === requestId);
+    if (!request) return;
+
+    setActiveRequestId(request.id);
+    setFormData(request.values);
+    setSelectedRecommendationId(null);
+    setDraftStatus('');
+    setView('details');
+  }
+
+  function createRequest() {
+    setActiveRequestId(null);
+    setFormData(newRequestDefaults);
+    setSelectedRecommendationId(null);
+    setDraftStatus('');
+    setView('details');
+  }
+
+  function goHome() {
+    setView('workspace');
   }
 
   function checkResults() {
@@ -343,8 +453,26 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <h1>Scheduling MVP1 (Commercial) - DEMO DATA ONLY</h1>
+        {view !== 'workspace' ? (
+          <div className="topbar-actions">
+            <Button type="button" className="ghost-button" onPress={goHome}>
+              Home
+            </Button>
+            <Button type="button" className="ghost-button" onPress={goHome}>
+              &lt;-- Back
+            </Button>
+          </div>
+        ) : null}
       </header>
 
+      {view === 'workspace' ? (
+        <RequestWorkspace
+          requestSummaries={requestSummaries}
+          activeRequestId={activeRequestId}
+          onOpenRequest={openRequest}
+          onCreateRequest={createRequest}
+        />
+      ) : (
       <main className="demo-grid">
         <section className="wizard" aria-labelledby="wizard-title">
           <div className="section-head">
@@ -715,7 +843,83 @@ export default function App() {
           </div>
         </section>
       </main>
+      )}
     </div>
+  );
+}
+
+function RequestWorkspace({ requestSummaries, activeRequestId, onOpenRequest, onCreateRequest }) {
+  return (
+    <main className="request-workspace" aria-labelledby="workspace-title">
+      <section className="workspace-hero">
+        <div>
+          <p className="eyebrow">Home</p>
+          <h2 id="workspace-title">Request workspace</h2>
+          <p>
+            Open a saved scheduling request or start a new one. The request opens directly into the
+            current wizard and decision console view.
+          </p>
+        </div>
+        <Button type="button" className="primary-button workspace-cta" onPress={onCreateRequest}>
+          <span>New request</span>
+          <ArrowRightIcon />
+        </Button>
+      </section>
+
+      <section className="request-list-panel" aria-labelledby="saved-requests-title">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Requests</p>
+            <h3 id="saved-requests-title">Saved scheduling requests</h3>
+          </div>
+          <span className="request-count">{requestSummaries.length} requests</span>
+        </div>
+        <div className="request-list">
+          {requestSummaries.map((item) => (
+            <RequestCard
+              key={item.record.id}
+              item={item}
+              isActive={item.record.id === activeRequestId}
+              onOpenRequest={onOpenRequest}
+            />
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function RequestCard({ item, isActive, onOpenRequest }) {
+  const { record, data, evaluation } = item;
+
+  return (
+    <Button
+      type="button"
+      className={`request-card ${isActive ? 'is-active' : ''}`}
+      onPress={() => onOpenRequest(record.id)}
+    >
+      <div className="request-card-head">
+        <div>
+          <span>{record.id}</span>
+          <strong>{requestTitleFor(data)}</strong>
+        </div>
+        <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.label}</span>
+      </div>
+      <div className="request-card-meta">
+        <span>
+          Timing <strong>{requestTimingFor(data)}</strong>
+        </span>
+        <span>
+          Stage <strong>{data.opportunityStage}</strong>
+        </span>
+        <span>
+          Source <strong>{record.source}</strong>
+        </span>
+        <span>
+          Saved <strong>{record.savedAt}</strong>
+        </span>
+      </div>
+    </Button>
   );
 }
 
@@ -1339,6 +1543,31 @@ function recheckTriggersFor(data) {
   if (data.reportingSendDependency && data.reportingSendDependency !== 'none') triggers.push('Reporting/SEND change or review');
   if (data.timingPrecision === 'exact') triggers.push('Specific date requested');
   return [...new Set(triggers)];
+}
+
+function requestTitleFor(data) {
+  return `${data.opportunityId || 'OPP-DRAFT'} - ${data.studyType2 || 'Study configuration pending'}`;
+}
+
+function requestTimingFor(data) {
+  return formatFullDate(data.opportunityStartDate)
+    || monthLabelFromFullDate(data.rfpRequestedStartDate)
+    || monthLabelFromKey(data.rfpRequestedStartDate)
+    || data.rfpRequestedStartDate
+    || 'Timing missing';
+}
+
+function requestIdFromData(data) {
+  const opportunityId = String(data.opportunityId || '').trim();
+  if (opportunityId && opportunityId !== 'OPP-DRAFT') {
+    return opportunityId.replace(/^OPP-/, 'REQ-');
+  }
+
+  return `REQ-${Date.now().toString().slice(-6)}`;
+}
+
+function formatTimestamp(date) {
+  return `${formatDate(date)} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
 function normalizeData(data) {
