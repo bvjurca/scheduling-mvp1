@@ -100,6 +100,27 @@ const checks = [
     ]
   },
   {
+    path: '../netlify/edge-functions/basic-auth.ts',
+    minBytes: 1000,
+    requiredText: [
+      "getEnv('BASIC_AUTH_USER')",
+      "getEnv('BASIC_AUTH_PASSWORD')",
+      'Netlify.env.get',
+      'WWW-Authenticate',
+      'context.next()',
+      'safeEqual'
+    ]
+  },
+  {
+    path: '../netlify.toml',
+    minBytes: 200,
+    requiredText: [
+      '[[edge_functions]]',
+      'path = "/*"',
+      'function = "basic-auth"'
+    ]
+  },
+  {
     path: '../docs/ui-input-decision-rationale.md',
     minBytes: 10000,
     requiredText: [
@@ -140,6 +161,11 @@ for (const check of checks) {
 const appSource = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
 if (appSource.includes('type="month"') || appSource.includes("type='month'")) {
   throw new Error('Native month inputs should not be used; use React Aria-styled timing controls.');
+}
+
+const edgeFunctionSource = readFileSync(new URL('../netlify/edge-functions/basic-auth.ts', import.meta.url), 'utf8');
+if (edgeFunctionSource.includes('context.env')) {
+  throw new Error('Netlify Edge Function must use Netlify.env, not context.env.');
 }
 
 for (const check of forbiddenTextChecks) {
