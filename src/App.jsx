@@ -458,9 +458,6 @@ export default function App() {
             <Button type="button" className="ghost-button" onPress={goHome}>
               Home
             </Button>
-            <Button type="button" className="ghost-button" onPress={goHome}>
-              &lt;-- Back
-            </Button>
           </div>
         ) : null}
       </header>
@@ -853,12 +850,7 @@ function RequestWorkspace({ requestSummaries, activeRequestId, onOpenRequest, on
     <main className="request-workspace" aria-labelledby="workspace-title">
       <section className="workspace-hero">
         <div>
-          <p className="eyebrow">Home</p>
-          <h2 id="workspace-title">Request workspace</h2>
-          <p>
-            Open a saved scheduling request or start a new one. The request opens directly into the
-            current wizard and decision console view.
-          </p>
+          <h2 id="workspace-title">Request workspace</h2>       
         </div>
         <Button type="button" className="primary-button workspace-cta" onPress={onCreateRequest}>
           <span>New request</span>
