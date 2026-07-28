@@ -25,7 +25,9 @@ const checks = [
     minBytes: 30000,
     requiredText: [
       'react-aria-components',
-      'Scheduling MVP1 (Commercial) - DEMO DATA ONLY',
+      'Select prototype view',
+      'Scheduling MVP1 - SFDC Opportunity View',
+      'LT Commercial Vision - DEMO DATA ONLY',
       'Opportunity Start Date',
       'Primary timing date for the >4 months rule',
       'Decision console',

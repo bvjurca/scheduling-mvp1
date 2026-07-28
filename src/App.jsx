@@ -255,6 +255,32 @@ const newRequestDefaults = {
   userCannotResolve: false
 };
 
+const mvp1Defaults = {
+  ...scenarios.happy,
+  opportunityId: 'OPP-400610',
+  opportunityStage: 'Negotiate',
+  opportunityStartDate: '15-Feb-2027',
+  rfpRequestedStartDate: 'Feb-2027',
+  timingPrecision: 'month',
+  dateMeaning: 'in_vivo',
+  studyType1: 'Toxicology',
+  studyType2: 'General tox',
+  species: 'rat',
+  route: 'Oral gavage',
+  configurationComplete: 'complete',
+  configuratorDepth: 'configured',
+  preferredSite: 'Any qualified site',
+  siteFlexibility: 'any',
+  testMaterial: 'available',
+  testMaterialDate: '01-Nov-2026',
+  labsciRequired: 'none',
+  labsciTiming: 'not_applicable',
+  reportingSendDependency: 'none',
+  reportingSendTargetDate: '',
+  contextNotes: 'Customer is open to any qualified site if timing improves. Commercial needs proposal-window language only.',
+  userCannotResolve: false
+};
+
 const options = {
   opportunityStage: ['Target', 'Qualify', 'Proposal & Price', 'Budgetary', 'Negotiate', 'Forecast & commit', 'Closed Won'].map(toOption),
   timingPrecision: [
@@ -338,6 +364,7 @@ const options = {
 };
 
 export default function App() {
+  const [experience, setExperience] = useState(null);
   const [view, setView] = useState('workspace');
   const [requestRecords, setRequestRecords] = useState(initialRequestRecords);
   const [activeRequestId, setActiveRequestId] = useState(null);
@@ -444,22 +471,45 @@ export default function App() {
     setView('workspace');
   }
 
+  function returnToEntry() {
+    setExperience(null);
+    setView('workspace');
+  }
+
+  function chooseExperience(nextExperience) {
+    setExperience(nextExperience);
+    setView('workspace');
+  }
+
   function checkResults() {
     consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     consoleRef.current?.focus({ preventScroll: true });
   }
 
+  if (!experience) {
+    return (
+      <EntryLanding onChooseExperience={chooseExperience} />
+    );
+  }
+
+  if (experience === 'mvp1') {
+    return <Mvp1Experience onHome={returnToEntry} />;
+  }
+
   return (
     <div className="app">
       <header className="topbar">
-        <h1>Scheduling MVP1 (Commercial) - DEMO DATA ONLY</h1>
-        {view !== 'workspace' ? (
-          <div className="topbar-actions">
+        <h1>LT Commercial Vision - DEMO DATA ONLY</h1>
+        <div className="topbar-actions">
+          {view !== 'workspace' ? (
             <Button type="button" className="ghost-button" onPress={goHome}>
-              Home
+              &lt;-- Back
             </Button>
-          </div>
-        ) : null}
+          ) : null}
+          <Button type="button" className="ghost-button" onPress={returnToEntry}>
+            Home
+          </Button>
+        </div>
       </header>
 
       {view === 'workspace' ? (
@@ -842,6 +892,508 @@ export default function App() {
       </main>
       )}
     </div>
+  );
+}
+
+function EntryLanding({ onChooseExperience }) {
+  return (
+    <div className="app entry-app">
+      <main className="entry-screen" aria-labelledby="entry-title">
+        <div className="entry-heading">
+          <p className="eyebrow">Commercial Scheduling</p>
+        </div>
+
+        <div className="entry-options">
+          <Button type="button" className="entry-card" onPress={() => onChooseExperience('mvp1')}>
+            <strong>MVP1</strong>
+            <p>Reduced to the agreed &gt;4 months, configuration completeness, site capability, lead-time snapshot, and Central Scheduling off-ramp.</p>
+          </Button>
+          <Button type="button" className="entry-card" onPress={() => onChooseExperience('vision')}>
+            <strong>Long Term Vision</strong>
+            <p>Existing requests workspace, full wizard, readiness console, recommendations, rule trace, and packet view.</p>
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Mvp1Experience({ onHome }) {
+  const [formData, setFormData] = useState(mvp1Defaults);
+  const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
+  const consoleRef = useRef(null);
+  const data = normalizeData(formData);
+  const evaluation = useMemo(() => evaluate(data), [data]);
+  const selectedRecommendation = evaluation.recommendations.find((card) => card.id === selectedRecommendationId);
+  const preferredSiteDisabled = data.siteFlexibility === 'any';
+
+  function updateField(name, value) {
+    setSelectedRecommendationId(null);
+    setFormData((current) => {
+      const next = { ...current, [name]: value };
+
+      if (name === 'siteFlexibility') {
+        next.preferredSite = value === 'any' ? 'Any qualified site' : current.preferredSite === 'Any qualified site' ? 'Mattawan' : current.preferredSite;
+      }
+
+      if (name === 'reportingSendDependency' && !reportingSendRequiresTargetDate(value)) {
+        next.reportingSendTargetDate = '';
+      }
+
+      return next;
+    });
+  }
+
+  function checkResults() {
+    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    consoleRef.current?.focus({ preventScroll: true });
+  }
+
+  return (
+    <div className="app mvp1-app">
+      <header className="topbar">
+        <h1>Scheduling MVP1 - SFDC Opportunity View</h1>
+        <div className="topbar-actions">
+          <Button type="button" className="ghost-button" onPress={onHome}>
+            Home
+          </Button>
+        </div>
+      </header>
+
+      <main className="sfdc-shell" aria-labelledby="mvp1-record-title">
+        <nav className="sfdc-nav" aria-label="Salesforce navigation">
+          <strong>RACE</strong>
+          <span>Home</span>
+          <span>Accounts</span>
+          <span className="is-active">Opportunities</span>
+          <span>Studies</span>
+          <span>Reports</span>
+          <span>Dashboards</span>
+        </nav>
+
+        <section className="sfdc-record-header">
+          <div>
+            <span className="record-type">Opportunity</span>
+            <h2 id="mvp1-record-title">Oculis_OCS-05_PPND BID IV inf - Split</h2>
+          </div>
+          <div className="record-actions">
+            <Button type="button" className="ghost-button">C &amp; M View</Button>
+            <Button type="button" className="ghost-button">Create Test Material</Button>
+            <Button type="button" className="ghost-button">Proposal Builder</Button>
+          </div>
+        </section>
+
+        <div className="sfdc-highlight-row" aria-label="Opportunity summary">
+          <SummaryField label="Account" value="Neurocol Operations Sarl" />
+          <SummaryField label="Close Date" value="29-Jan-2027" />
+          <SummaryField label="Amount" value="EUR 941,341.00" />
+          <SummaryField label="Opportunity Owner" value="Nitin Sabherwal" />
+          <SummaryField label="Opportunity #" value={data.opportunityId} />
+        </div>
+
+        <div className="sfdc-stage-path" aria-label="Opportunity stage">
+          {['Target', 'Qualify', 'Proposal & Price', 'Budgetary', 'Negotiate', 'Forecast & commit', 'Closed'].map((stage) => (
+            <span key={stage} className={stage === data.opportunityStage || (stage === 'Closed' && data.opportunityStage === 'Closed Won') ? 'is-current' : ''}>
+              {stage}
+            </span>
+          ))}
+        </div>
+
+        <div className="sfdc-content-grid">
+          <section className="sfdc-main-column">
+            <section className="mvp1-panel" aria-labelledby="mvp1-panel-title" tabIndex="-1" ref={consoleRef}>
+              <div className="section-head">
+                <div>
+                  <p className="eyebrow">Commercial Scheduling MVP1</p>
+                  <h2 id="mvp1-panel-title">Scheduling readiness</h2>
+                </div>
+                <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.label}</span>
+              </div>
+
+              <div className={`outcome-banner ${evaluation.outcome.level}`}>
+                <h3>{evaluation.outcome.title}</h3>
+                <p>{evaluation.outcome.copy}</p>
+              </div>
+
+              <div className="mvp1-status-strip" aria-label="MVP1 decision checks">
+                <Mvp1StatusTile label="Opportunity Start Date" value={formatFullDate(data.opportunityStartDate) || 'Missing'} level={formatFullDate(data.opportunityStartDate) ? 'good' : 'bad'} />
+                <Mvp1StatusTile label="Lead time gate" value={leadTimeGateLabel(data)} level={leadTimeGateLevel(data)} />
+                <Mvp1StatusTile label="Configuration" value={data.configurationComplete === 'complete' ? 'Present' : 'Needs data'} level={data.configurationComplete === 'complete' ? 'good' : 'bad'} />
+                <Mvp1StatusTile label="Validity" value={`Until ${formatDate(evaluation.expiryDate)}`} level={evaluation.triage.includes('offer_expired') ? 'bad' : 'good'} />
+              </div>
+
+              <div className="mvp1-reduced-grid">
+                <article className="mvp1-source-card">
+                  <h3>SFDC source context</h3>
+                  <dl className="source-list">
+                    <div>
+                      <dt>Study Type 1</dt>
+                      <dd>{data.studyType1 || 'Missing'}</dd>
+                    </div>
+                    <div>
+                      <dt>Study Type 2</dt>
+                      <dd>{data.studyType2 || 'Missing'}</dd>
+                    </div>
+                    <div>
+                      <dt>Species / test system</dt>
+                      <dd>{data.species || 'Missing'}</dd>
+                    </div>
+                    <div>
+                      <dt>Route of administration</dt>
+                      <dd>{data.route || 'Missing'}</dd>
+                    </div>
+                    <div>
+                      <dt>Specialized endpoint / housing</dt>
+                      <dd>{configuratorDepthLabel(data.configuratorDepth)}</dd>
+                    </div>
+                    <div>
+                      <dt>Requested timing</dt>
+                      <dd>{precisionLabel(data.timingPrecision)}</dd>
+                    </div>
+                    <div>
+                      <dt>Data transformed using DOT</dt>
+                      <dd>Site capability, LabSci capability, lead times, general timing, and SFDC config</dd>
+                    </div>
+                    <div>
+                      <dt>Decision contract</dt>
+                      <dd>Proposal window only</dd>
+                    </div>
+                    <div>
+                      <dt>Commitment</dt>
+                      <dd>No capacity hold</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article className="mvp1-edit-card">
+                  <h3>Resolve SFDC StudyID fields</h3>
+                  <div className="mvp1-field-grid">
+                    <DatePickerField
+                      label="Opportunity Start Date"
+                      name="opportunityStartDate"
+                      value={data.opportunityStartDate}
+                      placeholder="DD-MMM-YYYY"
+                      info="Primary timing date for the >4 months rule."
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Study Type L1"
+                      name="studyType1"
+                      value={data.studyType1}
+                      options={options.studyType1}
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Study Type L2"
+                      name="studyType2"
+                      value={data.studyType2}
+                      options={options.studyType2}
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Species"
+                      name="species"
+                      value={data.species}
+                      options={options.species}
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Route of administration"
+                      name="route"
+                      value={data.route}
+                      options={options.route}
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Specialized endpoint / housing"
+                      name="configuratorDepth"
+                      value={data.configuratorDepth}
+                      options={options.configuratorDepth}
+                      info="Represents the diagram's specialized endpoint/housing configuration signal. This remains SFDC configuration metadata, not operational room scheduling."
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Site flexibility"
+                      name="siteFlexibility"
+                      value={data.siteFlexibility}
+                      options={options.siteFlexibility}
+                      onChange={updateField}
+                    />
+                    <SelectField
+                      label="Preferred site"
+                      name="preferredSite"
+                      value={data.preferredSite}
+                      options={options.preferredSite}
+                      disabled={preferredSiteDisabled}
+                      info={preferredSiteDisabled ? 'Disabled because Site flexibility is Any qualified site.' : 'Used when a site preference exists.'}
+                      onChange={updateField}
+                    />
+                  </div>
+                  <div className="wizard-actions mvp1-actions">
+                    <Button type="button" className="primary-button" onPress={checkResults}>
+                      <span>Check results</span>
+                      <ArrowRightIcon />
+                    </Button>
+                  </div>
+                </article>
+              </div>
+
+              <Mvp1DecisionOutput
+                data={data}
+                evaluation={evaluation}
+                selectedRecommendation={selectedRecommendation}
+                selectedRecommendationId={selectedRecommendationId}
+                onSelectRecommendation={setSelectedRecommendationId}
+              />
+            </section>
+
+            <SfdcRelatedStudies data={data} />
+            <SfdcOpportunityInformation data={data} />
+          </section>
+
+          <aside className="sfdc-side-column">
+            <SfdcSideCard title="Present SOW">
+              <Button type="button" className="primary-button side-button">Proposal Builder</Button>
+              <Button type="button" className="ghost-button side-button">Present</Button>
+            </SfdcSideCard>
+            <SfdcSideCard title="Request for Proposals (Opportunity) (1)">
+              <a href="#mvp1-panel-title">RFP-046306</a>
+              <p>Client objective, service line, inquiry type, and requested timing context.</p>
+            </SfdcSideCard>
+            <SfdcSideCard title="SFDC configuration">
+              <a href="#mvp1-panel-title">StudyID 32078744</a>
+              <p>Study type, species, route, site selection, and specialized endpoint/housing metadata power MVP1.</p>
+            </SfdcSideCard>
+            <SfdcSideCard title="Stage History (3)">
+              <p>Target, Negotiate, Forecast &amp; commit tracked in SFDC.</p>
+            </SfdcSideCard>
+          </aside>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Mvp1DecisionOutput({ data, evaluation, selectedRecommendation, selectedRecommendationId, onSelectRecommendation }) {
+  return (
+    <div className="mvp1-output-grid">
+      <article className="mvp1-output-panel mvp1-output-wide">
+        <div className="panel-head">
+          <h3>Recommendations</h3>
+          <p className="snapshot-meta">
+            Last checked <strong>{formatFullDate(data.snapshotDate) || 'Unknown'} | valid until {formatDate(evaluation.expiryDate)} | no capacity hold</strong>
+          </p>
+        </div>
+
+        {evaluation.recommendations.length > 0 ? (
+          <div className={`selection-state ${selectedRecommendation ? 'has-selection' : ''}`} aria-live="polite">
+            {selectedRecommendation ? (
+              <span>
+                <strong>Selected snapshot option:</strong> {selectedRecommendation.site} / {selectedRecommendation.month}. This is UI state only.
+              </span>
+            ) : (
+              <span>No option selected. Selecting an option does not route, reserve, or commit capacity.</span>
+            )}
+          </div>
+        ) : null}
+
+        {evaluation.recommendations.length > 0 ? (
+          <RadioGroup
+            aria-label="MVP1 recommendation options"
+            className="recommendations"
+            value={selectedRecommendationId || ''}
+            onChange={onSelectRecommendation}
+          >
+            {evaluation.recommendations.map((card) => (
+              <RecommendationCard key={card.id} card={card} />
+            ))}
+          </RadioGroup>
+        ) : (
+          <div className="empty-card">
+            <strong>No recommendation generated</strong>
+            <p>Complete missing data, change site flexibility, or send the packet to Central Scheduling.</p>
+          </div>
+        )}
+      </article>
+
+      <article className="mvp1-output-panel mvp1-output-wide mvp1-response-panel">
+        <div className="panel-head">
+          <h3>After option selection</h3>
+          <p className="snapshot-meta">
+            Customer response <strong>Awaiting response</strong>
+          </p>
+        </div>
+        <div className="mvp1-response-steps">
+          <div>
+            <span className="dot good" />
+            <strong>Customer says yes</strong>
+            <p>Commercial proceeds with the selected proposal window. It still creates no capacity hold.</p>
+          </div>
+          <div>
+            <span className="dot warn" />
+            <strong>Client says no</strong>
+            <p>Modify selections and recalculate options before sending a different window.</p>
+          </div>
+          <div>
+            <span className="dot bad" />
+            <strong>Response after expiry</strong>
+            <p>Recheck the recommendation because the snapshot is no longer current.</p>
+          </div>
+        </div>
+      </article>
+
+      <article className="mvp1-output-panel">
+        <div className="panel-title-row">
+          <p className="eyebrow">Rule trace</p>
+        </div>
+        <div className="trace">
+          {mvp1TraceItems(evaluation.trace).slice(0, 6).map((item) => (
+            <div className="trace-item" key={`${item.rule}-${item.copy}`}>
+              <div className="item-title">
+                <strong>{item.rule}</strong>
+                <span className={`pill ${item.level}`}>{item.status.toUpperCase()}</span>
+              </div>
+              <p>{item.copy}</p>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <article className="mvp1-output-panel">
+        <div className="panel-title-row">
+          <p className="eyebrow">Central Scheduling off-ramp</p>
+          <span className="panel-icon-group" role="img" aria-label="Open packet in new tab">
+            <ExternalLinkIcon />
+          </span>
+        </div>
+        <div className="packet">
+          <div className="packet-item">
+            <strong>Reason codes</strong>
+            <p>{(evaluation.triage.length ? evaluation.triage : ['none']).map(reasonCodeLabel).join(', ')}</p>
+          </div>
+          <div className="packet-item">
+            <strong>Packet includes</strong>
+            <p>Opportunity ID, StudyID, site selection, target start date, configuration summary, missing fields, and notes.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function mvp1TraceItems(trace) {
+  return trace.filter((item) => item.rule !== 'Reporting/SEND dependency');
+}
+
+function leadTimeGateLabel(data) {
+  const start = parseFullDate(data.opportunityStartDate);
+  if (!start) return 'Missing';
+  return start > addMonths(today, 4) ? '>4 months out' : 'Off-ramp';
+}
+
+function leadTimeGateLevel(data) {
+  const start = parseFullDate(data.opportunityStartDate);
+  if (!start) return 'bad';
+  return start > addMonths(today, 4) ? 'good' : 'bad';
+}
+
+function SummaryField({ label, value }) {
+  return (
+    <div className="summary-field">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function Mvp1StatusTile({ label, value, level }) {
+  return (
+    <div className={`mvp1-status-tile ${level}`}>
+      <span className={`dot ${level}`} />
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </div>
+    </div>
+  );
+}
+
+function SfdcRelatedStudies({ data }) {
+  return (
+    <section className="sfdc-card">
+      <div className="sfdc-card-head">
+        <h3>Studies (2)</h3>
+        <span>Related</span>
+      </div>
+      <div className="sfdc-table" role="table" aria-label="Related studies">
+        <div role="row" className="sfdc-table-head">
+          <span role="columnheader">Study Name</span>
+          <span role="columnheader">Species</span>
+          <span role="columnheader">Study ID</span>
+          <span role="columnheader">CRL Site</span>
+          <span role="columnheader">Stage</span>
+        </div>
+        <div role="row">
+          <a href="#mvp1-panel-title" role="cell">{data.studyType2 || 'Study configuration pending'}</a>
+          <span role="cell">{data.species || 'Missing'}</span>
+          <span role="cell">CRL-662818</span>
+          <span role="cell">{data.preferredSite === 'Any qualified site' ? 'TBD' : data.preferredSite}</span>
+          <span role="cell">Proposal</span>
+        </div>
+        <div role="row">
+          <a href="#mvp1-panel-title" role="cell">Bioanalysis support</a>
+          <span role="cell">Not applicable</span>
+          <span role="cell">CRL-662821</span>
+          <span role="cell">TBD</span>
+          <span role="cell">Draft</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SfdcOpportunityInformation({ data }) {
+  return (
+    <section className="sfdc-card">
+      <div className="sfdc-card-head">
+        <h3>Opportunity Information</h3>
+      </div>
+      <dl className="sfdc-detail-grid">
+        <div>
+          <dt>Opportunity Name</dt>
+          <dd>Oculis_OCS-05_PPND BID IV inf - Split</dd>
+        </div>
+        <div>
+          <dt>Opportunity Currency</dt>
+          <dd>EUR - Euro</dd>
+        </div>
+        <div>
+          <dt>Stage</dt>
+          <dd>{data.opportunityStage}</dd>
+        </div>
+        <div>
+          <dt>Opportunity Start Date</dt>
+          <dd>{formatFullDate(data.opportunityStartDate) || 'Missing'}</dd>
+        </div>
+        <div>
+          <dt>Project Scheduling Requirements</dt>
+          <dd>{data.contextNotes || 'No additional requirements captured.'}</dd>
+        </div>
+        <div>
+          <dt>Proposal Delivery</dt>
+          <dd>{data.timingPrecision === 'exact' ? 'Off-ramp' : 'Proposal window'}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function SfdcSideCard({ title, children }) {
+  return (
+    <section className="sfdc-side-card">
+      <h3>{title}</h3>
+      <div>{children}</div>
+    </section>
   );
 }
 
@@ -1638,6 +2190,15 @@ function precisionLabel(value) {
     exact: 'Specific date'
   };
   return labels[value] || value;
+}
+
+function configuratorDepthLabel(value) {
+  const labels = {
+    basic: 'Standard endpoint / housing',
+    configured: 'Configured endpoint / housing',
+    complex: 'Specialized endpoint / housing'
+  };
+  return labels[value] || 'Unknown / needs config';
 }
 
 function reasonCodeLabel(code) {
