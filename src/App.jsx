@@ -981,7 +981,7 @@ function Mvp1Experience({ onHome }) {
   return (
     <div className="app mvp1-app">
       <header className="topbar">
-        <h1>Scheduling MVP1 - SFDC Study View</h1>
+        <h1>SFDC Wireframe</h1>
         <div className="topbar-actions">
           <Button type="button" className="ghost-button" onPress={onHome}>
             Home
@@ -1049,8 +1049,8 @@ function Mvp1Experience({ onHome }) {
                 <h4>Information</h4>
                 <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
                 <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
-                <div className="wire-row date-highlight-row">
-                  <div className="date-site-control-grid">
+                <div className={`wire-row date-highlight-row ${selectedSite ? 'has-site' : ''}`}>
+                  <div className={`date-site-control-grid ${selectedSite ? 'has-site' : ''}`}>
                     <DatePickerField
                       label="Start Date"
                       name="opportunityStartDate"
