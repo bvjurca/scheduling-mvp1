@@ -25,7 +25,12 @@ const checks = [
     minBytes: 30000,
     requiredText: [
       'react-aria-components',
-      'Scheduling MVP1 - SFDC Opportunity View',
+      'Scheduling MVP1 - SFDC Study View',
+      'Check site recommendations',
+      'Recommended sites',
+      'CRL Site',
+      'Missing information',
+      'Valid as of',
       'LT Commercial Vision - DEMO DATA ONLY',
       'Opportunity Start Date',
       'Primary timing date for the >4 months rule',
