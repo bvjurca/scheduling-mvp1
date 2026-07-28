@@ -942,6 +942,7 @@ function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
   const [selectedSite, setSelectedSite] = useState('');
   const [selectedSiteSource, setSelectedSiteSource] = useState('');
+  const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
@@ -952,6 +953,7 @@ function Mvp1Experience({ onHome }) {
       setStudyStartDate(value);
       setSelectedSite('');
       setSelectedSiteSource('');
+      setHasCheckedRecommendations(false);
     }
   }
 
@@ -959,9 +961,14 @@ function Mvp1Experience({ onHome }) {
     setStudyStartDate('');
     setSelectedSite('');
     setSelectedSiteSource('');
+    setHasCheckedRecommendations(false);
   }
 
   function checkSiteRecommendations() {
+    if (!parseFullDate(studyStartDate)) return;
+    setSelectedSite('');
+    setSelectedSiteSource('');
+    setHasCheckedRecommendations(true);
     setRecommendationSnapshot((current) => ({
       checkedAt: new Date(),
       variant: current.variant + 1
@@ -1088,6 +1095,7 @@ function Mvp1Experience({ onHome }) {
             <Mvp1DecisionOutput
               evaluation={evaluation}
               selectedSite={selectedSite}
+              hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
               onSelectSite={selectRecommendedSite}
               onCheckRecommendations={checkSiteRecommendations}
@@ -1102,7 +1110,11 @@ function Mvp1Experience({ onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ evaluation, selectedSite, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
+function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendations, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
+  const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
+  const hasRecommendationList = hasCheckedRecommendations && evaluation.recommendations.length > 0;
+  const showCheckedState = hasCheckedRecommendations && !isMissingStartDate;
+  const showCheckAction = !isMissingStartDate && (!hasCheckedRecommendations || hasRecommendationList);
   const panelLevel = isSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = isSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
   const panelCopy = isSiteOffRamp
@@ -1113,20 +1125,33 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, isSiteOffRamp, onSelectS
   return (
     <SfdcSideCard title="Recommended sites" className="mvp1-recommendations-card">
       <div className="mvp1-native-panel">
-        <div className={`mvp1-native-status ${panelLevel}`}>
-          {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
-          <p>{panelCopy}</p>
-        </div>
+        {showCheckedState ? (
+          <div className={`mvp1-native-status ${panelLevel}`}>
+            {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
+            <p>{panelCopy}</p>
+          </div>
+        ) : null}
 
-        <div className="valid-as-of">
-          Valid as of <strong>{evaluation.validAsOf}</strong>
-        </div>
+        {hasRecommendationList ? (
+          <div className="valid-as-of">
+            Valid as of <strong>{evaluation.validAsOf}</strong>
+          </div>
+        ) : null}
 
-        <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
-          Check site recommendations
-        </Button>
+        {!hasRecommendationList ? (
+          <div className="mvp1-empty-state">
+            <strong>{isMissingStartDate ? evaluation.emptyTitle : 'No site recommendations loaded'}</strong>
+            <p>{isMissingStartDate ? evaluation.emptyCopy : 'Check the current Study Start Date to load ranked site/month options.'}</p>
+          </div>
+        ) : null}
 
-        {evaluation.recommendations.length > 0 ? (
+        {showCheckAction ? (
+          <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
+            {hasRecommendationList ? 'Recheck' : 'Check site recommendations'}
+          </Button>
+        ) : null}
+
+        {hasRecommendationList ? (
           <RadioGroup
             className="site-recommendation-list"
             aria-label="Recommended sites"
@@ -1143,14 +1168,9 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, isSiteOffRamp, onSelectS
               </div>
             ))}
           </RadioGroup>
-        ) : (
-          <div className="mvp1-empty-state">
-            <strong>{evaluation.emptyTitle}</strong>
-            <p>{evaluation.emptyCopy}</p>
-          </div>
-        )}
+        ) : null}
 
-        {evaluation.offRampReason ? (
+        {showCheckedState && evaluation.offRampReason ? (
           <div className="mvp1-offramp-note">
             <strong>Off-ramp reason</strong>
             <p>{evaluation.offRampReason}</p>
@@ -1239,7 +1259,7 @@ function evaluateMvp1DateOnly(studyStartDate, snapshot) {
       validAsOf,
       recommendations: [],
       emptyTitle: 'Missing information',
-      emptyCopy: 'Add Study Start Date in the highlighted SFDC field, then recheck site/month options.',
+      emptyCopy: 'Add Study Start Date in the highlighted SFDC field before checking site/month options.',
       offRampReason: 'MISSING_STUDY_START_DATE'
     };
   }

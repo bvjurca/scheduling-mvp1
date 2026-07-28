@@ -864,6 +864,13 @@ h3 {
   padding-top: var(--space-250);
 }
 
+.mvp1-native-panel > .mvp1-empty-state:first-child {
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radii-75);
+  background: var(--color-surface-subtle);
+  padding: var(--space-400);
+}
+
 .mvp1-empty-state strong,
 .mvp1-offramp-note strong {
   display: block;
@@ -874,6 +881,8 @@ h3 {
 
 .recommendation-refresh-button {
   width: fit-content;
+  min-height: 42px;
+  font-size: var(--font-size-2);
 }
 
 .mvp1-study-shell .sfdc-warning-bar,
