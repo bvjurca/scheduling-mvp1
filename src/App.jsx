@@ -28,9 +28,29 @@ import {
 import { parseDate } from '@internationalized/date';
 
 const today = new Date('2026-07-07T12:00:00Z');
+const mvp1AsOfDate = new Date(2026, 6, 28, 12, 9);
 const expiryBusinessDays = 5;
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const monthLookup = Object.fromEntries(monthNames.map((month, index) => [month.toLowerCase(), index]));
+const mvp1AllCrlSites = [
+  'Alderley',
+  'Ashland',
+  'Barcelona',
+  'Beerse',
+  'Cleveland',
+  'Edinburgh',
+  'Elphinstone',
+  'Evreux',
+  'Freiburg',
+  'Harrogate',
+  'Horsham',
+  'Kansas City',
+  'Laval',
+  'Leiden',
+  'Montreal',
+  'Portishead',
+  'Shrewsbury'
+];
 
 const siteCapabilities = {
   Mattawan: {
@@ -906,7 +926,7 @@ function EntryLanding({ onChooseExperience }) {
         <div className="entry-options">
           <Button type="button" className="entry-card" onPress={() => onChooseExperience('mvp1')}>
             <strong>MVP1</strong>
-            <p>Reduced to the agreed &gt;4 months, configuration completeness, site capability, lead-time snapshot, and Central Scheduling off-ramp.</p>
+            <p>Study-page insert that reads Study Start Date and returns ranked site/month options or a missing-data/off-ramp state.</p>
           </Button>
           <Button type="button" className="entry-card" onPress={() => onChooseExperience('vision')}>
             <strong>Long Term Vision</strong>
@@ -919,40 +939,49 @@ function EntryLanding({ onChooseExperience }) {
 }
 
 function Mvp1Experience({ onHome }) {
-  const [formData, setFormData] = useState(mvp1Defaults);
-  const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
-  const consoleRef = useRef(null);
-  const data = normalizeData(formData);
-  const evaluation = useMemo(() => evaluate(data), [data]);
-  const selectedRecommendation = evaluation.recommendations.find((card) => card.id === selectedRecommendationId);
-  const preferredSiteDisabled = data.siteFlexibility === 'any';
+  const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
+  const [selectedSite, setSelectedSite] = useState('');
+  const [selectedSiteSource, setSelectedSiteSource] = useState('');
+  const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
+  const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
+  const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
+  const isNonRecommendedSite = Boolean(selectedSite && (selectedSiteSource === 'all' || !selectedRecommendation));
 
   function updateField(name, value) {
-    setSelectedRecommendationId(null);
-    setFormData((current) => {
-      const next = { ...current, [name]: value };
-
-      if (name === 'siteFlexibility') {
-        next.preferredSite = value === 'any' ? 'Any qualified site' : current.preferredSite === 'Any qualified site' ? 'Mattawan' : current.preferredSite;
-      }
-
-      if (name === 'reportingSendDependency' && !reportingSendRequiresTargetDate(value)) {
-        next.reportingSendTargetDate = '';
-      }
-
-      return next;
-    });
+    if (name === 'opportunityStartDate') {
+      setStudyStartDate(value);
+      setSelectedSite('');
+      setSelectedSiteSource('');
+    }
   }
 
-  function checkResults() {
-    consoleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    consoleRef.current?.focus({ preventScroll: true });
+  function clearStartDate() {
+    setStudyStartDate('');
+    setSelectedSite('');
+    setSelectedSiteSource('');
+  }
+
+  function checkSiteRecommendations() {
+    setRecommendationSnapshot((current) => ({
+      checkedAt: new Date(),
+      variant: current.variant + 1
+    }));
+  }
+
+  function selectRecommendedSite(site) {
+    setSelectedSite(site);
+    setSelectedSiteSource('recommended');
+  }
+
+  function selectCrlSite(selection) {
+    setSelectedSite(selection.site);
+    setSelectedSiteSource(selection.source);
   }
 
   return (
     <div className="app mvp1-app">
       <header className="topbar">
-        <h1>Scheduling MVP1 - SFDC Opportunity View</h1>
+        <h1>Scheduling MVP1 - SFDC Study View</h1>
         <div className="topbar-actions">
           <Button type="button" className="ghost-button" onPress={onHome}>
             Home
@@ -960,40 +989,42 @@ function Mvp1Experience({ onHome }) {
         </div>
       </header>
 
-      <main className="sfdc-shell" aria-labelledby="mvp1-record-title">
+      <main className="sfdc-shell mvp1-study-shell" aria-labelledby="mvp1-record-title">
         <nav className="sfdc-nav" aria-label="Salesforce navigation">
+          <div className="sfdc-cloud-logo" aria-label="Salesforce">
+            <SalesforceCloudLogo />
+          </div>
           <strong>RACE</strong>
           <span>Home</span>
           <span>Accounts</span>
-          <span className="is-active">Opportunities</span>
-          <span>Studies</span>
+          <span>Opportunities</span>
+          <span className="is-active">Studies</span>
           <span>Reports</span>
           <span>Dashboards</span>
         </nav>
 
         <section className="sfdc-record-header">
           <div>
-            <span className="record-type">Opportunity</span>
-            <h2 id="mvp1-record-title">Oculis_OCS-05_PPND BID IV inf - Split</h2>
+            <span className="record-type">Study</span>
+            <h2 id="mvp1-record-title">In Vivo - Ecotoxicology Daphnia sp. Acute Immobilisation Test (OECD 202)</h2>
           </div>
           <div className="record-actions">
-            <Button type="button" className="ghost-button">C &amp; M View</Button>
-            <Button type="button" className="ghost-button">Create Test Material</Button>
-            <Button type="button" className="ghost-button">Proposal Builder</Button>
+            <Button type="button" className="ghost-button">Study Reset</Button>
+            <Button type="button" className="ghost-button">Run Costs</Button>
           </div>
         </section>
 
-        <div className="sfdc-highlight-row" aria-label="Opportunity summary">
-          <SummaryField label="Account" value="Neurocol Operations Sarl" />
-          <SummaryField label="Close Date" value="29-Jan-2027" />
-          <SummaryField label="Amount" value="EUR 941,341.00" />
-          <SummaryField label="Opportunity Owner" value="Nitin Sabherwal" />
-          <SummaryField label="Opportunity #" value={data.opportunityId} />
+        <div className="sfdc-highlight-row" aria-label="Study summary">
+          <SummaryField label="CRL Scientific Study #" value="32105468" />
+          <SummaryField label="Study ID" value="CRL-689542" />
+          <SummaryField label="Opportunity" value="MICHELIN - REACH Annex VII Ecotox studies" />
+          <SummaryField label="CRL Site" value="Hertenbosch" />
+          <SummaryField label="Study Stage" value="Complete" />
         </div>
 
-        <div className="sfdc-stage-path" aria-label="Opportunity stage">
-          {['Target', 'Qualify', 'Proposal & Price', 'Budgetary', 'Negotiate', 'Forecast & commit', 'Closed'].map((stage) => (
-            <span key={stage} className={stage === data.opportunityStage || (stage === 'Closed' && data.opportunityStage === 'Closed Won') ? 'is-current' : ''}>
+        <div className="sfdc-stage-path" aria-label="Study stage">
+          {['New', 'Outline', 'Costing', 'Complete', 'Review'].map((stage) => (
+            <span key={stage} className={stage === 'Complete' ? 'is-current' : ''}>
               {stage}
             </span>
           ))}
@@ -1001,171 +1032,68 @@ function Mvp1Experience({ onHome }) {
 
         <div className="sfdc-content-grid">
           <section className="sfdc-main-column">
-            <section className="mvp1-panel" aria-labelledby="mvp1-panel-title" tabIndex="-1" ref={consoleRef}>
-              <div className="section-head">
-                <div>
-                  <p className="eyebrow">Commercial Scheduling MVP1</p>
-                  <h2 id="mvp1-panel-title">Scheduling readiness</h2>
-                </div>
-                <span className={`pill ${evaluation.outcome.level}`}>{evaluation.outcome.label}</span>
+            <section className="sfdc-card sfdc-study-wireframe" aria-labelledby="mvp1-record-details-title">
+              <div className="sfdc-card-head">
+                <h3 id="mvp1-record-details-title">Details</h3>
+                <span>Study record</span>
               </div>
 
-              <div className={`outcome-banner ${evaluation.outcome.level}`}>
-                <h3>{evaluation.outcome.title}</h3>
-                <p>{evaluation.outcome.copy}</p>
+              <div className="sfdc-tabs" aria-label="Study tabs">
+                <span className="is-active">Details</span>
+                <span>C &amp; M</span>
+                <span>Import PS</span>
+                <span>Study Tree</span>
               </div>
 
-              <div className="mvp1-status-strip" aria-label="MVP1 decision checks">
-                <Mvp1StatusTile label="Opportunity Start Date" value={formatFullDate(data.opportunityStartDate) || 'Missing'} level={formatFullDate(data.opportunityStartDate) ? 'good' : 'bad'} />
-                <Mvp1StatusTile label="Lead time gate" value={leadTimeGateLabel(data)} level={leadTimeGateLevel(data)} />
-                <Mvp1StatusTile label="Configuration" value={data.configurationComplete === 'complete' ? 'Present' : 'Needs data'} level={data.configurationComplete === 'complete' ? 'good' : 'bad'} />
-                <Mvp1StatusTile label="Validity" value={`Until ${formatDate(evaluation.expiryDate)}`} level={evaluation.triage.includes('offer_expired') ? 'bad' : 'good'} />
-              </div>
-
-              <div className="mvp1-reduced-grid">
-                <article className="mvp1-source-card">
-                  <h3>SFDC source context</h3>
-                  <dl className="source-list">
-                    <div>
-                      <dt>Study Type 1</dt>
-                      <dd>{data.studyType1 || 'Missing'}</dd>
-                    </div>
-                    <div>
-                      <dt>Study Type 2</dt>
-                      <dd>{data.studyType2 || 'Missing'}</dd>
-                    </div>
-                    <div>
-                      <dt>Species / test system</dt>
-                      <dd>{data.species || 'Missing'}</dd>
-                    </div>
-                    <div>
-                      <dt>Route of administration</dt>
-                      <dd>{data.route || 'Missing'}</dd>
-                    </div>
-                    <div>
-                      <dt>Specialized endpoint / housing</dt>
-                      <dd>{configuratorDepthLabel(data.configuratorDepth)}</dd>
-                    </div>
-                    <div>
-                      <dt>Requested timing</dt>
-                      <dd>{precisionLabel(data.timingPrecision)}</dd>
-                    </div>
-                    <div>
-                      <dt>Data transformed using DOT</dt>
-                      <dd>Site capability, LabSci capability, lead times, general timing, and SFDC config</dd>
-                    </div>
-                    <div>
-                      <dt>Decision contract</dt>
-                      <dd>Proposal window only</dd>
-                    </div>
-                    <div>
-                      <dt>Commitment</dt>
-                      <dd>No capacity hold</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article className="mvp1-edit-card">
-                  <h3>Resolve SFDC StudyID fields</h3>
-                  <div className="mvp1-field-grid">
+              <div className="wire-section wire-section-focus">
+                <h4>Information</h4>
+                <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
+                <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
+                <div className="wire-row date-highlight-row">
+                  <div className="date-site-control-grid">
                     <DatePickerField
-                      label="Opportunity Start Date"
+                      label="Start Date"
                       name="opportunityStartDate"
-                      value={data.opportunityStartDate}
+                      value={studyStartDate}
                       placeholder="DD-MMM-YYYY"
-                      info="Primary timing date for the >4 months rule."
+                      info="Used to request a refreshed site/month recommendation snapshot. The separate site lead-time prototype handles the actual ranking logic."
                       onChange={updateField}
                     />
-                    <SelectField
-                      label="Study Type L1"
-                      name="studyType1"
-                      value={data.studyType1}
-                      options={options.studyType1}
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Study Type L2"
-                      name="studyType2"
-                      value={data.studyType2}
-                      options={options.studyType2}
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Species"
-                      name="species"
-                      value={data.species}
-                      options={options.species}
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Route of administration"
-                      name="route"
-                      value={data.route}
-                      options={options.route}
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Specialized endpoint / housing"
-                      name="configuratorDepth"
-                      value={data.configuratorDepth}
-                      options={options.configuratorDepth}
-                      info="Represents the diagram's specialized endpoint/housing configuration signal. This remains SFDC configuration metadata, not operational room scheduling."
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Site flexibility"
-                      name="siteFlexibility"
-                      value={data.siteFlexibility}
-                      options={options.siteFlexibility}
-                      onChange={updateField}
-                    />
-                    <SelectField
-                      label="Preferred site"
-                      name="preferredSite"
-                      value={data.preferredSite}
-                      options={options.preferredSite}
-                      disabled={preferredSiteDisabled}
-                      info={preferredSiteDisabled ? 'Disabled because Site flexibility is Any qualified site.' : 'Used when a site preference exists.'}
-                      onChange={updateField}
-                    />
+                    {selectedSite ? (
+                      <Mvp1CrlSiteField
+                        selectedSite={selectedSite}
+                        siteOptions={evaluation.recommendations}
+                        allSiteOptions={mvp1AllCrlSites}
+                        isOffRamp={isNonRecommendedSite}
+                        onChange={selectCrlSite}
+                      />
+                    ) : null}
                   </div>
-                  <div className="wizard-actions mvp1-actions">
-                    <Button type="button" className="primary-button" onPress={checkResults}>
-                      <span>Check results</span>
-                      <ArrowRightIcon />
-                    </Button>
-                  </div>
-                </article>
+                  <Button type="button" className="ghost-button compact-button" onPress={clearStartDate}>
+                    Clear
+                  </Button>
+                </div>
+                <SfdcWireRow label="Study status" value="Complete" muted />
               </div>
 
-              <Mvp1DecisionOutput
-                data={data}
-                evaluation={evaluation}
-                selectedRecommendation={selectedRecommendation}
-                selectedRecommendationId={selectedRecommendationId}
-                onSelectRecommendation={setSelectedRecommendationId}
-              />
+              <div className="wire-section wire-section-compact">
+                <h4>Study detail</h4>
+                <SfdcWireRow label="Test System Category" value="Aquatic Invertebrates" muted />
+                <SfdcWireRow label="CRL Study Type L2" value="Daphnia sp. Acute Immobilisation Test (OECD 202)" muted />
+              </div>
             </section>
-
-            <SfdcRelatedStudies data={data} />
-            <SfdcOpportunityInformation data={data} />
           </section>
 
           <aside className="sfdc-side-column">
-            <SfdcSideCard title="Present SOW">
-              <Button type="button" className="primary-button side-button">Proposal Builder</Button>
-              <Button type="button" className="ghost-button side-button">Present</Button>
-            </SfdcSideCard>
-            <SfdcSideCard title="Request for Proposals (Opportunity) (1)">
-              <a href="#mvp1-panel-title">RFP-046306</a>
-              <p>Client objective, service line, inquiry type, and requested timing context.</p>
-            </SfdcSideCard>
-            <SfdcSideCard title="SFDC configuration">
-              <a href="#mvp1-panel-title">StudyID 32078744</a>
-              <p>Study type, species, route, site selection, and specialized endpoint/housing metadata power MVP1.</p>
-            </SfdcSideCard>
-            <SfdcSideCard title="Stage History (3)">
-              <p>Target, Negotiate, Forecast &amp; commit tracked in SFDC.</p>
+            <Mvp1DecisionOutput
+              evaluation={evaluation}
+              selectedSite={selectedSite}
+              isSiteOffRamp={isNonRecommendedSite}
+              onSelectSite={selectRecommendedSite}
+              onCheckRecommendations={checkSiteRecommendations}
+            />
+            <SfdcSideCard title="Related context">
+              <p>SFDC related-list placeholder. MVP1 does not read these fields.</p>
             </SfdcSideCard>
           </aside>
         </div>
@@ -1174,111 +1102,214 @@ function Mvp1Experience({ onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ data, evaluation, selectedRecommendation, selectedRecommendationId, onSelectRecommendation }) {
+function Mvp1DecisionOutput({ evaluation, selectedSite, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
+  const panelLevel = isSiteOffRamp ? 'bad' : evaluation.level;
+  const panelTitle = isSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
+  const panelCopy = isSiteOffRamp
+    ? 'Selected CRL Site is outside the recommended site set. Send this request to Central Scheduling.'
+    : evaluation.copy;
+  const selectedRecommendedSite = evaluation.recommendations.some((item) => item.site === selectedSite) ? selectedSite : '';
+
   return (
-    <div className="mvp1-output-grid">
-      <article className="mvp1-output-panel mvp1-output-wide">
-        <div className="panel-head">
-          <h3>Recommendations</h3>
-          <p className="snapshot-meta">
-            Last checked <strong>{formatFullDate(data.snapshotDate) || 'Unknown'} | valid until {formatDate(evaluation.expiryDate)} | no capacity hold</strong>
-          </p>
+    <SfdcSideCard title="Recommended sites" className="mvp1-recommendations-card">
+      <div className="mvp1-native-panel">
+        <div className={`mvp1-native-status ${panelLevel}`}>
+          {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
+          <p>{panelCopy}</p>
         </div>
 
-        {evaluation.recommendations.length > 0 ? (
-          <div className={`selection-state ${selectedRecommendation ? 'has-selection' : ''}`} aria-live="polite">
-            {selectedRecommendation ? (
-              <span>
-                <strong>Selected snapshot option:</strong> {selectedRecommendation.site} / {selectedRecommendation.month}. This is UI state only.
-              </span>
-            ) : (
-              <span>No option selected. Selecting an option does not route, reserve, or commit capacity.</span>
-            )}
-          </div>
-        ) : null}
+        <div className="valid-as-of">
+          Valid as of <strong>{evaluation.validAsOf}</strong>
+        </div>
+
+        <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
+          Check site recommendations
+        </Button>
 
         {evaluation.recommendations.length > 0 ? (
           <RadioGroup
-            aria-label="MVP1 recommendation options"
-            className="recommendations"
-            value={selectedRecommendationId || ''}
-            onChange={onSelectRecommendation}
+            className="site-recommendation-list"
+            aria-label="Recommended sites"
+            value={selectedRecommendedSite}
+            onChange={onSelectSite}
           >
-            {evaluation.recommendations.map((card) => (
-              <RecommendationCard key={card.id} card={card} />
+            {evaluation.recommendations.map((item, index) => (
+              <div className={`site-recommendation-option ${selectedSite === item.site ? 'is-selected' : ''}`} key={item.site}>
+                <Radio className="site-recommendation-row" value={item.site}>
+                  <strong>{item.site}</strong>
+                  <em>{item.availability}</em>
+                  <span className="site-select-indicator" aria-hidden="true" />
+                </Radio>
+              </div>
             ))}
           </RadioGroup>
         ) : (
-          <div className="empty-card">
-            <strong>No recommendation generated</strong>
-            <p>Complete missing data, change site flexibility, or send the packet to Central Scheduling.</p>
+          <div className="mvp1-empty-state">
+            <strong>{evaluation.emptyTitle}</strong>
+            <p>{evaluation.emptyCopy}</p>
           </div>
         )}
-      </article>
 
-      <article className="mvp1-output-panel mvp1-output-wide mvp1-response-panel">
-        <div className="panel-head">
-          <h3>After option selection</h3>
-          <p className="snapshot-meta">
-            Customer response <strong>Awaiting response</strong>
-          </p>
-        </div>
-        <div className="mvp1-response-steps">
-          <div>
-            <span className="dot good" />
-            <strong>Customer says yes</strong>
-            <p>Commercial proceeds with the selected proposal window. It still creates no capacity hold.</p>
+        {evaluation.offRampReason ? (
+          <div className="mvp1-offramp-note">
+            <strong>Off-ramp reason</strong>
+            <p>{evaluation.offRampReason}</p>
           </div>
-          <div>
-            <span className="dot warn" />
-            <strong>Client says no</strong>
-            <p>Modify selections and recalculate options before sending a different window.</p>
-          </div>
-          <div>
-            <span className="dot bad" />
-            <strong>Response after expiry</strong>
-            <p>Recheck the recommendation because the snapshot is no longer current.</p>
-          </div>
-        </div>
-      </article>
+        ) : null}
 
-      <article className="mvp1-output-panel">
-        <div className="panel-title-row">
-          <p className="eyebrow">Rule trace</p>
-        </div>
-        <div className="trace">
-          {mvp1TraceItems(evaluation.trace).slice(0, 6).map((item) => (
-            <div className="trace-item" key={`${item.rule}-${item.copy}`}>
-              <div className="item-title">
-                <strong>{item.rule}</strong>
-                <span className={`pill ${item.level}`}>{item.status.toUpperCase()}</span>
-              </div>
-              <p>{item.copy}</p>
-            </div>
+        {isSiteOffRamp ? (
+          <div className="mvp1-offramp-note">
+            <strong>Off-ramp reason</strong>
+            <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
+          </div>
+        ) : null}
+      </div>
+    </SfdcSideCard>
+  );
+}
+
+function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp, onChange }) {
+  const selectedKey = selectedSite ? `${isOffRamp ? 'all' : 'recommended'}:${selectedSite}` : null;
+  const allOptions = allSiteOptions.filter((site) => !siteOptions.some((option) => option.site === site));
+
+  function handleSelectionChange(key) {
+    const [source, ...siteParts] = String(key).split(':');
+    onChange({ source, site: siteParts.join(':') });
+  }
+
+  return (
+    <Select
+      className={`field select-field mvp1-crl-site-field ${isOffRamp ? 'is-error' : ''}`}
+      selectedKey={selectedKey}
+      onSelectionChange={handleSelectionChange}
+    >
+      <FieldLabel label="CRL Site" info="UI-only selected recommendation site. This does not reserve capacity." />
+      <Button className="select-button">
+        <SelectValue />
+        <ChevronDownIcon />
+      </Button>
+      <Popover className="select-popover">
+        <ListBox className="select-list">
+          <ListBoxItem className="select-option select-group-label" id="recommended-sites-label" isDisabled textValue="Recommended">
+            Recommended
+          </ListBoxItem>
+          {siteOptions.map((option) => (
+            <ListBoxItem className="select-option" id={`recommended:${option.site}`} key={option.site} textValue={option.site}>
+              {option.site}
+            </ListBoxItem>
           ))}
-        </div>
-      </article>
+          <ListBoxItem className="select-option select-separator" id="site-list-separator" isDisabled textValue="separator">
+            <span aria-hidden="true" />
+          </ListBoxItem>
+          <ListBoxItem className="select-option select-group-label" id="all-sites-label" isDisabled textValue="All">
+            All
+          </ListBoxItem>
+          {allOptions.map((site) => (
+            <ListBoxItem className="select-option" id={`all:${site}`} key={site} textValue={site}>
+              {site}
+            </ListBoxItem>
+          ))}
+        </ListBox>
+      </Popover>
+      {isOffRamp ? <span className="field-error">Central Scheduling required</span> : null}
+    </Select>
+  );
+}
 
-      <article className="mvp1-output-panel">
-        <div className="panel-title-row">
-          <p className="eyebrow">Central Scheduling off-ramp</p>
-          <span className="panel-icon-group" role="img" aria-label="Open packet in new tab">
-            <ExternalLinkIcon />
-          </span>
-        </div>
-        <div className="packet">
-          <div className="packet-item">
-            <strong>Reason codes</strong>
-            <p>{(evaluation.triage.length ? evaluation.triage : ['none']).map(reasonCodeLabel).join(', ')}</p>
-          </div>
-          <div className="packet-item">
-            <strong>Packet includes</strong>
-            <p>Opportunity ID, StudyID, site selection, target start date, configuration summary, missing fields, and notes.</p>
-          </div>
-        </div>
-      </article>
+function SfdcWireRow({ label, value, muted = false }) {
+  return (
+    <div className={`wire-row ${muted ? 'is-muted' : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <PencilIcon />
     </div>
   );
+}
+
+function evaluateMvp1DateOnly(studyStartDate, snapshot) {
+  const startDate = parseFullDate(studyStartDate);
+  const thresholdDate = addMonths(mvp1AsOfDate, 4);
+  const validAsOf = formatDateTime(snapshot.checkedAt);
+
+  if (!startDate) {
+    return {
+      level: 'warn',
+      title: 'Missing information',
+      copy: 'MVP1 cannot show recommended sites until the SFDC Study Start Date is populated.',
+      validAsOf,
+      recommendations: [],
+      emptyTitle: 'Missing information',
+      emptyCopy: 'Add Study Start Date in the highlighted SFDC field, then recheck site/month options.',
+      offRampReason: 'MISSING_STUDY_START_DATE'
+    };
+  }
+
+  if (startDate <= thresholdDate) {
+    return {
+      level: 'bad',
+      title: 'Central Scheduling off-ramp',
+      copy: `${formatDate(startDate)} is not more than four months out from the current snapshot.`,
+      validAsOf,
+      recommendations: [],
+      emptyTitle: 'No self-serve recommendation',
+      emptyCopy: 'Requests inside the >4 months threshold should be handled by Central Scheduling.',
+      offRampReason: 'START_DATE_WITHIN_4_MONTH_THRESHOLD'
+    };
+  }
+
+  return {
+    level: 'good',
+    title: 'Recommended sites',
+    copy: 'Refreshed from the separate site lead-time logic. No capacity is reserved by this view.',
+    validAsOf,
+    recommendations: buildMvp1SiteRecommendations(startDate, snapshot.variant),
+    emptyTitle: '',
+    emptyCopy: '',
+    offRampReason: null
+  };
+}
+
+function buildMvp1SiteRecommendations(startDate, variant = 0) {
+  const targetMonth = `${monthNames[startDate.getUTCMonth()]}-${startDate.getUTCFullYear()}`;
+  const rankingVariants = [
+    [
+      { site: 'Hertenbosch', monthOffset: 0 },
+      { site: 'Reno', monthOffset: 1 },
+      { site: 'Lyon', monthOffset: 1 },
+      { site: 'Senneville', monthOffset: 2 },
+      { site: 'Mattawan', monthOffset: 2 }
+    ],
+    [
+      { site: 'Reno', monthOffset: 0 },
+      { site: 'Hertenbosch', monthOffset: 1 },
+      { site: 'Senneville', monthOffset: 1 },
+      { site: 'Lyon', monthOffset: 2 },
+      { site: 'Mattawan', monthOffset: 2 }
+    ],
+    [
+      { site: 'Lyon', monthOffset: 0 },
+      { site: 'Hertenbosch', monthOffset: 0 },
+      { site: 'Reno', monthOffset: 1 },
+      { site: 'Mattawan', monthOffset: 2 },
+      { site: 'Senneville', monthOffset: 2 }
+    ]
+  ];
+  const rankedSites = rankingVariants[variant % rankingVariants.length];
+
+  return rankedSites.map((item) => ({
+    site: item.site,
+    availability: shiftMonthLabel(targetMonth, item.monthOffset)
+  }));
+}
+
+function formatDateTime(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
 }
 
 function mvp1TraceItems(trace) {
@@ -1388,9 +1419,9 @@ function SfdcOpportunityInformation({ data }) {
   );
 }
 
-function SfdcSideCard({ title, children }) {
+function SfdcSideCard({ title, children, className = '' }) {
   return (
-    <section className="sfdc-side-card">
+    <section className={`sfdc-side-card ${className}`}>
       <h3>{title}</h3>
       <div>{children}</div>
     </section>
@@ -2389,6 +2420,23 @@ function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="m5 12 4 4L19 6" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg className="wire-edit-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m16 3 5 5L8 21H3v-5L16 3z" />
+      <path d="m14 5 5 5" />
+    </svg>
+  );
+}
+
+function SalesforceCloudLogo() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" aria-hidden="true" focusable="false">
+      <path d="M37.963 22.47c2.706-2.83 6.474-4.584 10.641-4.584 5.54 0 10.372 3.099 12.946 7.7a17.84 17.84 0 0 1 7.317-1.56c9.991 0 18.091 8.198 18.091 18.31 0 10.114-8.1 18.312-18.09 18.312a17.84 17.84 0 0 1-3.564-.356c-2.267 4.057-6.586 6.797-11.543 6.797-2.075 0-4.038-.48-5.786-1.336-2.297 5.423-7.65 9.225-13.889 9.225-6.497 0-12.034-4.125-14.16-9.91-.928.198-1.89.301-2.878.301-7.735 0-14.006-6.357-14.006-14.2 0-5.256 2.818-9.845 7.004-12.3a16.303 16.303 0 0 1-1.341-6.495c0-9.02 7.297-16.332 16.299-16.332 5.284 0 9.981 2.521 12.959 6.428" fill="#00A1E0" />
     </svg>
   );
 }

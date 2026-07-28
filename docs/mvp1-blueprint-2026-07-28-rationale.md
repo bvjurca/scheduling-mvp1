@@ -2,129 +2,142 @@
 
 Date: 2026-07-28
 
-Source reviewed: `Blueprint Scheduling_2026-07-28_12-09-19.pdf`
+Sources reviewed:
 
-## Summary
+- `Blueprint Scheduling_2026-07-28_12-09-19.pdf`
+- `study reference.png`
+- `Wireframe.png`
 
-The July 28 Blueprint diagram reinforces that MVP1 is not a standalone scheduling workspace. It is a Commercial-persona decision flow embedded around the existing SFDC Opportunity/Study context.
+## Current MVP1 Decision
 
-MVP1 should answer one narrow question:
+MVP1 is now intentionally narrower than the prior split-view prototype.
 
-Can Commercial use SFDC StudyID/configuration metadata plus governed reference data to calculate proposal-window options, give the user a "Just Say Yes" path, or off-ramp to Central Scheduling?
+The MVP1 surface should read one SFDC Study field:
 
-The diagram does not expand MVP1 into Reporting/SEND, test material logistics, room scheduling, labor capacity, or post-award operational scheduling. Those remain long-term Commercial Vision or later-release concepts.
+- Study Start Date
 
-## What The Diagram Shows
+It should then display ranked site/month options from the separate site lead-time and ranking logic. This prototype does not need to reproduce that ranking logic in detail. It only needs to show where the result lands in SFDC and how Commercial sees the output.
 
-The diagram's MVP1 path is:
+## Why This Change Is Correct
 
-1. Lead/intake enters SFDC and creates an Opportunity.
-2. The scheduling process starts from the SFDC Opportunity context.
-3. The user must know or capture the target start date.
-4. The target start date must be more than four months out.
-5. If the date is sooner, the request off-ramps because it is not in MVP scope.
-6. If mandatory configuration is missing, the user is asked to fill missing data.
-7. The "Just Say Yes" / "In The Know" area is powered by SFDC StudyID/configuration fields:
-   - Select a site
-   - Study Type 1/2
-   - Species
-   - Route of Administration
-   - Specialized Endpoint / Housing
-8. DOT/transformed data sources feed the calculation:
-   - LabSci capabilities
-   - Site capability
-   - LabSci lead times
-   - General timing
-   - Custom rules / SFDC transformation
-   - Client site preference data
-   - SFDC Config API
-   - Scheduling rules engine
-9. The system calculates options.
-10. If options work, the user selects an option and gets proposal-window language.
-11. While awaiting customer response, the option can expire.
-12. If the client says no, the user modifies selections and recalculates.
-13. If the options do not work, the request off-ramps to Central Scheduling or the user modifies selections.
+The stakeholder clarification shifts MVP1 away from a wizard or broad readiness console. The actual MVP1 impact is concentrated on the existing SFDC Study record, specifically the date field that determines whether site/month recommendations can be shown.
 
-## Reassessment Of The Current MVP1 UI
+The earlier MVP1 version still carried too much of the long-term Commercial Vision:
 
-The split-view branch already made the right structural move by separating:
+- configuration completeness
+- route/species/study type checks
+- LabSci dependency language
+- Reporting/SEND dependency language
+- recommendation confidence
+- rule-trace detail
+- customer response loop
 
-- MVP1: SFDC Opportunity decision support
-- LT Commercial Vision: full request workspace, full wizard, expanded decision console
+Those may be valid future concepts, but they are not required for the simplified MVP1 screen.
 
-The July 28 diagram required further MVP1 tightening:
+## What The UI Now Shows
 
-1. Reporting/SEND should not appear as an MVP1 input.
+The MVP1 path now presents:
 
-   Reporting/SEND is useful in the broader prototype, but the diagram's MVP1 decision contract is built around SFDC StudyID configuration, site capability, LabSci/general timing, and rules. Reporting/SEND remains in LT Commercial Vision only.
+1. A generic SFDC Study page frame, modeled after the supplied Study reference.
+2. A visually muted SFDC record backdrop with only enough skeleton structure to imply the native page.
+3. A highlighted Study Start Date field.
+4. A right-side native SFDC-style box titled `Recommended sites`.
+5. A compact `Recommended sites` list with ranked sites and month availability.
+6. A `Check site recommendations` action that refreshes the snapshot and can change ranking order.
+7. UI-only site selection that surfaces the selected site in the SFDC mockup as a `CRL Site` dropdown.
+8. A grouped `CRL Site` dropdown that lists recommended sites first, then all other site names.
+9. Central Scheduling off-ramp handling when the user selects a non-recommended CRL site.
+10. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`.
+11. Missing-information handling when Study Start Date is blank.
+12. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
 
-2. The MVP1 field set should mirror the green SFDC StudyID boxes.
+## What The Recommendation Means
 
-   The reduced MVP1 UI now exposes Study Type 1, Study Type 2, Species, Route of Administration, Specialized Endpoint / Housing, Site Flexibility, and Preferred Site. This better reflects the diagram's "Have all config data fields been entered?" checkpoint.
+The recommendation is still not a booking confirmation.
 
-3. The MVP1 result should show the customer-response loop.
+It means:
 
-   The diagram does not end at "option calculated." It continues through selected option, awaiting customer response, customer says yes, customer says no, or the offer expires. The MVP1 UI now shows this as a lightweight post-selection state row, without adding real routing or commitment.
+- based on the Study Start Date,
+- and based on separately governed site lead-time/ranking logic,
+- Commercial can see candidate site/month options.
+- Commercial can mark one site/month option in the UI.
 
-4. MVP1 should still avoid capacity language.
+It does not mean:
 
-   The UI keeps "no capacity hold" and "proposal window" language because the diagram says the system calculates options, not reservations.
+- capacity has been reserved,
+- a room or operational slot exists,
+- RPM has accepted the date,
+- Central Scheduling has been bypassed,
+- all downstream dependencies are resolved.
+- the selected option has been routed, reserved, or committed.
 
-## What Changed In The UI
+## Missing Data Case
 
-MVP1 path:
+If Study Start Date is missing, MVP1 should not calculate or imply a recommendation.
 
-- Kept the SFDC Opportunity page framing.
-- Kept the >4 months Opportunity Start Date gate.
-- Kept readiness, recommendations, rule trace, and Central Scheduling off-ramp.
-- Removed Reporting/SEND from the MVP1 reduced field set.
-- Added Study Type 1.
-- Added Route of Administration.
-- Added Specialized Endpoint / Housing.
-- Replaced the side-card emphasis on Test Materials with SFDC configuration.
-- Added an "After option selection" row for:
-  - Customer says yes
-  - Client says no
-  - Response after expiry
+Reason: the single required input for this simplified MVP1 is absent.
 
-LT Commercial Vision path:
+UI behavior:
 
-- No reduction applied.
-- Keeps the full request workspace.
-- Keeps the full wizard and full decision console.
-- Keeps Reporting/SEND, test material, LabSci timing, timing precision, dependency risk, and broader recommendation caveats.
+- show `Missing information`,
+- show no site/month list,
+- tell the user to populate the highlighted SFDC field.
 
-## What Is Actually MVP1
+## Off-Ramp Case
 
-MVP1 is the SFDC-adjacent decision support component:
+If Study Start Date is not more than four months out, MVP1 should off-ramp.
 
-- Opportunity Start Date known
-- Opportunity Start Date more than four months out
-- Required SFDC StudyID/configuration fields present
-- Site capability check
-- Lead-time/general timing check
-- Rules-engine option calculation
-- Selectable proposal-window recommendation
-- Valid-until/expiry state
-- Central Scheduling off-ramp when the self-serve flow cannot answer
+Reason: the agreed MVP1 self-serve path is only appropriate for requests beyond the four-month threshold.
 
-MVP1 is not:
+UI behavior:
 
-- A booking confirmation
-- A capacity reservation
-- Room-level scheduling
-- Labor capacity planning
-- Test material logistics
-- Reporting/SEND scheduling
-- Equipment availability
-- Post-award RPM execution scheduling
-- Full commercial request management
+- show `Central Scheduling off-ramp`,
+- show no self-serve recommendation,
+- provide the reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD`.
 
-## Open Product Questions
+## Why `Valid As Of` Replaces `Valid Until`
 
-1. Should "Specialized Endpoint / Housing" be a discrete SFDC field, or is it derived from existing configurator data?
-2. Should "Select a Site" mean a user-selected site, a preferred site, or "any qualified site" by default?
-3. How exactly should the option expiry period be governed: fixed business days, reference-data freshness, or customer-response SLA?
-4. Should "Client Site Preference" be read-only in MVP1 because the diagram labels it as data only?
-5. When the user modifies selections after a client says no, should that create a new recommendation snapshot or update the prior snapshot?
+The stakeholder direction changes the output from a decision contract with expiry semantics to a simple snapshot output.
 
+`Valid until` implies a governed expiration window, which may overstate MVP1. `Valid as of` is weaker and more accurate:
+
+- it identifies when the site/month recommendation snapshot was checked,
+- it avoids implying a reservation window,
+- it leaves the refresh/expiry governance to the separate lead-time/ranking logic or future operational design.
+
+## What Is Not In MVP1
+
+These remain outside the simplified MVP1 view:
+
+- full request workspace,
+- wizard-driven request intake,
+- configuration-readiness checklist,
+- route/species/study-type validation,
+- LabSci dependency review,
+- Reporting/SEND dependency review,
+- test material availability,
+- custom endpoint/housing analysis,
+- rule trace,
+- recommendation confidence scoring,
+- SOW/customer response flow,
+- capacity reservation,
+- operational scheduling.
+
+The LT Commercial Vision path can continue to carry those ideas for discussion. MVP1 should not.
+
+## Implementation Rationale
+
+The UI recreates a generic SFDC Study wireframe in code instead of using the provided image as a static background.
+
+Reason:
+
+- it will deploy correctly to Netlify,
+- it avoids depending on a local Downloads image path,
+- it lets the highlighted Study Start Date remain editable,
+- it keeps the prototype legible while still looking like the supplied SFDC screen.
+
+The right-side recommendation list mimics native SFDC related-list/card styling because stakeholders said MVP1 affects this existing screen. That makes the prototype read as an SFDC augmentation, not as a separate scheduling application.
+
+When a user selects a recommended site, the value appears in the SFDC mockup as a visible `CRL Site` dropdown next to `Start Date`. That location is intentional: it makes the recommendation feel like a field-level augmentation of the existing Study page, while avoiding any expanded workflow inside the recommendation list.
+
+If the user changes `CRL Site` to a site from the broader `All` list, the recommendation panel switches to a Central Scheduling off-ramp and the CRL Site field shows an error state. This keeps MVP1 honest: non-recommended site choices are captured, but they are not treated as self-serve proposal recommendations.
