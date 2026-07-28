@@ -42,14 +42,15 @@ The MVP1 path now presents:
 2. A visually muted SFDC record backdrop with only enough skeleton structure to imply the native page.
 3. A highlighted Study Start Date field.
 4. A right-side native SFDC-style box titled `Recommended sites`.
-5. A compact `Recommended sites` list with ranked sites and month availability.
-6. A `Check site recommendations` action that refreshes the snapshot and can change ranking order.
-7. UI-only site selection that surfaces the selected site in the SFDC mockup as a `CRL Site` dropdown.
-8. A grouped `CRL Site` dropdown that lists recommended sites first, then all other site names.
-9. Central Scheduling off-ramp handling when the user selects a non-recommended CRL site.
-10. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`.
-11. Missing-information handling when Study Start Date is blank.
-12. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
+5. An initial empty state until the user checks the current Study Start Date.
+6. A compact `Recommended sites` list with ranked sites and month availability after the first check.
+7. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot and can change ranking order.
+8. UI-only site selection that surfaces the selected site in the SFDC mockup as a `CRL Site` dropdown.
+9. A grouped `CRL Site` dropdown that lists recommended sites first, then all other site names.
+10. Central Scheduling off-ramp handling when the user selects a non-recommended CRL site.
+11. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after a recommendation list is loaded.
+12. Missing-information handling when Study Start Date is blank.
+13. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
 
 ## What The Recommendation Means
 
@@ -81,6 +82,8 @@ UI behavior:
 
 - show `Missing information`,
 - show no site/month list,
+- show no check/recheck action,
+- show no `Valid as of` timestamp,
 - tell the user to populate the highlighted SFDC field.
 
 ## Off-Ramp Case
