@@ -25,7 +25,7 @@ const checks = [
     minBytes: 30000,
     requiredText: [
       'react-aria-components',
-      'Scheduling MVP1 - SFDC Study View',
+      'SFDC Wireframe',
       'Check site recommendations',
       'Recommended sites',
       'CRL Site',

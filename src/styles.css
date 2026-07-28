@@ -697,6 +697,7 @@ h3 {
 }
 
 .date-highlight-row {
+  width: calc((100% - var(--space-300)) / 2);
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   border: 2px solid var(--blue);
@@ -707,11 +708,21 @@ h3 {
   padding: var(--space-300);
 }
 
+.date-highlight-row.has-site {
+  width: 100%;
+}
+
 .date-site-control-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-300);
   min-width: 0;
+}
+
+.date-site-control-grid.has-site {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .date-highlight-row .date-picker-field,
@@ -865,8 +876,6 @@ h3 {
   width: fit-content;
 }
 
-.mvp1-app > .topbar h1,
-.mvp1-app > .topbar .ghost-button,
 .mvp1-study-shell .sfdc-warning-bar,
 .mvp1-study-shell .sfdc-nav strong,
 .mvp1-study-shell .sfdc-nav span,
@@ -899,15 +908,6 @@ h3 {
 .mvp1-study-shell .sfdc-card,
 .mvp1-study-shell .sfdc-side-card:not(.mvp1-recommendations-card) {
   border-color: #edf1f5;
-}
-
-.mvp1-app > .topbar h1 {
-  width: min(420px, 52vw);
-  height: 32px;
-}
-
-.mvp1-app > .topbar .ghost-button {
-  width: 70px;
 }
 
 .mvp1-study-shell .sfdc-warning-bar {
