@@ -29,6 +29,8 @@ const checks = [
       'Check site recommendations',
       'Recommended sites',
       'CRL Site',
+      'Central Scheduling required',
+      'SITE_OUTSIDE_RECOMMENDED_SET',
       'Missing information',
       'Valid as of',
       'LT Commercial Vision - DEMO DATA ONLY',

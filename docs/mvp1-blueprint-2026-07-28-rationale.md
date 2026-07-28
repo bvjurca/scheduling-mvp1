@@ -45,9 +45,11 @@ The MVP1 path now presents:
 5. A compact `Recommended sites` list with ranked sites and month availability.
 6. A `Check site recommendations` action that refreshes the snapshot and can change ranking order.
 7. UI-only site selection that surfaces the selected site in the SFDC mockup as a `CRL Site` dropdown.
-8. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`.
-9. Missing-information handling when Study Start Date is blank.
-10. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
+8. A grouped `CRL Site` dropdown that lists recommended sites first, then all other site names.
+9. Central Scheduling off-ramp handling when the user selects a non-recommended CRL site.
+10. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`.
+11. Missing-information handling when Study Start Date is blank.
+12. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
 
 ## What The Recommendation Means
 
@@ -137,3 +139,5 @@ Reason:
 The right-side recommendation list mimics native SFDC related-list/card styling because stakeholders said MVP1 affects this existing screen. That makes the prototype read as an SFDC augmentation, not as a separate scheduling application.
 
 When a user selects a recommended site, the value appears in the SFDC mockup as a visible `CRL Site` dropdown next to `Start Date`. That location is intentional: it makes the recommendation feel like a field-level augmentation of the existing Study page, while avoiding any expanded workflow inside the recommendation list.
+
+If the user changes `CRL Site` to a site from the broader `All` list, the recommendation panel switches to a Central Scheduling off-ramp and the CRL Site field shows an error state. This keeps MVP1 honest: non-recommended site choices are captured, but they are not treated as self-serve proposal recommendations.

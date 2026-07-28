@@ -599,6 +599,20 @@ h3 {
   min-width: 1300px;
 }
 
+.sfdc-cloud-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 32px;
+}
+
+.sfdc-cloud-logo svg {
+  display: block;
+  width: 42px;
+  height: 42px;
+}
+
 .mvp1-study-shell .sfdc-stage-path {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
@@ -695,18 +709,26 @@ h3 {
 
 .date-site-control-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-300);
   min-width: 0;
-}
-
-.date-site-control-grid.has-site {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .date-highlight-row .date-picker-field,
 .date-highlight-row .mvp1-crl-site-field {
   min-height: auto;
+}
+
+.mvp1-crl-site-field.is-error .select-button {
+  border-color: var(--color-danger);
+  background: var(--color-danger-subtle);
+  box-shadow: 0 0 0 3px #d92d201f;
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-0);
+  font-weight: 700;
 }
 
 .compact-button {
@@ -772,7 +794,8 @@ h3 {
 
 .site-recommendation-option {
   border-bottom: 1px solid var(--line);
-  padding-bottom: var(--space-150);
+  border-left: 3px solid transparent;
+  padding: 0 0 var(--space-150) var(--space-200);
 }
 
 .site-recommendation-option:last-child {
@@ -780,14 +803,13 @@ h3 {
 }
 
 .site-recommendation-option.is-selected {
-  border-left: 3px solid var(--blue);
+  border-left-color: var(--blue);
   background: var(--blue-soft);
-  padding-left: var(--space-200);
 }
 
 .site-recommendation-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) minmax(86px, auto) 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(86px, auto) 20px;
   align-items: center;
   gap: var(--space-200);
   width: 100%;
@@ -800,17 +822,6 @@ h3 {
 .site-recommendation-row[data-hovered] strong,
 .site-recommendation-row[data-focus-visible] strong {
   text-decoration: underline;
-}
-
-.site-rank {
-  display: inline-grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--color-text-secondary);
-  font-weight: 700;
 }
 
 .site-select-indicator {
@@ -875,7 +886,7 @@ h3 {
 .mvp1-study-shell .sfdc-side-card:not(.mvp1-recommendations-card) h3,
 .mvp1-study-shell .sfdc-side-card:not(.mvp1-recommendations-card) p {
   border-color: transparent !important;
-  border-radius: var(--radii-50);
+  border-radius: var(--radii-round);
   background: #f1f4f8 !important;
   box-shadow: none !important;
   color: transparent !important;
@@ -1527,6 +1538,28 @@ input[type="date"][tabindex="-1"],
   padding: var(--space-200) var(--space-250);
 }
 
+.select-group-label {
+  color: var(--color-text-muted);
+  cursor: default;
+  font-size: var(--font-size-0);
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: var(--space-150) var(--space-250) var(--space-50);
+  text-transform: uppercase;
+}
+
+.select-separator {
+  min-height: 1px;
+  cursor: default;
+  padding: var(--space-100) 0;
+}
+
+.select-separator span {
+  display: block;
+  height: 1px;
+  background: var(--line);
+}
+
 .select-option[data-focused] {
   background: var(--blue-soft);
   color: var(--blue);
@@ -1537,6 +1570,14 @@ input[type="date"][tabindex="-1"],
   background: var(--color-info-subtle);
   color: var(--color-info-text);
   font-weight: 700;
+}
+
+.select-group-label[data-focused],
+.select-separator[data-focused],
+.select-group-label[data-selected],
+.select-separator[data-selected] {
+  background: transparent;
+  color: var(--color-text-muted);
 }
 
 .info-wrapper {

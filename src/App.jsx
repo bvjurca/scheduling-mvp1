@@ -32,6 +32,25 @@ const mvp1AsOfDate = new Date(2026, 6, 28, 12, 9);
 const expiryBusinessDays = 5;
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const monthLookup = Object.fromEntries(monthNames.map((month, index) => [month.toLowerCase(), index]));
+const mvp1AllCrlSites = [
+  'Alderley',
+  'Ashland',
+  'Barcelona',
+  'Beerse',
+  'Cleveland',
+  'Edinburgh',
+  'Elphinstone',
+  'Evreux',
+  'Freiburg',
+  'Harrogate',
+  'Horsham',
+  'Kansas City',
+  'Laval',
+  'Leiden',
+  'Montreal',
+  'Portishead',
+  'Shrewsbury'
+];
 
 const siteCapabilities = {
   Mattawan: {
@@ -922,26 +941,24 @@ function EntryLanding({ onChooseExperience }) {
 function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
   const [selectedSite, setSelectedSite] = useState('');
+  const [selectedSiteSource, setSelectedSiteSource] = useState('');
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
-
-  useEffect(() => {
-    if (selectedSite && !selectedRecommendation) {
-      setSelectedSite('');
-    }
-  }, [selectedRecommendation, selectedSite]);
+  const isNonRecommendedSite = Boolean(selectedSite && (selectedSiteSource === 'all' || !selectedRecommendation));
 
   function updateField(name, value) {
     if (name === 'opportunityStartDate') {
       setStudyStartDate(value);
       setSelectedSite('');
+      setSelectedSiteSource('');
     }
   }
 
   function clearStartDate() {
     setStudyStartDate('');
     setSelectedSite('');
+    setSelectedSiteSource('');
   }
 
   function checkSiteRecommendations() {
@@ -949,6 +966,16 @@ function Mvp1Experience({ onHome }) {
       checkedAt: new Date(),
       variant: current.variant + 1
     }));
+  }
+
+  function selectRecommendedSite(site) {
+    setSelectedSite(site);
+    setSelectedSiteSource('recommended');
+  }
+
+  function selectCrlSite(selection) {
+    setSelectedSite(selection.site);
+    setSelectedSiteSource(selection.source);
   }
 
   return (
@@ -964,6 +991,9 @@ function Mvp1Experience({ onHome }) {
 
       <main className="sfdc-shell mvp1-study-shell" aria-labelledby="mvp1-record-title">
         <nav className="sfdc-nav" aria-label="Salesforce navigation">
+          <div className="sfdc-cloud-logo" aria-label="Salesforce">
+            <SalesforceCloudLogo />
+          </div>
           <strong>RACE</strong>
           <span>Home</span>
           <span>Accounts</span>
@@ -1020,7 +1050,7 @@ function Mvp1Experience({ onHome }) {
                 <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
                 <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
                 <div className="wire-row date-highlight-row">
-                  <div className={`date-site-control-grid ${selectedRecommendation ? 'has-site' : ''}`}>
+                  <div className="date-site-control-grid">
                     <DatePickerField
                       label="Start Date"
                       name="opportunityStartDate"
@@ -1029,11 +1059,13 @@ function Mvp1Experience({ onHome }) {
                       info="Used to request a refreshed site/month recommendation snapshot. The separate site lead-time prototype handles the actual ranking logic."
                       onChange={updateField}
                     />
-                    {selectedRecommendation ? (
+                    {selectedSite ? (
                       <Mvp1CrlSiteField
                         selectedSite={selectedSite}
                         siteOptions={evaluation.recommendations}
-                        onChange={setSelectedSite}
+                        allSiteOptions={mvp1AllCrlSites}
+                        isOffRamp={isNonRecommendedSite}
+                        onChange={selectCrlSite}
                       />
                     ) : null}
                   </div>
@@ -1056,7 +1088,8 @@ function Mvp1Experience({ onHome }) {
             <Mvp1DecisionOutput
               evaluation={evaluation}
               selectedSite={selectedSite}
-              onSelectSite={setSelectedSite}
+              isSiteOffRamp={isNonRecommendedSite}
+              onSelectSite={selectRecommendedSite}
               onCheckRecommendations={checkSiteRecommendations}
             />
             <SfdcSideCard title="Related context">
@@ -1069,13 +1102,20 @@ function Mvp1Experience({ onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ evaluation, selectedSite, onSelectSite, onCheckRecommendations }) {
+function Mvp1DecisionOutput({ evaluation, selectedSite, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
+  const panelLevel = isSiteOffRamp ? 'bad' : evaluation.level;
+  const panelTitle = isSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
+  const panelCopy = isSiteOffRamp
+    ? 'Selected CRL Site is outside the recommended site set. Send this request to Central Scheduling.'
+    : evaluation.copy;
+  const selectedRecommendedSite = evaluation.recommendations.some((item) => item.site === selectedSite) ? selectedSite : '';
+
   return (
     <SfdcSideCard title="Recommended sites" className="mvp1-recommendations-card">
       <div className="mvp1-native-panel">
-        <div className={`mvp1-native-status ${evaluation.level}`}>
-          {evaluation.level === 'good' ? null : <strong>{evaluation.title}</strong>}
-          <p>{evaluation.copy}</p>
+        <div className={`mvp1-native-status ${panelLevel}`}>
+          {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
+          <p>{panelCopy}</p>
         </div>
 
         <div className="valid-as-of">
@@ -1090,13 +1130,12 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, onSelectSite, onCheckRec
           <RadioGroup
             className="site-recommendation-list"
             aria-label="Recommended sites"
-            value={selectedSite}
+            value={selectedRecommendedSite}
             onChange={onSelectSite}
           >
             {evaluation.recommendations.map((item, index) => (
               <div className={`site-recommendation-option ${selectedSite === item.site ? 'is-selected' : ''}`} key={item.site}>
                 <Radio className="site-recommendation-row" value={item.site}>
-                  <span className="site-rank">{index + 1}</span>
                   <strong>{item.site}</strong>
                   <em>{item.availability}</em>
                   <span className="site-select-indicator" aria-hidden="true" />
@@ -1117,17 +1156,32 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, onSelectSite, onCheckRec
             <p>{evaluation.offRampReason}</p>
           </div>
         ) : null}
+
+        {isSiteOffRamp ? (
+          <div className="mvp1-offramp-note">
+            <strong>Off-ramp reason</strong>
+            <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
+          </div>
+        ) : null}
       </div>
     </SfdcSideCard>
   );
 }
 
-function Mvp1CrlSiteField({ selectedSite, siteOptions, onChange }) {
+function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp, onChange }) {
+  const selectedKey = selectedSite ? `${isOffRamp ? 'all' : 'recommended'}:${selectedSite}` : null;
+  const allOptions = allSiteOptions.filter((site) => !siteOptions.some((option) => option.site === site));
+
+  function handleSelectionChange(key) {
+    const [source, ...siteParts] = String(key).split(':');
+    onChange({ source, site: siteParts.join(':') });
+  }
+
   return (
     <Select
-      className="field select-field mvp1-crl-site-field"
-      selectedKey={selectedSite}
-      onSelectionChange={(key) => onChange(String(key))}
+      className={`field select-field mvp1-crl-site-field ${isOffRamp ? 'is-error' : ''}`}
+      selectedKey={selectedKey}
+      onSelectionChange={handleSelectionChange}
     >
       <FieldLabel label="CRL Site" info="UI-only selected recommendation site. This does not reserve capacity." />
       <Button className="select-button">
@@ -1136,13 +1190,28 @@ function Mvp1CrlSiteField({ selectedSite, siteOptions, onChange }) {
       </Button>
       <Popover className="select-popover">
         <ListBox className="select-list">
+          <ListBoxItem className="select-option select-group-label" id="recommended-sites-label" isDisabled textValue="Recommended">
+            Recommended
+          </ListBoxItem>
           {siteOptions.map((option) => (
-            <ListBoxItem className="select-option" id={option.site} key={option.site} textValue={option.site}>
+            <ListBoxItem className="select-option" id={`recommended:${option.site}`} key={option.site} textValue={option.site}>
               {option.site}
+            </ListBoxItem>
+          ))}
+          <ListBoxItem className="select-option select-separator" id="site-list-separator" isDisabled textValue="separator">
+            <span aria-hidden="true" />
+          </ListBoxItem>
+          <ListBoxItem className="select-option select-group-label" id="all-sites-label" isDisabled textValue="All">
+            All
+          </ListBoxItem>
+          {allOptions.map((site) => (
+            <ListBoxItem className="select-option" id={`all:${site}`} key={site} textValue={site}>
+              {site}
             </ListBoxItem>
           ))}
         </ListBox>
       </Popover>
+      {isOffRamp ? <span className="field-error">Central Scheduling required</span> : null}
     </Select>
   );
 }
@@ -2360,6 +2429,14 @@ function PencilIcon() {
     <svg className="wire-edit-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="m16 3 5 5L8 21H3v-5L16 3z" />
       <path d="m14 5 5 5" />
+    </svg>
+  );
+}
+
+function SalesforceCloudLogo() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90" aria-hidden="true" focusable="false">
+      <path d="M37.963 22.47c2.706-2.83 6.474-4.584 10.641-4.584 5.54 0 10.372 3.099 12.946 7.7a17.84 17.84 0 0 1 7.317-1.56c9.991 0 18.091 8.198 18.091 18.31 0 10.114-8.1 18.312-18.09 18.312a17.84 17.84 0 0 1-3.564-.356c-2.267 4.057-6.586 6.797-11.543 6.797-2.075 0-4.038-.48-5.786-1.336-2.297 5.423-7.65 9.225-13.889 9.225-6.497 0-12.034-4.125-14.16-9.91-.928.198-1.89.301-2.878.301-7.735 0-14.006-6.357-14.006-14.2 0-5.256 2.818-9.845 7.004-12.3a16.303 16.303 0 0 1-1.341-6.495c0-9.02 7.297-16.332 16.299-16.332 5.284 0 9.981 2.521 12.959 6.428" fill="#00A1E0" />
     </svg>
   );
 }
