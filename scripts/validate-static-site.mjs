@@ -29,7 +29,7 @@ const checks = [
       'Check site recommendations',
       'Recommended sites',
       'CRL Site',
-      'Central Scheduling required',
+      'Central scheduling support required',
       'SITE_OUTSIDE_RECOMMENDED_SET',
       'Missing information',
       'Valid as of',

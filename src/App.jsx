@@ -1112,9 +1112,11 @@ function Mvp1Experience({ onHome }) {
 
 function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendations, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
+  const isDateOffRamp = evaluation.offRampReason === 'START_DATE_WITHIN_4_MONTH_THRESHOLD';
   const hasRecommendationList = hasCheckedRecommendations && evaluation.recommendations.length > 0;
-  const showCheckedState = hasCheckedRecommendations && !isMissingStartDate;
-  const showCheckAction = !isMissingStartDate && (!hasCheckedRecommendations || hasRecommendationList);
+  const showKnownOffRampState = isDateOffRamp || isSiteOffRamp;
+  const showCheckedState = (hasCheckedRecommendations || showKnownOffRampState) && !isMissingStartDate;
+  const showCheckAction = !isMissingStartDate && !showKnownOffRampState && (!hasCheckedRecommendations || hasRecommendationList);
   const panelLevel = isSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = isSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
   const panelCopy = isSiteOffRamp
@@ -1140,8 +1142,8 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
 
         {!hasRecommendationList ? (
           <div className="mvp1-empty-state">
-            <strong>{isMissingStartDate ? evaluation.emptyTitle : 'No site recommendations loaded'}</strong>
-            <p>{isMissingStartDate ? evaluation.emptyCopy : 'Check the current Study Start Date to load ranked site/month options.'}</p>
+            <strong>{isMissingStartDate || isDateOffRamp ? evaluation.emptyTitle : 'No site recommendations loaded'}</strong>
+            <p>{isMissingStartDate || isDateOffRamp ? evaluation.emptyCopy : 'Check the current Study Start Date to load ranked site/month options.'}</p>
           </div>
         ) : null}
 
@@ -1231,7 +1233,7 @@ function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp
           ))}
         </ListBox>
       </Popover>
-      {isOffRamp ? <span className="field-error">Central Scheduling required</span> : null}
+      {isOffRamp ? <span className="field-error">Central scheduling support required</span> : null}
     </Select>
   );
 }

@@ -50,7 +50,7 @@ The MVP1 path now presents:
 10. Central Scheduling off-ramp handling when the user selects a non-recommended CRL site.
 11. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after a recommendation list is loaded.
 12. Missing-information handling when Study Start Date is blank.
-13. Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
+13. Immediate Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
 
 ## What The Recommendation Means
 
@@ -96,6 +96,7 @@ UI behavior:
 
 - show `Central Scheduling off-ramp`,
 - show no self-serve recommendation,
+- show no check/recheck action because the threshold failure is already known,
 - provide the reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD`.
 
 ## Why `Valid As Of` Replaces `Valid Until`
