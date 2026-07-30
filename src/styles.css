@@ -697,7 +697,7 @@ h3 {
 }
 
 .date-highlight-row {
-  width: calc((100% - var(--space-300)) / 2);
+  width: 100%;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   border: 2px solid var(--blue);
@@ -798,64 +798,64 @@ h3 {
   color: var(--ink);
 }
 
-.site-recommendation-list {
+.eligible-site-list {
   display: grid;
-  gap: var(--space-150);
 }
 
-.site-recommendation-option {
+.eligible-site-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(86px, auto);
+  align-items: center;
+  gap: var(--space-200);
+  min-height: 44px;
   border-bottom: 1px solid var(--line);
-  border-left: 3px solid transparent;
-  padding: 0 0 var(--space-150) var(--space-200);
+  padding: 0 0 var(--space-150);
+  color: var(--ink);
 }
 
-.site-recommendation-option:last-child {
+.eligible-site-row:last-child {
   border-bottom: 0;
 }
 
-.site-recommendation-option.is-selected {
-  border-left-color: var(--blue);
-  background: var(--blue-soft);
-}
-
-.site-recommendation-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(86px, auto) 20px;
-  align-items: center;
-  gap: var(--space-200);
-  width: 100%;
-  min-height: 44px;
-  color: var(--ink);
-  cursor: pointer;
-  outline: none;
-}
-
-.site-recommendation-row[data-hovered] strong,
-.site-recommendation-row[data-focus-visible] strong {
-  text-decoration: underline;
-}
-
-.site-select-indicator {
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radii-round);
-  background: var(--panel);
-}
-
-.site-recommendation-row[data-selected] .site-select-indicator {
-  border: 5px solid var(--blue);
-}
-
-.site-recommendation-row strong {
+.eligible-site-row strong {
   color: var(--blue);
   font-size: var(--font-size-2);
 }
 
-.site-recommendation-row em {
+.eligible-site-row em {
   color: var(--ink);
   font-style: normal;
   font-weight: 700;
+}
+
+.eligible-site-disclaimer {
+  display: grid;
+  gap: var(--space-150);
+  border-top: 1px solid var(--line);
+  margin: 0;
+  padding-top: var(--space-250);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-0);
+  line-height: 1.45;
+}
+
+.eligible-site-disclaimer p {
+  margin: 0;
+}
+
+.eligible-site-view-all {
+  display: block;
+  width: 100%;
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-200);
+  color: var(--blue);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.eligible-site-view-all:hover {
+  text-decoration: underline;
 }
 
 .mvp1-empty-state,

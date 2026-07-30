@@ -940,44 +940,35 @@ function EntryLanding({ onChooseExperience }) {
 
 function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
-  const [selectedSite, setSelectedSite] = useState('');
-  const [selectedSiteSource, setSelectedSiteSource] = useState('');
+  const [selectedSite, setSelectedSite] = useState('Hertenbosch');
+  const [selectedSiteSource, setSelectedSiteSource] = useState('recommended');
   const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
-  const isNonRecommendedSite = Boolean(selectedSite && (selectedSiteSource === 'all' || !selectedRecommendation));
+  const parsedStudyStartDate = parseFullDate(studyStartDate);
+  const isDateEligibleForSelfServe = Boolean(parsedStudyStartDate && parsedStudyStartDate > addMonths(mvp1AsOfDate, 4));
+  const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && selectedSite && (selectedSiteSource === 'all' || !selectedRecommendation));
 
   function updateField(name, value) {
     if (name === 'opportunityStartDate') {
       setStudyStartDate(value);
-      setSelectedSite('');
-      setSelectedSiteSource('');
       setHasCheckedRecommendations(false);
     }
   }
 
   function clearStartDate() {
     setStudyStartDate('');
-    setSelectedSite('');
-    setSelectedSiteSource('');
     setHasCheckedRecommendations(false);
   }
 
   function checkSiteRecommendations() {
     if (!parseFullDate(studyStartDate)) return;
-    setSelectedSite('');
-    setSelectedSiteSource('');
     setHasCheckedRecommendations(true);
     setRecommendationSnapshot((current) => ({
       checkedAt: new Date(),
       variant: current.variant + 1
     }));
-  }
-
-  function selectRecommendedSite(site) {
-    setSelectedSite(site);
-    setSelectedSiteSource('recommended');
   }
 
   function selectCrlSite(selection) {
@@ -1056,8 +1047,8 @@ function Mvp1Experience({ onHome }) {
                 <h4>Information</h4>
                 <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
                 <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
-                <div className={`wire-row date-highlight-row ${selectedSite ? 'has-site' : ''}`}>
-                  <div className={`date-site-control-grid ${selectedSite ? 'has-site' : ''}`}>
+                <div className="wire-row date-highlight-row has-site">
+                  <div className="date-site-control-grid has-site">
                     <DatePickerField
                       label="Start Date"
                       name="opportunityStartDate"
@@ -1066,15 +1057,13 @@ function Mvp1Experience({ onHome }) {
                       info="Used to request a refreshed site/month recommendation snapshot. The separate site lead-time prototype handles the actual ranking logic."
                       onChange={updateField}
                     />
-                    {selectedSite ? (
-                      <Mvp1CrlSiteField
-                        selectedSite={selectedSite}
-                        siteOptions={evaluation.recommendations}
-                        allSiteOptions={mvp1AllCrlSites}
-                        isOffRamp={isNonRecommendedSite}
-                        onChange={selectCrlSite}
-                      />
-                    ) : null}
+                    <Mvp1CrlSiteField
+                      selectedSite={selectedSite}
+                      siteOptions={evaluation.recommendations}
+                      allSiteOptions={mvp1AllCrlSites}
+                      isOffRamp={isNonRecommendedSite}
+                      onChange={selectCrlSite}
+                    />
                   </div>
                   <Button type="button" className="ghost-button compact-button" onPress={clearStartDate}>
                     Clear
@@ -1094,10 +1083,8 @@ function Mvp1Experience({ onHome }) {
           <aside className="sfdc-side-column">
             <Mvp1DecisionOutput
               evaluation={evaluation}
-              selectedSite={selectedSite}
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
-              onSelectSite={selectRecommendedSite}
               onCheckRecommendations={checkSiteRecommendations}
             />
             <SfdcSideCard title="Related context">
@@ -1110,22 +1097,23 @@ function Mvp1Experience({ onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendations, isSiteOffRamp, onSelectSite, onCheckRecommendations }) {
+function Mvp1DecisionOutput({ evaluation, hasCheckedRecommendations, isSiteOffRamp, onCheckRecommendations }) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
   const isDateOffRamp = evaluation.offRampReason === 'START_DATE_WITHIN_4_MONTH_THRESHOLD';
   const hasRecommendationList = hasCheckedRecommendations && evaluation.recommendations.length > 0;
-  const showKnownOffRampState = isDateOffRamp || isSiteOffRamp;
+  const showSiteOffRamp = isSiteOffRamp && !isMissingStartDate && !isDateOffRamp;
+  const showKnownOffRampState = isDateOffRamp || showSiteOffRamp;
   const showCheckedState = (hasCheckedRecommendations || showKnownOffRampState) && !isMissingStartDate;
-  const showCheckAction = !isMissingStartDate && !showKnownOffRampState && (!hasCheckedRecommendations || hasRecommendationList);
-  const panelLevel = isSiteOffRamp ? 'bad' : evaluation.level;
-  const panelTitle = isSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
-  const panelCopy = isSiteOffRamp
-    ? 'Selected CRL Site is outside the recommended site set. Send this request to Central Scheduling.'
+  const showCheckAction = !isMissingStartDate && !isDateOffRamp && (!hasCheckedRecommendations || hasRecommendationList);
+  const panelLevel = showSiteOffRamp ? 'bad' : evaluation.level;
+  const panelTitle = showSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
+  const panelCopy = showSiteOffRamp
+    ? 'Selected CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
     : evaluation.copy;
-  const selectedRecommendedSite = evaluation.recommendations.some((item) => item.site === selectedSite) ? selectedSite : '';
+  const eligibleSites = hasRecommendationList ? sortMvp1SiteRecommendations(evaluation.recommendations).slice(0, 5) : [];
 
   return (
-    <SfdcSideCard title="Recommended sites" className="mvp1-recommendations-card">
+    <SfdcSideCard title="Eligible sites" className="mvp1-recommendations-card">
       <div className="mvp1-native-panel">
         {showCheckedState ? (
           <div className={`mvp1-native-status ${panelLevel}`}>
@@ -1142,8 +1130,8 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
 
         {!hasRecommendationList ? (
           <div className="mvp1-empty-state">
-            <strong>{isMissingStartDate || isDateOffRamp ? evaluation.emptyTitle : 'No site recommendations loaded'}</strong>
-            <p>{isMissingStartDate || isDateOffRamp ? evaluation.emptyCopy : 'Check the current Study Start Date to load ranked site/month options.'}</p>
+            <strong>{isMissingStartDate || isDateOffRamp ? evaluation.emptyTitle : 'No eligible sites loaded'}</strong>
+            <p>{isMissingStartDate || isDateOffRamp ? evaluation.emptyCopy : 'Select Start Date and CRL Site, then check site recommendations to load eligible site/month options.'}</p>
           </div>
         ) : null}
 
@@ -1154,22 +1142,24 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
         ) : null}
 
         {hasRecommendationList ? (
-          <RadioGroup
-            className="site-recommendation-list"
-            aria-label="Recommended sites"
-            value={selectedRecommendedSite}
-            onChange={onSelectSite}
-          >
-            {evaluation.recommendations.map((item, index) => (
-              <div className={`site-recommendation-option ${selectedSite === item.site ? 'is-selected' : ''}`} key={item.site}>
-                <Radio className="site-recommendation-row" value={item.site}>
+          <>
+            <div className="eligible-site-list" aria-label="Eligible sites">
+              {eligibleSites.map((item) => (
+                <div className="eligible-site-row" key={`${item.site}-${item.availability}`}>
                   <strong>{item.site}</strong>
                   <em>{item.availability}</em>
-                  <span className="site-select-indicator" aria-hidden="true" />
-                </Radio>
-              </div>
-            ))}
-          </RadioGroup>
+                </div>
+              ))}
+            </div>
+            <div className="eligible-site-disclaimer">
+              <p>Eligible sites match current Commercial snapshot as a proposal window. No capacity hold implied.</p>
+              <p>Data used: SFDC Opportunity/RFP fields, Lead-time snapshot, Site capability reference.</p>
+              <p>Recheck if: SOW delay, Scope/configuration change, Site preference change, Client response after expiry</p>
+            </div>
+            <a className="eligible-site-view-all" href="#eligible-sites-detail">
+              View all
+            </a>
+          </>
         ) : null}
 
         {showCheckedState && evaluation.offRampReason ? (
@@ -1179,7 +1169,7 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
           </div>
         ) : null}
 
-        {isSiteOffRamp ? (
+        {showSiteOffRamp ? (
           <div className="mvp1-offramp-note">
             <strong>Off-ramp reason</strong>
             <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
@@ -1205,15 +1195,15 @@ function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp
       selectedKey={selectedKey}
       onSelectionChange={handleSelectionChange}
     >
-      <FieldLabel label="CRL Site" info="UI-only selected recommendation site. This does not reserve capacity." />
+      <FieldLabel label="CRL Site" info="Preferred CRL Site for the commercial request. This does not reserve capacity." />
       <Button className="select-button">
         <SelectValue />
         <ChevronDownIcon />
       </Button>
       <Popover className="select-popover">
         <ListBox className="select-list">
-          <ListBoxItem className="select-option select-group-label" id="recommended-sites-label" isDisabled textValue="Recommended">
-            Recommended
+          <ListBoxItem className="select-option select-group-label" id="eligible-sites-label" isDisabled textValue="Eligible">
+            Eligible
           </ListBoxItem>
           {siteOptions.map((option) => (
             <ListBoxItem className="select-option" id={`recommended:${option.site}`} key={option.site} textValue={option.site}>
@@ -1257,7 +1247,7 @@ function evaluateMvp1DateOnly(studyStartDate, snapshot) {
     return {
       level: 'warn',
       title: 'Missing information',
-      copy: 'MVP1 cannot show recommended sites until the SFDC Study Start Date is populated.',
+      copy: 'MVP1 cannot show eligible sites until the SFDC Study Start Date is populated.',
       validAsOf,
       recommendations: [],
       emptyTitle: 'Missing information',
@@ -1281,7 +1271,7 @@ function evaluateMvp1DateOnly(studyStartDate, snapshot) {
 
   return {
     level: 'good',
-    title: 'Recommended sites',
+    title: 'Eligible sites',
     copy: 'Refreshed from the separate site lead-time logic. No capacity is reserved by this view.',
     validAsOf,
     recommendations: buildMvp1SiteRecommendations(startDate, snapshot.variant),
@@ -1289,6 +1279,20 @@ function evaluateMvp1DateOnly(studyStartDate, snapshot) {
     emptyCopy: '',
     offRampReason: null
   };
+}
+
+function sortMvp1SiteRecommendations(recommendations) {
+  return [...recommendations].sort((a, b) => {
+    const availabilityDiff = monthLabelToSortValue(a.availability) - monthLabelToSortValue(b.availability);
+    if (availabilityDiff !== 0) return availabilityDiff;
+    return a.site.localeCompare(b.site);
+  });
+}
+
+function monthLabelToSortValue(monthLabel) {
+  const parsed = parseMonthSelection(monthLabel);
+  if (!parsed) return Number.MAX_SAFE_INTEGER;
+  return parsed.year * 12 + parsed.month;
 }
 
 function buildMvp1SiteRecommendations(startDate, variant = 0) {
