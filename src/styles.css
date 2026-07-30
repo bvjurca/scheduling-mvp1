@@ -1342,6 +1342,10 @@ input[type="date"][tabindex="-1"],
   pointer-events: none;
 }
 
+.mvp1-crl-site-field .field-error {
+  color: var(--color-danger);
+}
+
 .field-input:hover,
 .select-button:hover,
 .date-group:hover,
