@@ -700,12 +700,12 @@ h3 {
   width: 100%;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
-  border: 2px solid var(--blue);
-  border-radius: var(--radii-75);
-  background: var(--blue-soft);
-  box-shadow: 0 0 0 4px #005aa814;
-  margin: var(--space-100) 0 var(--space-200);
-  padding: var(--space-300);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin: 0;
+  padding: var(--space-100) var(--space-300) var(--space-250);
 }
 
 .date-highlight-row.has-site {
@@ -1088,9 +1088,9 @@ h3 {
 .mvp1-study-shell .sfdc-study-wireframe .sfdc-card-head span,
 .mvp1-study-shell .sfdc-tabs span,
 .mvp1-study-shell .wire-section h4,
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > span,
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > strong,
-.mvp1-study-shell .wire-row:not(.date-highlight-row) .wire-edit-icon,
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > span,
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > strong,
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) .wire-edit-icon,
 .mvp1-study-shell .sfdc-side-card:not(.mvp1-recommendations-card) h3,
 .mvp1-study-shell .sfdc-side-card:not(.mvp1-recommendations-card) p {
   border-color: transparent !important;
@@ -1190,21 +1190,21 @@ h3 {
   height: 32px;
 }
 
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > span,
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > strong {
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > span,
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > strong {
   display: block;
   height: 13px;
 }
 
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > span {
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > span {
   width: 88%;
 }
 
-.mvp1-study-shell .wire-row:not(.date-highlight-row) > strong {
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) > strong {
   width: 62%;
 }
 
-.mvp1-study-shell .wire-row:not(.date-highlight-row) .wire-edit-icon {
+.mvp1-study-shell .wire-row:not(.date-highlight-row):not(.visible-wire-row) .wire-edit-icon {
   width: 15px;
   height: 15px;
 }
