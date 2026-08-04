@@ -671,7 +671,7 @@ h3 {
 
 .wire-row span {
   color: var(--color-text-secondary);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .wire-row strong {
@@ -897,7 +897,7 @@ h3 {
   gap: var(--space-100);
   color: var(--color-text-muted);
   font-size: var(--font-size--1);
-  font-weight: 800;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -1032,6 +1032,10 @@ h3 {
   gap: var(--space-150);
   color: var(--blue);
   font-weight: 800;
+}
+
+.eligible-sites-detail-row:not(.eligible-sites-detail-table-head) > span:nth-child(3) {
+  font-weight: 700;
 }
 
 .eligible-sites-detail-row a {
