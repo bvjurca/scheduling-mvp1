@@ -813,6 +813,19 @@ h3 {
   color: var(--ink);
 }
 
+.eligible-site-main {
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto;
+  justify-content: start;
+  align-items: center;
+  gap: var(--space-100) var(--space-150);
+  min-width: 0;
+}
+
+.eligible-site-main .last-updated-marker {
+  grid-column: 1 / -1;
+}
+
 .eligible-site-row:last-child {
   border-bottom: 0;
 }
@@ -846,8 +859,13 @@ h3 {
 .eligible-site-view-all {
   display: block;
   width: 100%;
+  border: 0;
   border-top: 1px solid var(--line);
-  padding-top: var(--space-200);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-1);
+  padding: var(--space-200) 0 0;
   color: var(--blue);
   font-weight: 800;
   text-align: center;
@@ -856,6 +874,192 @@ h3 {
 
 .eligible-site-view-all:hover {
   text-decoration: underline;
+}
+
+.preferred-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 20px;
+  border: 1px solid #b6d7f4;
+  border-radius: var(--radii-round);
+  background: #f2f8ff;
+  color: var(--blue);
+  font-size: var(--font-size--1);
+  font-weight: 800;
+  line-height: 1;
+  padding: 0 var(--space-150);
+}
+
+.last-updated-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+  color: var(--color-text-muted);
+  font-size: var(--font-size--1);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.last-updated-marker.fresh {
+  color: var(--color-success-text);
+}
+
+.last-updated-marker.aging {
+  color: var(--color-warning-text);
+}
+
+.last-updated-marker.stale {
+  color: var(--color-danger);
+}
+
+.time-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.mvp1-site-detail-shell {
+  min-height: 720px;
+}
+
+.eligible-sites-detail-card {
+  margin: var(--space-400);
+  overflow: hidden;
+  padding: 0;
+}
+
+.eligible-sites-detail-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: var(--space-250);
+  align-items: end;
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: var(--space-300) var(--space-400);
+}
+
+.sfdc-object-icon {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radii-75);
+  background: #ff7043;
+  color: white;
+  font-size: var(--font-size-4);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.eligible-sites-title-block {
+  display: grid;
+  gap: var(--space-100);
+}
+
+.eligible-sites-detail-head .eligible-sites-breadcrumb {
+  color: var(--blue);
+  font-size: var(--font-size-0);
+  font-weight: 700;
+}
+
+.eligible-sites-detail-head h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--font-size-4);
+  line-height: 1.15;
+}
+
+.eligible-sites-detail-head span {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.eligible-sites-detail-head .sfdc-object-icon span {
+  color: white;
+}
+
+.valid-as-of.compact {
+  border-bottom: 0;
+  padding-bottom: 0;
+  white-space: nowrap;
+}
+
+.eligible-sites-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-100);
+}
+
+.list-tool-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radii-75);
+  background: white;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-0);
+  font-weight: 800;
+  line-height: 1;
+  padding: 0 var(--space-150);
+}
+
+.list-tool-button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.eligible-sites-detail-table {
+  display: grid;
+  overflow: auto;
+}
+
+.eligible-sites-detail-row {
+  display: grid;
+  grid-template-columns: 72px minmax(240px, 1.25fr) minmax(150px, 0.7fr) minmax(190px, 0.8fr) minmax(132px, 0.55fr);
+  align-items: center;
+  min-width: 980px;
+  min-height: 34px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.eligible-sites-detail-row:last-child {
+  border-bottom: 0;
+}
+
+.eligible-sites-detail-row > * {
+  min-width: 0;
+  padding: var(--space-150) var(--space-250);
+}
+
+.eligible-sites-detail-table-head {
+  min-height: 40px;
+  background: #f3f5f7;
+  color: var(--color-text-secondary);
+  font-weight: 800;
+}
+
+.eligible-sites-detail-table-head span {
+  border-right: 1px solid var(--line);
+}
+
+.eligible-sites-detail-table-head span:last-child {
+  border-right: 0;
+}
+
+.eligible-sites-detail-row strong {
+  color: var(--blue);
+  font-weight: 800;
 }
 
 .mvp1-empty-state,

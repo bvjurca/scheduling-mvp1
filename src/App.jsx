@@ -32,25 +32,29 @@ const mvp1AsOfDate = new Date(2026, 6, 28, 12, 9);
 const expiryBusinessDays = 5;
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const monthLookup = Object.fromEntries(monthNames.map((month, index) => [month.toLowerCase(), index]));
-const mvp1AllCrlSites = [
-  'Alderley',
-  'Ashland',
-  'Barcelona',
-  'Beerse',
-  'Cleveland',
-  'Edinburgh',
-  'Elphinstone',
-  'Evreux',
-  'Freiburg',
-  'Harrogate',
-  'Horsham',
-  'Kansas City',
-  'Laval',
-  'Leiden',
-  'Montreal',
-  'Portishead',
-  'Shrewsbury'
+const mvp1EligibleSiteLeadTimes = [
+  { site: 'Hertenbosch', monthOffset: 0, updatedDaysAgo: 4 },
+  { site: 'Reno', monthOffset: 0, updatedDaysAgo: 10 },
+  { site: 'Ashland', monthOffset: 0, updatedDaysAgo: 24 },
+  { site: 'Lyon', monthOffset: 1, updatedDaysAgo: 3 },
+  { site: 'Senneville', monthOffset: 1, updatedDaysAgo: 12 },
+  { site: 'Shrewsbury', monthOffset: 1, updatedDaysAgo: 18 },
+  { site: 'Laval', monthOffset: 1, updatedDaysAgo: 31 },
+  { site: 'Mattawan', monthOffset: 2, updatedDaysAgo: 7 },
+  { site: 'Montreal', monthOffset: 2, updatedDaysAgo: 14 },
+  { site: 'Edinburgh', monthOffset: 2, updatedDaysAgo: 22 },
+  { site: 'Evreux', monthOffset: 2, updatedDaysAgo: 35 },
+  { site: 'Horsham', monthOffset: 3, updatedDaysAgo: 2 },
+  { site: 'Kansas City', monthOffset: 3, updatedDaysAgo: 16 },
+  { site: 'Portishead', monthOffset: 3, updatedDaysAgo: 27 },
+  { site: 'Alderley', monthOffset: 4, updatedDaysAgo: 6 },
+  { site: 'Elphinstone', monthOffset: 4, updatedDaysAgo: 25 },
+  { site: 'Barcelona', monthOffset: 4, updatedDaysAgo: 34 },
+  { site: 'Beerse', monthOffset: 5, updatedDaysAgo: 11 },
+  { site: 'Cleveland', monthOffset: 5, updatedDaysAgo: 21 },
+  { site: 'Freiburg', monthOffset: 5, updatedDaysAgo: 42 }
 ];
+const mvp1AllCrlSites = mvp1EligibleSiteLeadTimes.map((item) => item.site).sort((a, b) => a.localeCompare(b));
 
 const siteCapabilities = {
   Mattawan: {
@@ -941,39 +945,52 @@ function EntryLanding({ onChooseExperience }) {
 function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
   const [selectedSite, setSelectedSite] = useState('Hertenbosch');
-  const [selectedSiteSource, setSelectedSiteSource] = useState('recommended');
   const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
+  const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
   const parsedStudyStartDate = parseFullDate(studyStartDate);
   const isDateEligibleForSelfServe = Boolean(parsedStudyStartDate && parsedStudyStartDate > addMonths(mvp1AsOfDate, 4));
-  const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && selectedSite && (selectedSiteSource === 'all' || !selectedRecommendation));
+  const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && selectedSite && !selectedRecommendation);
 
   function updateField(name, value) {
     if (name === 'opportunityStartDate') {
       setStudyStartDate(value);
       setHasCheckedRecommendations(false);
+      setIsEligibleSitesDetailOpen(false);
     }
   }
 
   function clearStartDate() {
     setStudyStartDate('');
     setHasCheckedRecommendations(false);
+    setIsEligibleSitesDetailOpen(false);
   }
 
   function checkSiteRecommendations() {
     if (!parseFullDate(studyStartDate)) return;
     setHasCheckedRecommendations(true);
+    setIsEligibleSitesDetailOpen(false);
     setRecommendationSnapshot((current) => ({
       checkedAt: new Date(),
       variant: current.variant + 1
     }));
   }
 
-  function selectCrlSite(selection) {
-    setSelectedSite(selection.site);
-    setSelectedSiteSource(selection.source);
+  function selectCrlSite(site) {
+    setSelectedSite(site);
+  }
+
+  if (isEligibleSitesDetailOpen) {
+    return (
+      <Mvp1EligibleSitesDetail
+        evaluation={evaluation}
+        selectedSite={selectedSite}
+        onBack={() => setIsEligibleSitesDetailOpen(false)}
+        onHome={onHome}
+      />
+    );
   }
 
   return (
@@ -1059,7 +1076,6 @@ function Mvp1Experience({ onHome }) {
                     />
                     <Mvp1CrlSiteField
                       selectedSite={selectedSite}
-                      siteOptions={evaluation.recommendations}
                       allSiteOptions={mvp1AllCrlSites}
                       isOffRamp={isNonRecommendedSite}
                       onChange={selectCrlSite}
@@ -1083,9 +1099,11 @@ function Mvp1Experience({ onHome }) {
           <aside className="sfdc-side-column">
             <Mvp1DecisionOutput
               evaluation={evaluation}
+              selectedSite={selectedSite}
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
               onCheckRecommendations={checkSiteRecommendations}
+              onViewAll={() => setIsEligibleSitesDetailOpen(true)}
             />
             <SfdcSideCard title="Related context">
               <p>SFDC related-list placeholder. MVP1 does not read these fields.</p>
@@ -1097,7 +1115,83 @@ function Mvp1Experience({ onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ evaluation, hasCheckedRecommendations, isSiteOffRamp, onCheckRecommendations }) {
+function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
+  const eligibleSites = sortMvp1SiteRecommendations(evaluation.recommendations).slice(0, 20);
+
+  return (
+    <div className="app mvp1-app">
+      <header className="topbar">
+        <h1>SFDC Wireframe</h1>
+        <div className="topbar-actions">
+          <Button type="button" className="ghost-button" onPress={onBack}>
+            &lt;-- Back
+          </Button>
+          <Button type="button" className="ghost-button" onPress={onHome}>
+            Home
+          </Button>
+        </div>
+      </header>
+
+      <main className="sfdc-shell mvp1-site-detail-shell" aria-labelledby="eligible-sites-detail-title">
+        <nav className="sfdc-nav" aria-label="Salesforce navigation">
+          <div className="sfdc-cloud-logo" aria-label="Salesforce">
+            <SalesforceCloudLogo />
+          </div>
+          <strong>RACE</strong>
+          <span>Home</span>
+          <span>Accounts</span>
+          <span>Opportunities</span>
+          <span className="is-active">Studies</span>
+          <span>Reports</span>
+          <span>Dashboards</span>
+        </nav>
+
+        <section className="sfdc-card eligible-sites-detail-card" aria-label="Eligible Sites list detail">
+          <div className="eligible-sites-detail-head">
+            <div className="sfdc-object-icon" aria-hidden="true">
+              <span>+</span>
+            </div>
+            <div className="eligible-sites-title-block">
+              <span className="eligible-sites-breadcrumb">Studies &gt; In Vivo - Ecotoxicology Daphnia sp. Acute Immobilisation Test</span>
+              <h2 id="eligible-sites-detail-title">Eligible Sites</h2>
+              <span>20 items - sorted by lead time, then most recent update</span>
+            </div>
+            <div className="valid-as-of compact">
+              Valid as of <strong>{evaluation.validAsOf}</strong>
+            </div>
+            <div className="eligible-sites-toolbar" aria-label="List actions">
+              <Button type="button" className="list-tool-button" aria-label="List settings">...</Button>
+              <Button type="button" className="list-tool-button" aria-label="Refresh list">R</Button>
+              <Button type="button" className="list-tool-button" aria-label="Sort list">S</Button>
+              <Button type="button" className="list-tool-button" aria-label="Filter list">F</Button>
+            </div>
+          </div>
+
+          <div className="eligible-sites-detail-table" role="table" aria-label="Eligible Sites ranked list">
+            <div className="eligible-sites-detail-row eligible-sites-detail-table-head" role="row">
+              <span>Rank</span>
+              <span>Site</span>
+              <span>Lead Time</span>
+              <span>Last Updated</span>
+              <span>Preference</span>
+            </div>
+            {eligibleSites.map((item, index) => (
+              <div className="eligible-sites-detail-row" role="row" key={`${item.site}-${item.availability}`}>
+                <span>{index + 1}</span>
+                <strong>{item.site}</strong>
+                <span>{item.availability}</span>
+                <LastUpdatedMarker item={item} />
+                <span>{item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendations, isSiteOffRamp, onCheckRecommendations, onViewAll }) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
   const isDateOffRamp = evaluation.offRampReason === 'START_DATE_WITHIN_4_MONTH_THRESHOLD';
   const hasRecommendationList = hasCheckedRecommendations && evaluation.recommendations.length > 0;
@@ -1146,7 +1240,11 @@ function Mvp1DecisionOutput({ evaluation, hasCheckedRecommendations, isSiteOffRa
             <div className="eligible-site-list" aria-label="Eligible sites">
               {eligibleSites.map((item) => (
                 <div className="eligible-site-row" key={`${item.site}-${item.availability}`}>
-                  <strong>{item.site}</strong>
+                  <div className="eligible-site-main">
+                    <strong>{item.site}</strong>
+                    {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
+                    <LastUpdatedMarker item={item} />
+                  </div>
                   <em>{item.availability}</em>
                 </div>
               ))}
@@ -1156,9 +1254,9 @@ function Mvp1DecisionOutput({ evaluation, hasCheckedRecommendations, isSiteOffRa
               <p>Data used: SFDC Opportunity/RFP fields, Lead-time snapshot, Site capability reference.</p>
               <p>Recheck if: SOW delay, Scope/configuration change, Site preference change, Client response after expiry</p>
             </div>
-            <a className="eligible-site-view-all" href="#eligible-sites-detail">
+            <Button type="button" className="eligible-site-view-all" onPress={onViewAll}>
               View all
-            </a>
+            </Button>
           </>
         ) : null}
 
@@ -1180,20 +1278,23 @@ function Mvp1DecisionOutput({ evaluation, hasCheckedRecommendations, isSiteOffRa
   );
 }
 
-function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp, onChange }) {
-  const selectedKey = selectedSite ? `${isOffRamp ? 'all' : 'recommended'}:${selectedSite}` : null;
-  const allOptions = allSiteOptions.filter((site) => !siteOptions.some((option) => option.site === site));
+function LastUpdatedMarker({ item }) {
+  return (
+    <span className={`last-updated-marker ${item.freshnessLevel}`}>
+      <ClockIcon />
+      Updated {formatDate(item.lastUpdated)}
+    </span>
+  );
+}
 
-  function handleSelectionChange(key) {
-    const [source, ...siteParts] = String(key).split(':');
-    onChange({ source, site: siteParts.join(':') });
-  }
+function Mvp1CrlSiteField({ selectedSite, allSiteOptions, isOffRamp, onChange }) {
+  const selectedKey = selectedSite || null;
 
   return (
     <Select
       className={`field select-field mvp1-crl-site-field ${isOffRamp ? 'is-error' : ''}`}
       selectedKey={selectedKey}
-      onSelectionChange={handleSelectionChange}
+      onSelectionChange={(key) => onChange(String(key))}
     >
       <FieldLabel label="CRL Site" info="Preferred CRL Site for the commercial request. This does not reserve capacity." />
       <Button className="select-button">
@@ -1202,22 +1303,8 @@ function Mvp1CrlSiteField({ selectedSite, siteOptions, allSiteOptions, isOffRamp
       </Button>
       <Popover className="select-popover">
         <ListBox className="select-list">
-          <ListBoxItem className="select-option select-group-label" id="eligible-sites-label" isDisabled textValue="Eligible">
-            Eligible
-          </ListBoxItem>
-          {siteOptions.map((option) => (
-            <ListBoxItem className="select-option" id={`recommended:${option.site}`} key={option.site} textValue={option.site}>
-              {option.site}
-            </ListBoxItem>
-          ))}
-          <ListBoxItem className="select-option select-separator" id="site-list-separator" isDisabled textValue="separator">
-            <span aria-hidden="true" />
-          </ListBoxItem>
-          <ListBoxItem className="select-option select-group-label" id="all-sites-label" isDisabled textValue="All">
-            All
-          </ListBoxItem>
-          {allOptions.map((site) => (
-            <ListBoxItem className="select-option" id={`all:${site}`} key={site} textValue={site}>
+          {allSiteOptions.map((site) => (
+            <ListBoxItem className="select-option" id={site} key={site} textValue={site}>
               {site}
             </ListBoxItem>
           ))}
@@ -1274,7 +1361,7 @@ function evaluateMvp1DateOnly(studyStartDate, snapshot) {
     title: 'Eligible sites',
     copy: 'Refreshed from the separate site lead-time logic. No capacity is reserved by this view.',
     validAsOf,
-    recommendations: buildMvp1SiteRecommendations(startDate, snapshot.variant),
+    recommendations: buildMvp1SiteRecommendations(startDate, snapshot),
     emptyTitle: '',
     emptyCopy: '',
     offRampReason: null
@@ -1285,6 +1372,8 @@ function sortMvp1SiteRecommendations(recommendations) {
   return [...recommendations].sort((a, b) => {
     const availabilityDiff = monthLabelToSortValue(a.availability) - monthLabelToSortValue(b.availability);
     if (availabilityDiff !== 0) return availabilityDiff;
+    const updatedDiff = b.lastUpdated.getTime() - a.lastUpdated.getTime();
+    if (updatedDiff !== 0) return updatedDiff;
     return a.site.localeCompare(b.site);
   });
 }
@@ -1295,37 +1384,33 @@ function monthLabelToSortValue(monthLabel) {
   return parsed.year * 12 + parsed.month;
 }
 
-function buildMvp1SiteRecommendations(startDate, variant = 0) {
+function buildMvp1SiteRecommendations(startDate, snapshot) {
   const targetMonth = `${monthNames[startDate.getUTCMonth()]}-${startDate.getUTCFullYear()}`;
-  const rankingVariants = [
-    [
-      { site: 'Hertenbosch', monthOffset: 0 },
-      { site: 'Reno', monthOffset: 1 },
-      { site: 'Lyon', monthOffset: 1 },
-      { site: 'Senneville', monthOffset: 2 },
-      { site: 'Mattawan', monthOffset: 2 }
-    ],
-    [
-      { site: 'Reno', monthOffset: 0 },
-      { site: 'Hertenbosch', monthOffset: 1 },
-      { site: 'Senneville', monthOffset: 1 },
-      { site: 'Lyon', monthOffset: 2 },
-      { site: 'Mattawan', monthOffset: 2 }
-    ],
-    [
-      { site: 'Lyon', monthOffset: 0 },
-      { site: 'Hertenbosch', monthOffset: 0 },
-      { site: 'Reno', monthOffset: 1 },
-      { site: 'Mattawan', monthOffset: 2 },
-      { site: 'Senneville', monthOffset: 2 }
-    ]
-  ];
-  const rankedSites = rankingVariants[variant % rankingVariants.length];
+  const checkedAt = snapshot?.checkedAt ?? mvp1AsOfDate;
 
-  return rankedSites.map((item) => ({
-    site: item.site,
-    availability: shiftMonthLabel(targetMonth, item.monthOffset)
+  return sortMvp1SiteRecommendations(mvp1EligibleSiteLeadTimes.map((item) => {
+    const lastUpdated = subtractDays(checkedAt, item.updatedDaysAgo);
+    return {
+      site: item.site,
+      availability: shiftMonthLabel(targetMonth, item.monthOffset),
+      monthOffset: item.monthOffset,
+      lastUpdated,
+      updatedDaysAgo: item.updatedDaysAgo,
+      freshnessLevel: freshnessLevelFor(item.updatedDaysAgo)
+    };
   }));
+}
+
+function subtractDays(date, days) {
+  const next = new Date(date);
+  next.setDate(next.getDate() - days);
+  return next;
+}
+
+function freshnessLevelFor(daysAgo) {
+  if (daysAgo <= 14) return 'fresh';
+  if (daysAgo <= 28) return 'aging';
+  return 'stale';
 }
 
 function formatDateTime(date) {
@@ -2422,6 +2507,15 @@ function CalendarIcon() {
       <path d="M16 2v4" />
       <path d="M3 10h18" />
       <path d="M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg className="time-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 8v5l3 2" />
+      <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
     </svg>
   );
 }

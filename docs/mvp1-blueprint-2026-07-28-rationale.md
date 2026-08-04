@@ -45,16 +45,18 @@ The MVP1 path now presents:
 4. A highlighted CRL Site dropdown beside the date field, prefilled from the SFDC Study record.
 5. A right-side native SFDC-style box titled `Eligible sites`.
 6. An initial empty state until the user checks the current Study Start Date and CRL Site.
-7. A compact, read-only `Eligible sites` list with five site/month rows after the first check.
-8. Eligible rows sorted chronologically by month, then by site name when months tie.
-9. A `View all` link placeholder for a future standalone SFDC detail list view.
-10. A confidence disclaimer explaining that the output is a proposal window, not a capacity hold.
-11. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot and can change ranking order.
-12. A grouped `CRL Site` dropdown that lists eligible sites first, then all other site names.
-13. Central Scheduling off-ramp handling when the user selects a non-eligible CRL site.
-14. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after an eligible list is loaded.
-15. Missing-information handling when Study Start Date is blank.
-16. Immediate Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
+7. A compact, read-only `Eligible sites` list with the first five ranked site/month rows after the first check.
+8. A synthetic approximately 20-site eligible set behind the module.
+9. Eligible rows sorted chronologically by lead-time month, then by most recent lead-time update when months tie.
+10. A `View all` action that opens a Salesforce-style list detail view with 20 ranked rows.
+11. A `Preferred` marker for the CRL Site selected in the Study field.
+12. A last-updated marker on every visible eligible site, using a time icon and recency color.
+13. A confidence disclaimer explaining that the output is a proposal window, not a capacity hold.
+14. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot timestamp.
+15. A simplified alphabetically sorted `CRL Site` dropdown.
+16. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after an eligible list is loaded.
+17. Missing-information handling when Study Start Date is blank.
+18. Immediate Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
 
 ## What The Eligible Site List Means
 
@@ -67,6 +69,8 @@ It means:
 - and based on separately governed site lead-time/ranking logic,
 - Commercial can see candidate site/month options.
 - Commercial can compare the preferred site against other eligible site/month options.
+- Commercial can see whether the selected CRL Site appears in the ranked eligible set.
+- Commercial can see how recently each lead-time signal was updated.
 
 It does not mean:
 
@@ -77,7 +81,21 @@ It does not mean:
 - all downstream dependencies are resolved.
 - any option has been routed, reserved, or committed.
 
-The list is FYI only. It has no radio control, selected state, hover affordance, or routing behavior. A future SFDC detail list can expose all eligible options; MVP1 only previews the first five rows.
+The list is FYI only. It has no radio control, selected state, hover affordance, or routing behavior. The side module previews the first five rows. `View all` opens a Salesforce-style detail list with 20 ranked rows.
+
+Ranking rule shown in this prototype:
+
+- sort first by lead-time month,
+- if lead-time month ties, sort by the most recently updated lead-time signal,
+- if both tie, sort alphabetically by site.
+
+The color-coded last-updated marker is a trust signal, not another recommendation rule:
+
+- green: updated within 2 weeks,
+- orange: updated within 2-4 weeks,
+- red: updated more than 4 weeks ago.
+
+The selected CRL Site appears as `Preferred` in both the five-row module and the 20-row detail list when it is present in the eligible set. `Preferred` means user-entered preference, not a committed or reserved site.
 
 ## Peace Of Mind Disclaimer
 
@@ -163,4 +181,6 @@ The right-side eligible-sites list mimics native SFDC related-list/card styling 
 
 The `CRL Site` dropdown appears next to `Start Date` from the beginning because preferred site is part of Commercial’s starting context. That location is intentional: it makes MVP1 feel like a field-level augmentation of the existing Study page, while avoiding any expanded workflow inside the recommendation list.
 
-If the user changes `CRL Site` to a site from the broader `All` list, the recommendation panel switches to a Central Scheduling off-ramp and the CRL Site field shows an error state. This keeps MVP1 honest: non-eligible site choices are captured, but they are not treated as self-serve proposal windows.
+The `CRL Site` dropdown is now one alphabetically sorted list. Reason: the earlier grouped dropdown over-explained eligibility inside the input. MVP1 should let Commercial set the preferred site in the familiar SFDC field location, then let the recommendations module show where that selected site lands in the ranked eligible set.
+
+The `View all` list uses SFDC-style table density because the stakeholder reference was a native Salesforce list detail view. This keeps the expanded state recognizable without implying a new scheduling application or a separate workflow.
