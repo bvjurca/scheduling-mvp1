@@ -901,19 +901,16 @@ h3 {
   white-space: nowrap;
 }
 
-.last-updated-marker.fresh {
-  color: var(--color-success-text);
-}
-
+.last-updated-marker.fresh,
 .last-updated-marker.aging {
-  color: var(--color-warning-text);
+  color: var(--color-text-muted);
 }
 
 .last-updated-marker.stale {
   color: var(--color-danger);
 }
 
-.time-icon {
+.recency-warning-icon {
   width: 14px;
   height: 14px;
   fill: none;
@@ -935,7 +932,7 @@ h3 {
 
 .eligible-sites-detail-head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--space-250);
   align-items: end;
   border-bottom: 1px solid var(--line);
@@ -990,34 +987,6 @@ h3 {
   white-space: nowrap;
 }
 
-.eligible-sites-toolbar {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-100);
-}
-
-.list-tool-button {
-  display: inline-grid;
-  place-items: center;
-  min-width: 32px;
-  height: 32px;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radii-75);
-  background: white;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--font-size-0);
-  font-weight: 800;
-  line-height: 1;
-  padding: 0 var(--space-150);
-}
-
-.list-tool-button:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-
 .eligible-sites-detail-table {
   display: grid;
   overflow: auto;
@@ -1025,7 +994,7 @@ h3 {
 
 .eligible-sites-detail-row {
   display: grid;
-  grid-template-columns: 72px minmax(240px, 1.25fr) minmax(150px, 0.7fr) minmax(190px, 0.8fr) minmax(132px, 0.55fr);
+  grid-template-columns: 72px minmax(280px, 1.35fr) minmax(150px, 0.7fr) minmax(190px, 0.8fr) minmax(180px, 0.75fr);
   align-items: center;
   min-width: 980px;
   min-height: 34px;
@@ -1058,8 +1027,21 @@ h3 {
 }
 
 .eligible-sites-detail-row strong {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-150);
   color: var(--blue);
   font-weight: 800;
+}
+
+.eligible-sites-detail-row a {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.eligible-sites-detail-row a:hover {
+  text-decoration: underline;
 }
 
 .mvp1-empty-state,

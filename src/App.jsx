@@ -55,6 +55,7 @@ const mvp1EligibleSiteLeadTimes = [
   { site: 'Freiburg', monthOffset: 5, updatedDaysAgo: 42 }
 ];
 const mvp1AllCrlSites = mvp1EligibleSiteLeadTimes.map((item) => item.site).sort((a, b) => a.localeCompare(b));
+const mvp1LeadTimeOffsetPattern = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6];
 
 const siteCapabilities = {
   Mattawan: {
@@ -1159,12 +1160,6 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
             <div className="valid-as-of compact">
               Valid as of <strong>{evaluation.validAsOf}</strong>
             </div>
-            <div className="eligible-sites-toolbar" aria-label="List actions">
-              <Button type="button" className="list-tool-button" aria-label="List settings">...</Button>
-              <Button type="button" className="list-tool-button" aria-label="Refresh list">R</Button>
-              <Button type="button" className="list-tool-button" aria-label="Sort list">S</Button>
-              <Button type="button" className="list-tool-button" aria-label="Filter list">F</Button>
-            </div>
           </div>
 
           <div className="eligible-sites-detail-table" role="table" aria-label="Eligible Sites ranked list">
@@ -1173,15 +1168,18 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
               <span>Site</span>
               <span>Lead Time</span>
               <span>Last Updated</span>
-              <span>Preference</span>
+              <span>Source</span>
             </div>
             {eligibleSites.map((item, index) => (
               <div className="eligible-sites-detail-row" role="row" key={`${item.site}-${item.availability}`}>
                 <span>{index + 1}</span>
-                <strong>{item.site}</strong>
+                <strong>
+                  {item.site}
+                  {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
+                </strong>
                 <span>{item.availability}</span>
                 <LastUpdatedMarker item={item} />
-                <span>{item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}</span>
+                <a href="#" onClick={(event) => event.preventDefault()}>PowerBI Dashboard</a>
               </div>
             ))}
           </div>
@@ -1279,9 +1277,11 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
 }
 
 function LastUpdatedMarker({ item }) {
+  const showWarning = item.freshnessLevel !== 'fresh';
+
   return (
     <span className={`last-updated-marker ${item.freshnessLevel}`}>
-      <ClockIcon />
+      {showWarning ? <RecencyWarningIcon /> : null}
       Updated {formatDate(item.lastUpdated)}
     </span>
   );
@@ -1387,18 +1387,43 @@ function monthLabelToSortValue(monthLabel) {
 function buildMvp1SiteRecommendations(startDate, snapshot) {
   const targetMonth = `${monthNames[startDate.getUTCMonth()]}-${startDate.getUTCFullYear()}`;
   const checkedAt = snapshot?.checkedAt ?? mvp1AsOfDate;
+  const variant = snapshot?.variant ?? 0;
+  const shuffledSites = shuffleWithSeed(mvp1EligibleSiteLeadTimes, variant + 1);
 
-  return sortMvp1SiteRecommendations(mvp1EligibleSiteLeadTimes.map((item) => {
-    const lastUpdated = subtractDays(checkedAt, item.updatedDaysAgo);
+  return sortMvp1SiteRecommendations(shuffledSites.map((item, index) => {
+    const monthOffset = mvp1LeadTimeOffsetPattern[index % mvp1LeadTimeOffsetPattern.length];
+    const adjustedDaysAgo = ((item.updatedDaysAgo + (variant * 5) + (index * 3)) % 49) + 1;
+    const lastUpdated = subtractDays(checkedAt, adjustedDaysAgo);
     return {
       site: item.site,
-      availability: shiftMonthLabel(targetMonth, item.monthOffset),
-      monthOffset: item.monthOffset,
+      availability: shiftMonthLabel(targetMonth, monthOffset),
+      monthOffset,
       lastUpdated,
-      updatedDaysAgo: item.updatedDaysAgo,
-      freshnessLevel: freshnessLevelFor(item.updatedDaysAgo)
+      updatedDaysAgo: adjustedDaysAgo,
+      freshnessLevel: freshnessLevelFor(adjustedDaysAgo)
     };
   }));
+}
+
+function shuffleWithSeed(items, seed) {
+  const shuffled = [...items];
+  const random = seededRandom(seed);
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+function seededRandom(seed) {
+  let value = Math.max(1, Math.floor(seed)) % 2147483647;
+
+  return () => {
+    value = (value * 16807) % 2147483647;
+    return (value - 1) / 2147483646;
+  };
 }
 
 function subtractDays(date, days) {
@@ -2511,11 +2536,12 @@ function CalendarIcon() {
   );
 }
 
-function ClockIcon() {
+function RecencyWarningIcon() {
   return (
-    <svg className="time-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M12 8v5l3 2" />
-      <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+    <svg className="recency-warning-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 3 2 21h20L12 3z" />
+      <path d="M12 9v5" />
+      <path d="M12 17h.01" />
     </svg>
   );
 }

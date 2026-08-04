@@ -48,9 +48,9 @@ The MVP1 path now presents:
 7. A compact, read-only `Eligible sites` list with the first five ranked site/month rows after the first check.
 8. A synthetic approximately 20-site eligible set behind the module.
 9. Eligible rows sorted chronologically by lead-time month, then by most recent lead-time update when months tie.
-10. A `View all` action that opens a Salesforce-style list detail view with 20 ranked rows.
+10. A `View all` action that opens a Salesforce-style list detail view with 20 ranked rows and a source link for each row.
 11. A `Preferred` marker for the CRL Site selected in the Study field.
-12. A last-updated marker on every visible eligible site, using a time icon and recency color.
+12. A last-updated marker on every visible eligible site, using neutral text for current/recent updates and a warning treatment for older updates.
 13. A confidence disclaimer explaining that the output is a proposal window, not a capacity hold.
 14. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot timestamp.
 15. A simplified alphabetically sorted `CRL Site` dropdown.
@@ -89,13 +89,15 @@ Ranking rule shown in this prototype:
 - if lead-time month ties, sort by the most recently updated lead-time signal,
 - if both tie, sort alphabetically by site.
 
-The color-coded last-updated marker is a trust signal, not another recommendation rule:
+The last-updated marker is a trust signal, not another recommendation rule:
 
-- green: updated within 2 weeks,
-- orange: updated within 2-4 weeks,
-- red: updated more than 4 weeks ago.
+- within 2 weeks: neutral gray text, no icon,
+- 2-4 weeks: warning icon with neutral gray text,
+- over 4 weeks: warning icon with red text.
 
 The selected CRL Site appears as `Preferred` in both the five-row module and the 20-row detail list when it is present in the eligible set. `Preferred` means user-entered preference, not a committed or reserved site.
+
+The expanded `View all` list uses a `Source` column with `PowerBI Dashboard` links. Those links are placeholders in this prototype; their purpose is to show that the site/month row is traceable to the lead-time dashboard without routing the user anywhere yet.
 
 ## Peace Of Mind Disclaimer
 
