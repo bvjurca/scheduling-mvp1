@@ -1065,6 +1065,18 @@ function Mvp1Experience({ onHome }) {
                 <h4>Information</h4>
                 <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
                 <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
+                <SfdcWireRow
+                  className="visible-wire-row"
+                  label="Test System Category"
+                  value="Aquatic Invertebrates"
+                  muted
+                />
+                <SfdcWireRow
+                  className="visible-wire-row"
+                  label="CRL Study Type L2"
+                  value="Daphnia sp. Acute Immobilisation Test (OECD 202)"
+                  muted
+                />
                 <div className="wire-row date-highlight-row has-site">
                   <div className="date-site-control-grid has-site">
                     <DatePickerField
@@ -1083,16 +1095,10 @@ function Mvp1Experience({ onHome }) {
                     />
                   </div>
                   <Button type="button" className="ghost-button compact-button" onPress={clearStartDate}>
-                    Clear
+                    Clear (demo only)
                   </Button>
                 </div>
                 <SfdcWireRow label="Study status" value="Complete" muted />
-              </div>
-
-              <div className="wire-section wire-section-compact">
-                <h4>Study detail</h4>
-                <SfdcWireRow label="Test System Category" value="Aquatic Invertebrates" muted />
-                <SfdcWireRow label="CRL Study Type L2" value="Daphnia sp. Acute Immobilisation Test (OECD 202)" muted />
               </div>
             </section>
           </section>
@@ -1315,9 +1321,11 @@ function Mvp1CrlSiteField({ selectedSite, allSiteOptions, isOffRamp, onChange })
   );
 }
 
-function SfdcWireRow({ label, value, muted = false }) {
+function SfdcWireRow({ label, value, muted = false, className = '' }) {
+  const rowClassName = ['wire-row', muted ? 'is-muted' : '', className].filter(Boolean).join(' ');
+
   return (
-    <div className={`wire-row ${muted ? 'is-muted' : ''}`}>
+    <div className={rowClassName}>
       <span>{label}</span>
       <strong>{value}</strong>
       <PencilIcon />
