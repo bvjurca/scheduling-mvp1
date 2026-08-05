@@ -35,7 +35,7 @@ const checks = [
       'Eligible Sites ranked list',
       'Last Updated',
       'Source',
-      'PowerBI Dashboard',
+      'Site lead times manager',
       'Preferred',
       'RecencyWarningIcon',
       'freshnessLevelFor',
