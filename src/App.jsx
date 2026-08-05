@@ -1065,18 +1065,28 @@ function Mvp1Experience({ onHome }) {
                 <h4>Information</h4>
                 <SfdcWireRow label="Study identifier" value="CRL-689542" muted />
                 <SfdcWireRow label="Opportunity" value="MICHELIN - REACH Annex VII package" muted />
-                <SfdcWireRow
-                  className="visible-wire-row"
-                  label="Test System Category"
-                  value="Aquatic Invertebrates"
-                  muted
-                />
-                <SfdcWireRow
-                  className="visible-wire-row"
-                  label="CRL Study Type L2"
-                  value="Daphnia sp. Acute Immobilisation Test (OECD 202)"
-                  muted
-                />
+                <div className="visible-wire-row-grid">
+                  <SfdcWireRow className="visible-wire-row" label="Test System Category" value="Mammals" />
+                  <SfdcWireRow className="visible-wire-row" label="Species/Species Family" value="Mouse" />
+                  <SfdcWireRow className="visible-wire-row" label="Route of Administration L1" value="Cardiac" />
+                  <SfdcWireRow
+                    className="visible-wire-row"
+                    label="Route of Administration L2"
+                    value="Coronary Sinus Retrograde"
+                  />
+                  <SfdcWireRow className="visible-wire-row" label="Experimental Study Type" value="Services" />
+                  <SfdcWireRow
+                    className="visible-wire-row"
+                    label="CRL Study Type L1"
+                    value="Services - Regulatory Affairs"
+                  />
+                  <SfdcWireRow
+                    className="visible-wire-row"
+                    label="CRL Study Type L2"
+                    value="Regulatory Study Summary (OECD/IUCLID/METI/MHLW)"
+                  />
+                  <SfdcWireRow className="visible-wire-row" label="Treatment Period" value="Not Applicable" />
+                </div>
                 <div className="wire-row date-highlight-row has-site">
                   <div className="date-site-control-grid has-site">
                     <DatePickerField

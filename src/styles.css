@@ -676,7 +676,7 @@ h3 {
 
 .wire-row strong {
   overflow: hidden;
-  color: var(--ink);
+  color: var(--muted);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -684,6 +684,36 @@ h3 {
 
 .wire-row.is-muted {
   opacity: 0.62;
+}
+
+.visible-wire-row-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-600);
+  row-gap: var(--space-150);
+  padding: 0 var(--space-300);
+}
+
+.visible-wire-row-grid .wire-row {
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: end;
+  gap: var(--space-100);
+  min-height: 52px;
+  padding: 0 0 var(--space-150);
+}
+
+.visible-wire-row-grid .wire-row span {
+  grid-column: 1 / -1;
+}
+
+.visible-wire-row-grid .wire-row strong {
+  grid-column: 1;
+}
+
+.visible-wire-row-grid .wire-row .wire-edit-icon {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
 }
 
 .wire-edit-icon {
@@ -728,6 +758,12 @@ h3 {
 .date-highlight-row .date-picker-field,
 .date-highlight-row .mvp1-crl-site-field {
   min-height: auto;
+}
+
+.date-highlight-row .date-display:not(.is-placeholder),
+.date-highlight-row .select-button,
+.date-highlight-row .select-button .react-aria-SelectValue {
+  font-weight: 700;
 }
 
 .mvp1-crl-site-field.is-error .select-button {
