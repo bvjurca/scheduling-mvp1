@@ -1195,7 +1195,7 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
                 </strong>
                 <span>{item.availability}</span>
                 <LastUpdatedMarker item={item} />
-                <a href="#" onClick={(event) => event.preventDefault()}>PowerBI Dashboard</a>
+                <a href="#" onClick={(event) => event.preventDefault()}>Site lead times manager</a>
               </div>
             ))}
           </div>
@@ -1233,6 +1233,9 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
         {hasRecommendationList ? (
           <div className="valid-as-of">
             Valid as of <strong>{evaluation.validAsOf}</strong>
+            <a className="valid-source-link" href="#" onClick={(event) => event.preventDefault()}>
+              View source
+            </a>
           </div>
         ) : null}
 

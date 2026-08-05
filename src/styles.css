@@ -834,6 +834,18 @@ h3 {
   color: var(--ink);
 }
 
+.valid-source-link {
+  color: var(--blue);
+  font-size: inherit;
+  font-weight: 500;
+  margin-left: var(--space-150);
+  text-decoration: none;
+}
+
+.valid-source-link:hover {
+  text-decoration: underline;
+}
+
 .eligible-site-list {
   display: grid;
 }
@@ -845,7 +857,7 @@ h3 {
   gap: var(--space-200);
   min-height: 44px;
   border-bottom: 1px solid var(--line);
-  padding: 0 0 var(--space-150);
+  padding: 8px 0;
   color: var(--ink);
 }
 
@@ -875,6 +887,8 @@ h3 {
   color: var(--ink);
   font-style: normal;
   font-weight: 700;
+  justify-self: end;
+  text-align: right;
 }
 
 .eligible-site-disclaimer {
