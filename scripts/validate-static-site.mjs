@@ -38,10 +38,9 @@ const checks = [
       'Site lead times manager',
       'Preferred',
       'RecencyWarningIcon',
-      'freshnessLevelFor',
+      'RecencyCheckIcon',
       'Central scheduling support required',
       'SITE_OUTSIDE_RECOMMENDED_SET',
-      'Missing information',
       'Valid as of',
       'LT Commercial Vision - DEMO DATA ONLY',
       'Opportunity Start Date',
@@ -80,6 +79,36 @@ const checks = [
       'DatePicker',
       'CalendarGrid',
       '>4 months out'
+    ]
+  },
+  {
+    path: '../src/mvp1Scheduling.js',
+    minBytes: 5000,
+    requiredText: [
+      'evaluateMvp1DateOnly',
+      'sortMvp1SiteRecommendations',
+      'getCompactMvp1EligibleSites',
+      'freshnessLevelFor',
+      'isPreferredPinGap',
+      'mvp1EligibleSiteLeadTimes',
+      'mvp1LeadTimeOffsetPattern',
+      'mvp1AllCrlSites',
+      'Missing information',
+      'START_DATE_WITHIN_4_MONTH_THRESHOLD'
+    ]
+  },
+  {
+    path: '../src/dateUtils.js',
+    minBytes: 3000,
+    requiredText: [
+      'parseFullDate',
+      'formatFullDate',
+      'formatDateTime',
+      'toCalendarDate',
+      'fromCalendarDate',
+      'parseMonthSelection',
+      'shiftMonthLabel',
+      'monthNames'
     ]
   },
   {

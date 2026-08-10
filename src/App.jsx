@@ -25,37 +25,31 @@ import {
   TextArea,
   TextField
 } from 'react-aria-components';
-import { parseDate } from '@internationalized/date';
+import {
+  addBusinessDays,
+  addMonths,
+  formatDate,
+  formatFullDate,
+  formatMonthSelection,
+  fromCalendarDate,
+  monthLabelFromFullDate,
+  monthLabelFromKey,
+  monthNames,
+  parseFullDate,
+  parseMonthSelection,
+  shiftMonthLabel,
+  today,
+  toCalendarDate
+} from './dateUtils';
+import {
+  evaluateMvp1DateOnly,
+  getCompactMvp1EligibleSites,
+  mvp1AllCrlSites,
+  mvp1AsOfDate,
+  sortMvp1SiteRecommendations
+} from './mvp1Scheduling';
 
-const today = new Date('2026-07-07T12:00:00Z');
-const mvp1AsOfDate = new Date(2026, 6, 28, 12, 9);
 const expiryBusinessDays = 5;
-const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const monthLookup = Object.fromEntries(monthNames.map((month, index) => [month.toLowerCase(), index]));
-const mvp1EligibleSiteLeadTimes = [
-  { site: 'Hertenbosch', monthOffset: 0, updatedDaysAgo: 4 },
-  { site: 'Reno', monthOffset: 0, updatedDaysAgo: 10 },
-  { site: 'Ashland', monthOffset: 0, updatedDaysAgo: 24 },
-  { site: 'Lyon', monthOffset: 1, updatedDaysAgo: 3 },
-  { site: 'Senneville', monthOffset: 1, updatedDaysAgo: 12 },
-  { site: 'Shrewsbury', monthOffset: 1, updatedDaysAgo: 18 },
-  { site: 'Laval', monthOffset: 1, updatedDaysAgo: 31 },
-  { site: 'Mattawan', monthOffset: 2, updatedDaysAgo: 7 },
-  { site: 'Montreal', monthOffset: 2, updatedDaysAgo: 14 },
-  { site: 'Edinburgh', monthOffset: 2, updatedDaysAgo: 22 },
-  { site: 'Evreux', monthOffset: 2, updatedDaysAgo: 35 },
-  { site: 'Horsham', monthOffset: 3, updatedDaysAgo: 2 },
-  { site: 'Kansas City', monthOffset: 3, updatedDaysAgo: 16 },
-  { site: 'Portishead', monthOffset: 3, updatedDaysAgo: 27 },
-  { site: 'Alderley', monthOffset: 4, updatedDaysAgo: 6 },
-  { site: 'Elphinstone', monthOffset: 4, updatedDaysAgo: 25 },
-  { site: 'Barcelona', monthOffset: 4, updatedDaysAgo: 34 },
-  { site: 'Beerse', monthOffset: 5, updatedDaysAgo: 11 },
-  { site: 'Cleveland', monthOffset: 5, updatedDaysAgo: 21 },
-  { site: 'Freiburg', monthOffset: 5, updatedDaysAgo: 42 }
-];
-const mvp1AllCrlSites = mvp1EligibleSiteLeadTimes.map((item) => item.site).sort((a, b) => a.localeCompare(b));
-const mvp1LeadTimeOffsetPattern = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6];
 
 const siteCapabilities = {
   Mattawan: {
@@ -1218,7 +1212,7 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
   const panelCopy = showSiteOffRamp
     ? 'Selected CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
     : evaluation.copy;
-  const eligibleSites = hasRecommendationList ? sortMvp1SiteRecommendations(evaluation.recommendations).slice(0, 5) : [];
+  const eligibleSites = hasRecommendationList ? getCompactMvp1EligibleSites(evaluation.recommendations, selectedSite) : [];
 
   return (
     <SfdcSideCard title="Eligible sites" className="mvp1-recommendations-card">
@@ -1256,14 +1250,27 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
           <>
             <div className="eligible-site-list" aria-label="Eligible sites">
               {eligibleSites.map((item) => (
-                <div className="eligible-site-row" key={`${item.site}-${item.availability}`}>
-                  <div className="eligible-site-main">
-                    <strong>{item.site}</strong>
-                    {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
-                    <LastUpdatedMarker item={item} />
+                item.isPreferredPinGap ? (
+                  <div className="eligible-site-gap" key="preferred-pin-gap">
+                    <Button
+                      type="button"
+                      className="eligible-site-gap-button"
+                      aria-label="View all eligible sites"
+                      onPress={onViewAll}
+                    >
+                      <span aria-hidden="true">...</span>
+                    </Button>
                   </div>
-                  <em>{item.availability}</em>
-                </div>
+                ) : (
+                  <div className="eligible-site-row" key={`${item.site}-${item.availability}`}>
+                    <div className="eligible-site-main">
+                      <strong>{item.site}</strong>
+                      {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
+                      <LastUpdatedMarker item={item} />
+                    </div>
+                    <em>{item.availability}</em>
+                  </div>
+                )
               ))}
             </div>
             <div className="eligible-site-disclaimer">
@@ -1296,11 +1303,11 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
 }
 
 function LastUpdatedMarker({ item }) {
-  const showWarning = item.freshnessLevel !== 'fresh';
+  const isFresh = item.freshnessLevel === 'fresh';
 
   return (
     <span className={`last-updated-marker ${item.freshnessLevel}`}>
-      {showWarning ? <RecencyWarningIcon /> : null}
+      {isFresh ? <RecencyCheckIcon /> : <RecencyWarningIcon />}
       Updated {formatDate(item.lastUpdated)}
     </span>
   );
@@ -1346,233 +1353,12 @@ function SfdcWireRow({ label, value, muted = false, className = '' }) {
   );
 }
 
-function evaluateMvp1DateOnly(studyStartDate, snapshot) {
-  const startDate = parseFullDate(studyStartDate);
-  const thresholdDate = addMonths(mvp1AsOfDate, 4);
-  const validAsOf = formatDateTime(snapshot.checkedAt);
-
-  if (!startDate) {
-    return {
-      level: 'warn',
-      title: 'Missing information',
-      copy: 'MVP1 cannot show eligible sites until the SFDC Study Start Date is populated.',
-      validAsOf,
-      recommendations: [],
-      emptyTitle: 'Missing information',
-      emptyCopy: 'Add Study Start Date in the highlighted SFDC field before checking site/month options.',
-      offRampReason: 'MISSING_STUDY_START_DATE'
-    };
-  }
-
-  if (startDate <= thresholdDate) {
-    return {
-      level: 'bad',
-      title: 'Central Scheduling off-ramp',
-      copy: `${formatDate(startDate)} is not more than four months out from the current snapshot.`,
-      validAsOf,
-      recommendations: [],
-      emptyTitle: 'No self-serve recommendation',
-      emptyCopy: 'Requests inside the >4 months threshold should be handled by Central Scheduling.',
-      offRampReason: 'START_DATE_WITHIN_4_MONTH_THRESHOLD'
-    };
-  }
-
-  return {
-    level: 'good',
-    title: 'Eligible sites',
-    copy: 'Refreshed from the separate site lead-time logic. No capacity is reserved by this view.',
-    validAsOf,
-    recommendations: buildMvp1SiteRecommendations(startDate, snapshot),
-    emptyTitle: '',
-    emptyCopy: '',
-    offRampReason: null
-  };
-}
-
-function sortMvp1SiteRecommendations(recommendations) {
-  return [...recommendations].sort((a, b) => {
-    const availabilityDiff = monthLabelToSortValue(a.availability) - monthLabelToSortValue(b.availability);
-    if (availabilityDiff !== 0) return availabilityDiff;
-    const updatedDiff = b.lastUpdated.getTime() - a.lastUpdated.getTime();
-    if (updatedDiff !== 0) return updatedDiff;
-    return a.site.localeCompare(b.site);
-  });
-}
-
-function monthLabelToSortValue(monthLabel) {
-  const parsed = parseMonthSelection(monthLabel);
-  if (!parsed) return Number.MAX_SAFE_INTEGER;
-  return parsed.year * 12 + parsed.month;
-}
-
-function buildMvp1SiteRecommendations(startDate, snapshot) {
-  const targetMonth = `${monthNames[startDate.getUTCMonth()]}-${startDate.getUTCFullYear()}`;
-  const checkedAt = snapshot?.checkedAt ?? mvp1AsOfDate;
-  const variant = snapshot?.variant ?? 0;
-  const shuffledSites = shuffleWithSeed(mvp1EligibleSiteLeadTimes, variant + 1);
-
-  return sortMvp1SiteRecommendations(shuffledSites.map((item, index) => {
-    const monthOffset = mvp1LeadTimeOffsetPattern[index % mvp1LeadTimeOffsetPattern.length];
-    const adjustedDaysAgo = ((item.updatedDaysAgo + (variant * 5) + (index * 3)) % 49) + 1;
-    const lastUpdated = subtractDays(checkedAt, adjustedDaysAgo);
-    return {
-      site: item.site,
-      availability: shiftMonthLabel(targetMonth, monthOffset),
-      monthOffset,
-      lastUpdated,
-      updatedDaysAgo: adjustedDaysAgo,
-      freshnessLevel: freshnessLevelFor(adjustedDaysAgo)
-    };
-  }));
-}
-
-function shuffleWithSeed(items, seed) {
-  const shuffled = [...items];
-  const random = seededRandom(seed);
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
-  }
-
-  return shuffled;
-}
-
-function seededRandom(seed) {
-  let value = Math.max(1, Math.floor(seed)) % 2147483647;
-
-  return () => {
-    value = (value * 16807) % 2147483647;
-    return (value - 1) / 2147483646;
-  };
-}
-
-function subtractDays(date, days) {
-  const next = new Date(date);
-  next.setDate(next.getDate() - days);
-  return next;
-}
-
-function freshnessLevelFor(daysAgo) {
-  if (daysAgo <= 14) return 'fresh';
-  if (daysAgo <= 28) return 'aging';
-  return 'stale';
-}
-
-function formatDateTime(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${day}-${month}-${year} ${hours}:${minutes}`;
-}
-
-function mvp1TraceItems(trace) {
-  return trace.filter((item) => item.rule !== 'Reporting/SEND dependency');
-}
-
-function leadTimeGateLabel(data) {
-  const start = parseFullDate(data.opportunityStartDate);
-  if (!start) return 'Missing';
-  return start > addMonths(today, 4) ? '>4 months out' : 'Off-ramp';
-}
-
-function leadTimeGateLevel(data) {
-  const start = parseFullDate(data.opportunityStartDate);
-  if (!start) return 'bad';
-  return start > addMonths(today, 4) ? 'good' : 'bad';
-}
-
 function SummaryField({ label, value }) {
   return (
     <div className="summary-field">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
-  );
-}
-
-function Mvp1StatusTile({ label, value, level }) {
-  return (
-    <div className={`mvp1-status-tile ${level}`}>
-      <span className={`dot ${level}`} />
-      <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
-    </div>
-  );
-}
-
-function SfdcRelatedStudies({ data }) {
-  return (
-    <section className="sfdc-card">
-      <div className="sfdc-card-head">
-        <h3>Studies (2)</h3>
-        <span>Related</span>
-      </div>
-      <div className="sfdc-table" role="table" aria-label="Related studies">
-        <div role="row" className="sfdc-table-head">
-          <span role="columnheader">Study Name</span>
-          <span role="columnheader">Species</span>
-          <span role="columnheader">Study ID</span>
-          <span role="columnheader">CRL Site</span>
-          <span role="columnheader">Stage</span>
-        </div>
-        <div role="row">
-          <a href="#mvp1-panel-title" role="cell">{data.studyType2 || 'Study configuration pending'}</a>
-          <span role="cell">{data.species || 'Missing'}</span>
-          <span role="cell">CRL-662818</span>
-          <span role="cell">{data.preferredSite === 'Any qualified site' ? 'TBD' : data.preferredSite}</span>
-          <span role="cell">Proposal</span>
-        </div>
-        <div role="row">
-          <a href="#mvp1-panel-title" role="cell">Bioanalysis support</a>
-          <span role="cell">Not applicable</span>
-          <span role="cell">CRL-662821</span>
-          <span role="cell">TBD</span>
-          <span role="cell">Draft</span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SfdcOpportunityInformation({ data }) {
-  return (
-    <section className="sfdc-card">
-      <div className="sfdc-card-head">
-        <h3>Opportunity Information</h3>
-      </div>
-      <dl className="sfdc-detail-grid">
-        <div>
-          <dt>Opportunity Name</dt>
-          <dd>Oculis_OCS-05_PPND BID IV inf - Split</dd>
-        </div>
-        <div>
-          <dt>Opportunity Currency</dt>
-          <dd>EUR - Euro</dd>
-        </div>
-        <div>
-          <dt>Stage</dt>
-          <dd>{data.opportunityStage}</dd>
-        </div>
-        <div>
-          <dt>Opportunity Start Date</dt>
-          <dd>{formatFullDate(data.opportunityStartDate) || 'Missing'}</dd>
-        </div>
-        <div>
-          <dt>Project Scheduling Requirements</dt>
-          <dd>{data.contextNotes || 'No additional requirements captured.'}</dd>
-        </div>
-        <div>
-          <dt>Proposal Delivery</dt>
-          <dd>{data.timingPrecision === 'exact' ? 'Off-ramp' : 'Proposal window'}</dd>
-        </div>
-      </dl>
-    </section>
   );
 }
 
@@ -2419,109 +2205,6 @@ function commercialPostureFor(stage) {
   return postureByStage[stage] || 'planning';
 }
 
-function addMonths(date, months) {
-  const next = new Date(date);
-  next.setMonth(next.getMonth() + months);
-  return next;
-}
-
-function addBusinessDays(date, days) {
-  const next = new Date(date);
-  let added = 0;
-  while (added < days) {
-    next.setDate(next.getDate() + 1);
-    const day = next.getDay();
-    if (day !== 0 && day !== 6) added += 1;
-  }
-  return next;
-}
-
-function formatDate(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = monthNames[date.getUTCMonth()];
-  const year = date.getUTCFullYear();
-  return `${day}-${month}-${year}`;
-}
-
-function formatFullDate(value) {
-  const date = parseFullDate(value);
-  return date ? formatDate(date) : '';
-}
-
-function toCalendarDate(value) {
-  const date = parseFullDate(value);
-  if (!date) return null;
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  return parseDate(`${year}-${month}-${day}`);
-}
-
-function fromCalendarDate(value) {
-  if (!value) return '';
-  const day = String(value.day).padStart(2, '0');
-  const month = monthNames[value.month - 1];
-  return `${day}-${month}-${value.year}`;
-}
-
-function parseFullDate(value) {
-  if (!value) return null;
-  const trimmed = String(value).trim();
-  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (iso) {
-    const [, year, month, day] = iso;
-    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12));
-  }
-
-  const display = trimmed.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
-  if (!display) return null;
-  const [, day, month, year] = display;
-  const monthIndex = monthLookup[month.toLowerCase()];
-  if (monthIndex === undefined) return null;
-  return new Date(Date.UTC(Number(year), monthIndex, Number(day), 12));
-}
-
-function monthLabelFromFullDate(value) {
-  const date = parseFullDate(value);
-  if (!date) return '';
-  return `${monthNames[date.getUTCMonth()]}-${date.getUTCFullYear()}`;
-}
-
-function monthLabelFromKey(value) {
-  const match = String(value || '').match(/^(\d{4})-(\d{2})$/);
-  if (!match) return '';
-  const [, year, month] = match;
-  return `${monthNames[Number(month) - 1]}-${year}`;
-}
-
-function parseMonthSelection(value) {
-  const fullDateMonth = monthLabelFromFullDate(value);
-  const normalizedValue = fullDateMonth || monthLabelFromKey(value) || String(value || '').trim();
-  const match = normalizedValue.match(/^([A-Za-z]{3})-(\d{4})$/);
-  if (!match) return null;
-  const [, month, year] = match;
-  const monthIndex = monthLookup[month.toLowerCase()];
-  if (monthIndex === undefined) return null;
-  return { month: monthIndex, year: Number(year) };
-}
-
-function formatMonthSelection(monthIndex, year) {
-  return `${monthNames[monthIndex]}-${year}`;
-}
-
-function shiftMonthLabel(monthLabel, delta) {
-  if (!monthLabel || monthLabel === 'TBD') return 'TBD';
-  const match = String(monthLabel).match(/^([A-Za-z]{3})-(\d{4})$/);
-  if (!match) return monthLabel;
-  const [, month, year] = match;
-  const monthIndex = monthLookup[month.toLowerCase()];
-  if (monthIndex === undefined) return monthLabel;
-  const date = new Date(Date.UTC(Number(year), monthIndex, 15, 12));
-  date.setMonth(date.getUTCMonth() + delta);
-  return `${monthNames[date.getUTCMonth()]}-${date.getUTCFullYear()}`;
-}
-
 function toOption(value) {
   return { value, label: value };
 }
@@ -2563,6 +2246,14 @@ function RecencyWarningIcon() {
       <path d="M12 3 2 21h20L12 3z" />
       <path d="M12 9v5" />
       <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+function RecencyCheckIcon() {
+  return (
+    <svg className="recency-check-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="m5 12 4 4L19 6" />
     </svg>
   );
 }
