@@ -30,7 +30,7 @@ const checks = [
       'Eligible sites',
       'Eligible sites match current Commercial snapshot as a proposal window',
       'View all',
-      'CRL Site',
+      'Preferred CRL Site',
       '20 items - sorted by lead time, then most recent update',
       'Eligible Sites ranked list',
       'Last Updated',
