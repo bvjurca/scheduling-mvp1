@@ -93,7 +93,8 @@ export function sortMvp1SiteRecommendations(recommendations) {
 export function getCompactMvp1EligibleSites(recommendations, selectedSite) {
   const rankedSites = sortMvp1SiteRecommendations(recommendations);
   const visibleSites = rankedSites.slice(0, 5);
-  const preferredSite = selectedSite ? rankedSites.find((item) => item.site === selectedSite) : null;
+  const hasPreferredSite = Boolean(selectedSite && selectedSite !== 'Any');
+  const preferredSite = hasPreferredSite ? rankedSites.find((item) => item.site === selectedSite) : null;
 
   if (!preferredSite || visibleSites.some((item) => item.site === selectedSite)) {
     return visibleSites;

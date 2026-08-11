@@ -15,13 +15,13 @@ MVP1 is now intentionally narrower than the prior split-view prototype.
 The MVP1 surface should start from two SFDC Study fields:
 
 - Study Start Date
-- CRL Site
+- Preferred CRL Site
 
-Study Start Date is still the governing timing field for the simplified MVP1 rule. CRL Site is captured because Commercial usually starts with a preferred site. The right-side output then displays eligible site/month options from the separate site lead-time and ranking logic. This prototype does not need to reproduce that ranking logic in detail. It only needs to show where the result lands in SFDC and how Commercial sees the output.
+Study Start Date is still the governing timing field for the simplified MVP1 rule. Preferred CRL Site is captured when Commercial has a site preference, but it now defaults to `Any` so eligible site/month options can be checked without forcing a preferred-site assumption. The right-side output then displays eligible site/month options from the separate site lead-time and ranking logic. This prototype does not need to reproduce that ranking logic in detail. It only needs to show where the result lands in SFDC and how Commercial sees the output.
 
 ## Why This Change Is Correct
 
-The stakeholder clarification shifts MVP1 away from a wizard or broad readiness console. The actual MVP1 impact is concentrated on the existing SFDC Study record, specifically the date field that determines whether site/month recommendations can be shown and the CRL Site field that captures preferred-site context.
+The stakeholder clarification shifts MVP1 away from a wizard or broad readiness console. The actual MVP1 impact is concentrated on the existing SFDC Study record, specifically the date field that determines whether site/month recommendations can be shown and the Preferred CRL Site field that optionally captures preferred-site context.
 
 The earlier MVP1 version still carried too much of the long-term Commercial Vision:
 
@@ -42,18 +42,18 @@ The MVP1 path now presents:
 1. A generic SFDC Study page frame, modeled after the supplied Study reference.
 2. A visually muted SFDC record backdrop with only enough skeleton structure to imply the native page.
 3. A highlighted Study Start Date field.
-4. A highlighted CRL Site dropdown beside the date field, prefilled from the SFDC Study record.
+4. A highlighted Preferred CRL Site dropdown beside the date field, defaulted to `Any`.
 5. A right-side native SFDC-style box titled `Eligible sites`.
-6. An initial empty state until the user checks the current Study Start Date and CRL Site.
+6. An initial empty state until the user checks the current Study Start Date, with or without a preferred site.
 7. A compact, read-only `Eligible sites` list with the first five ranked site/month rows after the first check.
 8. A synthetic approximately 20-site eligible set behind the module.
 9. Eligible rows sorted chronologically by lead-time month, then by most recent lead-time update when months tie.
 10. A `View all` action that opens a Salesforce-style list detail view with 20 ranked rows and a source link for each row.
-11. A `Preferred` marker for the CRL Site selected in the Study field.
+11. A `Preferred` marker only when the user selects a specific Preferred CRL Site that appears in the eligible set.
 12. A last-updated marker on every visible eligible site, using neutral text for current/recent updates and a warning treatment for older updates.
 13. A confidence disclaimer explaining that the output is a proposal window, not a capacity hold.
 14. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot timestamp.
-15. A simplified alphabetically sorted `CRL Site` dropdown.
+15. A simplified alphabetically sorted `Preferred CRL Site` dropdown with `Any` as the no-preference value.
 16. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after an eligible list is loaded.
 17. Missing-information handling when Study Start Date is blank.
 18. Immediate Central Scheduling off-ramp handling when Study Start Date is inside the four-month threshold.
@@ -65,11 +65,12 @@ The eligible site list is still not a booking confirmation.
 It means:
 
 - based on the Study Start Date,
-- using the selected CRL Site as preferred-site context,
+- using the selected Preferred CRL Site as preferred-site context when it is not `Any`,
 - and based on separately governed site lead-time/ranking logic,
 - Commercial can see candidate site/month options.
-- Commercial can compare the preferred site against other eligible site/month options.
-- Commercial can see whether the selected CRL Site appears in the ranked eligible set.
+- Commercial can compare a preferred site against other eligible site/month options when one exists.
+- Commercial can check eligible sites without selecting a preferred site first.
+- Commercial can see whether a specific selected Preferred CRL Site appears in the ranked eligible set.
 - Commercial can see how recently each lead-time signal was updated.
 
 It does not mean:
@@ -95,7 +96,7 @@ The last-updated marker is a trust signal, not another recommendation rule:
 - 2-4 weeks: warning icon with neutral gray text,
 - over 4 weeks: warning icon with red text.
 
-The selected CRL Site appears as `Preferred` in both the five-row module and the 20-row detail list when it is present in the eligible set. `Preferred` means user-entered preference, not a committed or reserved site.
+The selected Preferred CRL Site appears as `Preferred` in both the five-row module and the 20-row detail list only when it is a specific site and is present in the eligible set. When the value is `Any`, no preferred badge, preferred pinning, or preferred-site off-ramp logic applies. `Preferred` means user-entered preference, not a committed or reserved site.
 
 The expanded `View all` list uses a `Source` column with `PowerBI Dashboard` links. Those links are placeholders in this prototype; their purpose is to show that the site/month row is traceable to the lead-time dashboard without routing the user anywhere yet.
 
@@ -181,8 +182,8 @@ Reason:
 
 The right-side eligible-sites list mimics native SFDC related-list/card styling because stakeholders said MVP1 affects this existing screen. That makes the prototype read as an SFDC augmentation, not as a separate scheduling application.
 
-The `CRL Site` dropdown appears next to `Start Date` from the beginning because preferred site is part of Commercial’s starting context. That location is intentional: it makes MVP1 feel like a field-level augmentation of the existing Study page, while avoiding any expanded workflow inside the recommendation list.
+The `Preferred CRL Site` dropdown appears next to `Start Date` from the beginning because preferred site can be part of Commercial’s starting context. It defaults to `Any` so Commercial can still check eligible sites when no preferred site has been stated. That location is intentional: it makes MVP1 feel like a field-level augmentation of the existing Study page, while avoiding any expanded workflow inside the recommendation list.
 
-The `CRL Site` dropdown is now one alphabetically sorted list. Reason: the earlier grouped dropdown over-explained eligibility inside the input. MVP1 should let Commercial set the preferred site in the familiar SFDC field location, then let the recommendations module show where that selected site lands in the ranked eligible set.
+The `Preferred CRL Site` dropdown is now one alphabetically sorted list with `Any` first. Reason: the earlier grouped dropdown over-explained eligibility inside the input. MVP1 should let Commercial optionally set the preferred site in the familiar SFDC field location, then let the recommendations module show where that selected site lands in the ranked eligible set.
 
 The `View all` list uses SFDC-style table density because the stakeholder reference was a native Salesforce list detail view. This keeps the expanded state recognizable without implying a new scheduling application or a separate workflow.
