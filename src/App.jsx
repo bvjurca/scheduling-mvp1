@@ -1207,7 +1207,7 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
   const showSiteOffRamp = isSiteOffRamp && !isMissingStartDate && !isDateOffRamp;
   const showKnownOffRampState = isDateOffRamp || showSiteOffRamp;
   const showCheckedState = (hasCheckedRecommendations || showKnownOffRampState) && !isMissingStartDate;
-  const showCheckAction = !isMissingStartDate && !isDateOffRamp && (!hasCheckedRecommendations || hasRecommendationList);
+  const showCheckAction = !isMissingStartDate && (!hasCheckedRecommendations || hasRecommendationList);
   const panelLevel = showSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = showSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
   const panelCopy = showSiteOffRamp
@@ -1274,6 +1274,21 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
                 )
               ))}
             </div>
+
+            {showCheckedState && evaluation.offRampReason ? (
+              <div className="mvp1-offramp-note">
+                <strong>Off-ramp reason</strong>
+                <p>{evaluation.offRampReason}</p>
+              </div>
+            ) : null}
+
+            {showSiteOffRamp ? (
+              <div className="mvp1-offramp-note">
+                <strong>Off-ramp reason</strong>
+                <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
+              </div>
+            ) : null}
+
             <div className="eligible-site-disclaimer">
               <p>Eligible sites match current Commercial snapshot as a proposal window. No capacity hold implied.</p>
               <p>Data used: SFDC Opportunity/RFP fields, Lead-time snapshot, Site capability reference.</p>
@@ -1283,20 +1298,6 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
               View all
             </Button>
           </>
-        ) : null}
-
-        {showCheckedState && evaluation.offRampReason ? (
-          <div className="mvp1-offramp-note">
-            <strong>Off-ramp reason</strong>
-            <p>{evaluation.offRampReason}</p>
-          </div>
-        ) : null}
-
-        {showSiteOffRamp ? (
-          <div className="mvp1-offramp-note">
-            <strong>Off-ramp reason</strong>
-            <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
-          </div>
         ) : null}
       </div>
     </SfdcSideCard>

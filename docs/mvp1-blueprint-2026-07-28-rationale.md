@@ -135,8 +135,10 @@ Reason: the agreed MVP1 self-serve path is only appropriate for requests beyond 
 UI behavior:
 
 - show `Central Scheduling off-ramp`,
-- show no self-serve recommendation,
-- show no check/recheck action because the threshold failure is already known,
+- keep the missing/off-ramp empty state until the user explicitly checks the snapshot,
+- allow `Check site recommendations` for read-only visibility into the current eligible-site snapshot,
+- keep the red status banner and reason code when the eligible-site list is loaded,
+- show the loaded list as context only, not as a self-serve recommendation,
 - provide the reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD`.
 
 ## Why `Valid As Of` Replaces `Valid Until`

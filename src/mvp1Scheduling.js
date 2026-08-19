@@ -61,7 +61,7 @@ export function evaluateMvp1DateOnly(studyStartDate, snapshot) {
       title: 'Central Scheduling off-ramp',
       copy: `${formatDate(startDate)} is not more than four months out from the current snapshot.`,
       validAsOf,
-      recommendations: [],
+      recommendations: buildMvp1SiteRecommendations(startDate, snapshot),
       emptyTitle: 'No self-serve recommendation',
       emptyCopy: 'Requests inside the >4 months threshold should be handled by Central Scheduling.',
       offRampReason: 'START_DATE_WITHIN_4_MONTH_THRESHOLD'
