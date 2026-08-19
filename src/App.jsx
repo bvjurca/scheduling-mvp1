@@ -1221,7 +1221,14 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
         {showCheckedState ? (
           <div className={`mvp1-native-status ${panelLevel}`}>
             {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
-            <p>{panelCopy}</p>
+            {isDateOffRamp && evaluation.statusTimestamp ? (
+              <p>
+                <strong className="mvp1-status-timestamp">{evaluation.statusTimestamp}</strong>
+                {' is not more than four months out from the current snapshot.'}
+              </p>
+            ) : (
+              <p>{panelCopy}</p>
+            )}
           </div>
         ) : null}
 
@@ -1275,17 +1282,10 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
               ))}
             </div>
 
-            {showCheckedState && evaluation.offRampReason ? (
+            {isDateOffRamp ? (
               <div className="mvp1-offramp-note">
-                <strong>Off-ramp reason</strong>
-                <p>{evaluation.offRampReason}</p>
-              </div>
-            ) : null}
-
-            {showSiteOffRamp ? (
-              <div className="mvp1-offramp-note">
-                <strong>Off-ramp reason</strong>
-                <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
+                <strong>{evaluation.emptyTitle}</strong>
+                <p>{evaluation.emptyCopy}</p>
               </div>
             ) : null}
 

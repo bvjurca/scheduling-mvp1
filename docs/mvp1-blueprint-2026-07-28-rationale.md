@@ -137,9 +137,10 @@ UI behavior:
 - show `Central Scheduling off-ramp`,
 - keep the missing/off-ramp empty state until the user explicitly checks the snapshot,
 - allow `Check site recommendations` for read-only visibility into the current eligible-site snapshot,
-- keep the red status banner and reason code when the eligible-site list is loaded,
+- keep the red status banner when the eligible-site list is loaded,
+- repeat the `No self-serve recommendation` message beneath the loaded list instead of showing a separate reason-code row,
 - show the loaded list as context only, not as a self-serve recommendation,
-- provide the reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD`.
+- retain the internal reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD` for logic only.
 
 ## Why `Valid As Of` Replaces `Valid Until`
 
