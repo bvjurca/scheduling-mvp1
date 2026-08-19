@@ -40,7 +40,6 @@ const checks = [
       'RecencyWarningIcon',
       'RecencyCheckIcon',
       'Central scheduling support required',
-      'SITE_OUTSIDE_RECOMMENDED_SET',
       'Valid as of',
       'LT Commercial Vision - DEMO DATA ONLY',
       'Opportunity Start Date',
@@ -94,6 +93,7 @@ const checks = [
       'mvp1LeadTimeOffsetPattern',
       'mvp1AllCrlSites',
       'Missing information',
+      'Requests inside the <4 months threshold should be handled by Central Scheduling.',
       'START_DATE_WITHIN_4_MONTH_THRESHOLD'
     ]
   },
