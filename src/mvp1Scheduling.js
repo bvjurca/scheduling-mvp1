@@ -159,7 +159,7 @@ function subtractDays(date, days) {
 }
 
 function freshnessLevelFor(daysAgo) {
-  if (daysAgo <= 14) return 'fresh';
-  if (daysAgo <= 28) return 'aging';
+  if (daysAgo <= 7) return 'fresh';
+  if (daysAgo <= 21) return 'aging';
   return 'stale';
 }
