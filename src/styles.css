@@ -920,9 +920,9 @@ h3 {
 
 .eligible-sites-detail-row {
   display: grid;
-  grid-template-columns: 72px minmax(280px, 1.35fr) minmax(150px, 0.7fr) minmax(190px, 0.8fr) minmax(180px, 0.75fr);
+  grid-template-columns: 72px minmax(280px, 1.35fr) minmax(150px, 0.7fr) minmax(190px, 0.8fr);
   align-items: center;
-  min-width: 980px;
+  min-width: 800px;
   min-height: 34px;
   border-bottom: 1px solid var(--line);
   color: var(--ink);

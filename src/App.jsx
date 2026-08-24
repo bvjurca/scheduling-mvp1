@@ -1170,6 +1170,9 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
             </div>
             <div className="valid-as-of compact">
               Valid as of <strong>{evaluation.validAsOf}</strong>
+              <a className="valid-source-link" href="#" onClick={(event) => event.preventDefault()}>
+                View source
+              </a>
             </div>
           </div>
 
@@ -1179,7 +1182,6 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
               <span>Site</span>
               <span>Lead Time</span>
               <span>Last Updated</span>
-              <span>Source</span>
             </div>
             {eligibleSites.map((item, index) => (
               <div className="eligible-sites-detail-row" role="row" key={`${item.site}-${item.availability}`}>
@@ -1190,7 +1192,6 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
                 </strong>
                 <span>{item.availability}</span>
                 <LastUpdatedMarker item={item} />
-                <a href="#" onClick={(event) => event.preventDefault()}>Site lead times manager</a>
               </div>
             ))}
           </div>
