@@ -673,7 +673,7 @@ h3 {
 .valid-source-link {
   color: var(--blue);
   font-size: inherit;
-  font-weight: 500;
+  font-weight: 700;
   margin-left: var(--space-150);
   text-decoration: none;
 }
@@ -1055,6 +1055,33 @@ h3 {
 }
 
 .mvp1-study-shell .sfdc-nav span.is-active {
+  border-bottom-color: transparent;
+}
+
+.mvp1-site-detail-shell .sfdc-nav strong,
+.mvp1-site-detail-shell .sfdc-nav span {
+  border-color: transparent !important;
+  border-radius: var(--radii-round);
+  background: #f1f4f8 !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  fill: transparent !important;
+  stroke: transparent !important;
+  text-shadow: none !important;
+  user-select: none;
+}
+
+.mvp1-site-detail-shell .sfdc-nav strong {
+  width: 54px;
+  height: 18px;
+}
+
+.mvp1-site-detail-shell .sfdc-nav span {
+  width: 64px;
+  min-height: 18px;
+}
+
+.mvp1-site-detail-shell .sfdc-nav span.is-active {
   border-bottom-color: transparent;
 }
 

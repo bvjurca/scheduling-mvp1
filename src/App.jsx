@@ -1166,7 +1166,6 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
             <div className="eligible-sites-title-block">
               <span className="eligible-sites-breadcrumb">Studies &gt; In Vivo - Ecotoxicology Daphnia sp. Acute Immobilisation Test</span>
               <h2 id="eligible-sites-detail-title">Eligible Sites</h2>
-              <span>20 items - sorted by lead time, then most recent update</span>
             </div>
             <div className="valid-as-of compact">
               Valid as of <strong>{evaluation.validAsOf}</strong>
