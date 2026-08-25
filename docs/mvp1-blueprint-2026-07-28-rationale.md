@@ -98,7 +98,7 @@ The last-updated marker is a trust signal, not another recommendation rule:
 
 The selected Preferred CRL Site appears as `Preferred` in both the five-row module and the 20-row detail list only when it is a specific site and is present in the eligible set. When the value is `Any`, no preferred badge, preferred pinning, or preferred-site off-ramp logic applies. `Preferred` means user-entered preference, not a committed or reserved site.
 
-The expanded `View all` list uses a `Source` column with `PowerBI Dashboard` links. Those links are placeholders in this prototype; their purpose is to show that the site/month row is traceable to the lead-time dashboard without routing the user anywhere yet.
+The expanded `View all` list keeps the source affordance beside the shared snapshot timestamp as `View source`. The link is a placeholder in this prototype; its purpose is to show that the site/month list is traceable to the lead-time dashboard without routing the user anywhere yet.
 
 ## Peace Of Mind Disclaimer
 
