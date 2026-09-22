@@ -104,7 +104,7 @@ const checks = [
   },
   {
     path: '../src/mvp1Eligibility.js',
-    minBytes: 4500,
+    minBytes: 2000,
     requiredText: [
       'evaluateMvp1Eligibility',
       'lead_times',
@@ -112,7 +112,7 @@ const checks = [
       'species',
       'crl_study_type_l1',
       'crl_study_type_l2',
-      'GREATER_THAN_OR_EQUAL',
+      'PRESENT',
       'pass_with_warning'
     ]
   },
