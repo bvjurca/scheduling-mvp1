@@ -148,10 +148,10 @@ The MVP1 study-page insert now includes a narrow pre-award eligibility slice lay
 
 - Commercial can run recommendation and eligibility independently from the same action level; eligibility checks the study date, species, and study types without requiring a recommendation snapshot first.
 - When a recommendation snapshot is available, the eligibility response is placed directly beneath the selected Preferred site; the human-facing response omits the redundant CRL Site row.
-- A failed check stops dependent checks and displays readable failure feedback plus the next action.
+- The date check shows the requested date against the selected site's lead time; the remaining study checks still run so Commercial can review the full response.
 - A non-fresh lead-time signal can pass with a warning so freshness remains visible.
-- A passing response can be confirmed in the demo, changing the visible Study status to `Confirmed` and presenting `Proceed to award process`.
-- Confirmation is a local prototype state only. It does not write to SFDC, reserve capacity, book an operational slot, or replace Central Scheduling.
+- A passing response remains a reviewable eligibility result in the demo; it does not advance Study status or present an award CTA.
+- The eligibility response does not write to SFDC, reserve capacity, book an operational slot, or replace Central Scheduling.
 - A failed response can prepare a human-support handoff; the existing Smartsheet process remains outside this prototype.
 
 This is intentionally a pre-award eligibility gate, not post-award micro scheduling. The checks are a deterministic mock of the proposed API contract until the live integration, authentication, failure semantics, and source-of-truth ownership are agreed.

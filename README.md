@@ -16,7 +16,7 @@ The Blueprint remains the source of truth for scope. MVP1 is a Commercial Person
 - asks for missing configuration data;
 - calculates site/month options;
 - gives Commercial an eligible proposal window, caveated recommendation, or off-ramp.
-- can run a narrow ordered pre-award eligibility check and represent confirmation locally in the demo.
+- can run a narrow ordered pre-award eligibility check and surface the response for review in the demo.
 
 MVP1 does not reserve capacity, optimize room-level schedules, replace Central Scheduling, write back to SFDC, or create a final RPM execution date.
 
@@ -104,7 +104,7 @@ See `docs/mvp1-target-date-clarification-and-context-note.md`.
 
 ## UI Rationale
 
-The reasoning behind each wizard input, status pill, and decision-console element is captured in:
+The reasoning behind each wizard input, eligibility response, and decision-console element is captured in:
 
 ```text
 docs/ui-input-decision-rationale.md

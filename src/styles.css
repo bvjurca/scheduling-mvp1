@@ -665,12 +665,6 @@ h3 {
   background: var(--amber-soft);
 }
 
-.mvp1-eligibility-result.confirmed {
-  border-color: var(--color-success-border);
-  border-left-color: var(--green);
-  background: var(--green-soft);
-}
-
 .mvp1-eligibility-result.escalated {
   border-color: var(--color-warning-border);
   border-left-color: var(--amber);
@@ -693,36 +687,8 @@ h3 {
   font-size: var(--font-size-2);
 }
 
-.eligibility-status-pill {
-  border: 1px solid var(--color-info-border);
-  border-radius: var(--radii-round);
-  background: #ffffff;
-  color: var(--blue);
-  font-size: var(--font-size-0);
-  font-weight: 700;
-  padding: var(--space-50) var(--space-150);
-  text-align: right;
-}
-
-.eligibility-status-pill.fail {
-  border-color: var(--color-danger-border);
-  color: var(--red);
-}
-
-.eligibility-status-pill.pass_with_warning,
-.eligibility-status-pill.escalated {
-  border-color: var(--color-warning-border);
-  color: var(--amber);
-}
-
-.eligibility-status-pill.confirmed {
-  border-color: var(--color-success-border);
-  color: var(--green);
-}
-
 .mvp1-eligibility-summary,
 .eligibility-failure-feedback p,
-.eligibility-confirmed-note p,
 .eligibility-escalated-note p {
   margin: 0;
   color: var(--color-text-secondary);
@@ -764,8 +730,15 @@ h3 {
   font-weight: 400;
 }
 
+.eligibility-check-label small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-0);
+  font-weight: 400;
+}
+
 .eligibility-check-mark {
   display: inline-grid;
+  flex: 0 0 17px;
   width: 17px;
   height: 17px;
   place-items: center;
@@ -790,6 +763,7 @@ h3 {
 }
 
 .eligibility-check-status {
+  flex: 0 0 auto;
   margin-left: auto;
   color: var(--color-text-secondary);
   font-size: var(--font-size-0);
@@ -797,8 +771,6 @@ h3 {
   white-space: nowrap;
 }
 
-.eligibility-failure-feedback,
-.eligibility-confirmed-note,
 .eligibility-escalated-note {
   display: grid;
   gap: var(--space-100);
@@ -806,26 +778,8 @@ h3 {
   padding-top: var(--space-200);
 }
 
-.eligibility-failure-feedback strong {
-  color: var(--red);
-}
-
-.eligibility-failure-feedback span {
-  color: var(--red);
-  font-size: var(--font-size-0);
-  font-weight: 700;
-}
-
-.eligibility-confirmed-note strong {
-  color: var(--green);
-}
-
 .eligibility-escalated-note strong {
   color: var(--amber);
-}
-
-.eligibility-confirm-button {
-  width: fit-content;
 }
 
 .mvp1-native-status {
