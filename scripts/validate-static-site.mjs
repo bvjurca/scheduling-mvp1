@@ -28,11 +28,8 @@ const checks = [
       'SFDC Wireframe',
       'Check recommendation',
       'Check eligibility',
-      'Confirm eligibility',
       'Eligibility service response',
       'Ordered eligibility checks',
-      'Failure feedback',
-      'Proceed to award process',
       'Escalate to human support',
       'Eligible sites',
       'Eligible sites match current Commercial snapshot as a proposal window',
@@ -112,7 +109,7 @@ const checks = [
       'species',
       'crl_study_type_l1',
       'crl_study_type_l2',
-      'PRESENT',
+      'GREATER_THAN_OR_EQUAL',
       'pass_with_warning'
     ]
   },

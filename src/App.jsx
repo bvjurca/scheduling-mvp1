@@ -945,7 +945,6 @@ function Mvp1Experience({ onHome }) {
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const [eligibilityResult, setEligibilityResult] = useState(null);
-  const [isEligibilityConfirmed, setIsEligibilityConfirmed] = useState(false);
   const [isEligibilityEscalated, setIsEligibilityEscalated] = useState(false);
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const hasPreferredSite = selectedSite !== 'Any';
@@ -988,7 +987,6 @@ function Mvp1Experience({ onHome }) {
 
   function resetEligibilityState() {
     setEligibilityResult(null);
-    setIsEligibilityConfirmed(false);
     setIsEligibilityEscalated(false);
   }
 
@@ -996,22 +994,15 @@ function Mvp1Experience({ onHome }) {
     if (!site) return;
     setEligibilityResult(evaluateMvp1Eligibility({
       studyStartDate,
-      selectedSite: site
+      selectedSite: site,
+      recommendations: evaluation.recommendations
     }));
-    setIsEligibilityConfirmed(false);
-    setIsEligibilityEscalated(false);
-  }
-
-  function confirmEligibility() {
-    if (!eligibilityResult || !['pass', 'pass_with_warning'].includes(eligibilityResult.status)) return;
-    setIsEligibilityConfirmed(true);
     setIsEligibilityEscalated(false);
   }
 
   function escalateEligibility() {
     if (!eligibilityResult) return;
     setIsEligibilityEscalated(true);
-    setIsEligibilityConfirmed(false);
   }
 
   if (isEligibleSitesDetailOpen) {
@@ -1139,7 +1130,7 @@ function Mvp1Experience({ onHome }) {
                     Clear (demo only)
                   </Button>
                 </div>
-                <SfdcWireRow label="Study status" value={isEligibilityConfirmed ? 'Confirmed' : 'Complete'} muted />
+                <SfdcWireRow label="Study status" value="Complete" muted />
               </div>
             </section>
           </section>
@@ -1151,11 +1142,9 @@ function Mvp1Experience({ onHome }) {
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
               eligibilityResult={eligibilityResult}
-              isEligibilityConfirmed={isEligibilityConfirmed}
               isEligibilityEscalated={isEligibilityEscalated}
               onCheckRecommendations={checkSiteRecommendations}
               onCheckEligibility={checkEligibility}
-              onConfirmEligibility={confirmEligibility}
               onEscalateEligibility={escalateEligibility}
               onViewAll={() => setIsEligibleSitesDetailOpen(true)}
             />
@@ -1248,11 +1237,9 @@ function Mvp1DecisionOutput({
   hasCheckedRecommendations,
   isSiteOffRamp,
   eligibilityResult,
-  isEligibilityConfirmed,
   isEligibilityEscalated,
   onCheckRecommendations,
   onCheckEligibility,
-  onConfirmEligibility,
   onEscalateEligibility,
   onViewAll
 }) {
@@ -1313,9 +1300,7 @@ function Mvp1DecisionOutput({
         {eligibilityResult && !hasRecommendationList ? (
           <Mvp1EligibilityResult
             result={eligibilityResult}
-            isConfirmed={isEligibilityConfirmed}
             isEscalated={isEligibilityEscalated}
-            onConfirm={onConfirmEligibility}
             onEscalate={onEscalateEligibility}
           />
         ) : null}
@@ -1350,9 +1335,7 @@ function Mvp1DecisionOutput({
                     {item.site === selectedSite && eligibilityResult ? (
                       <Mvp1EligibilityResult
                         result={eligibilityResult}
-                        isConfirmed={isEligibilityConfirmed}
                         isEscalated={isEligibilityEscalated}
-                        onConfirm={onConfirmEligibility}
                         onEscalate={onEscalateEligibility}
                       />
                     ) : null}
@@ -1383,9 +1366,9 @@ function Mvp1DecisionOutput({
   );
 }
 
-function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, onEscalate }) {
-  const panelStatus = isConfirmed ? 'confirmed' : isEscalated ? 'escalated' : result.status;
-  const panelTitle = isConfirmed ? 'Confirmed for award process' : isEscalated ? 'Human support requested' : result.label;
+function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
+  const panelStatus = isEscalated ? 'escalated' : result.status;
+  const panelTitle = isEscalated ? 'Human support requested' : result.label;
 
   return (
     <section className={`mvp1-eligibility-result ${panelStatus}`} aria-labelledby="mvp1-eligibility-title">
@@ -1394,14 +1377,11 @@ function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, on
           <p className="eyebrow">Eligibility service response</p>
           <h4 id="mvp1-eligibility-title">{panelTitle}</h4>
         </div>
-        <span className={`eligibility-status-pill ${panelStatus}`}>{panelTitle}</span>
       </div>
       <p className="mvp1-eligibility-summary">
-        {isConfirmed
-          ? 'Study Start Date and Status are marked Confirmed in this demo state. Proceed to the award process.'
-          : isEscalated
-            ? 'The check remains visible for review. Use the existing human-support / Smartsheet process outside this prototype.'
-            : result.summary}
+        {isEscalated
+          ? 'The check remains visible for review. Use the existing human-support / Smartsheet process outside this prototype.'
+          : result.summary}
       </p>
 
       <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
@@ -1412,6 +1392,9 @@ function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, on
               <span className="eligibility-check-label">
                 <strong>{eligibilityCheckLabelFor(check).value}</strong>
                 <span>{eligibilityCheckLabelFor(check).subLabel}</span>
+                {eligibilityCheckLabelFor(check).detail ? (
+                  <small>{eligibilityCheckLabelFor(check).detail}</small>
+                ) : null}
               </span>
               <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
             </div>
@@ -1419,30 +1402,13 @@ function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, on
         ))}
       </div>
 
-      {result.failureFeedback && !isEscalated ? (
-        <div className="eligibility-failure-feedback">
-          <strong>Failure feedback</strong>
-          <p>{result.failureFeedback}</p>
-          <span>Next action: {result.nextAction}</span>
-        </div>
-      ) : null}
-
-      {isConfirmed ? (
-        <div className="eligibility-confirmed-note">
-          <strong>Proceed to award process</strong>
-          <p>Demo only — no SFDC writeback, capacity reservation, or operational booking has occurred.</p>
-        </div>
-      ) : isEscalated ? (
+      {isEscalated ? (
         <div className="eligibility-escalated-note">
           <strong>Handoff prepared</strong>
-          <p>Failure feedback is ready to carry into the human-support workflow.</p>
+          <p>The human-support workflow is ready to continue this check.</p>
         </div>
-      ) : result.status === 'pass' || result.status === 'pass_with_warning' ? (
-        <Button type="button" className="primary-button eligibility-confirm-button" onPress={onConfirm}>
-          {result.status === 'pass_with_warning' ? 'Confirm with warning' : 'Confirm eligibility'}
-        </Button>
       ) : result.status === 'fail' ? (
-        <Button type="button" className="ghost-button secondary-button eligibility-confirm-button" onPress={onEscalate}>
+        <Button type="button" className="ghost-button secondary-button" onPress={onEscalate}>
           Escalate to human support
         </Button>
       ) : null}
@@ -1468,13 +1434,14 @@ function eligibilityCheckLabelFor(check) {
   if (check.id === 'lead_times') {
     return {
       value: check.studyValue === 'Needs Study Start Date' ? 'Study Start Date' : check.studyValue,
-      subLabel: 'Date'
+      subLabel: 'Date',
+      detail: check.status === 'fail' ? `Lead time: ${check.siteValue}` : ''
     };
   }
-  if (check.id === 'species') return { value: check.studyValue, subLabel: 'Species' };
-  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, subLabel: 'Study type L1' };
-  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, subLabel: 'Study type L2' };
-  return { value: check.label, subLabel: '' };
+  if (check.id === 'species') return { value: check.studyValue, subLabel: 'Species', detail: '' };
+  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, subLabel: 'Study type L1', detail: '' };
+  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, subLabel: 'Study type L2', detail: '' };
+  return { value: check.label, subLabel: '', detail: '' };
 }
 
 function LastUpdatedMarker({ item }) {
