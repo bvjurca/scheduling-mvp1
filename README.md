@@ -16,8 +16,9 @@ The Blueprint remains the source of truth for scope. MVP1 is a Commercial Person
 - asks for missing configuration data;
 - calculates site/month options;
 - gives Commercial an eligible proposal window, caveated recommendation, or off-ramp.
+- can run a narrow ordered pre-award eligibility check and represent confirmation locally in the demo.
 
-MVP1 does not reserve capacity, optimize room-level schedules, replace Central Scheduling, or create a final RPM execution date.
+MVP1 does not reserve capacity, optimize room-level schedules, replace Central Scheduling, write back to SFDC, or create a final RPM execution date.
 
 ## Project Structure
 

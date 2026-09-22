@@ -52,7 +52,7 @@ The MVP1 path now presents:
 11. A `Preferred` marker for the CRL Site selected in the Study field.
 12. A last-updated marker on every visible eligible site, using neutral text for current/recent updates and a warning treatment for older updates.
 13. A confidence disclaimer explaining that the output is a proposal window, not a capacity hold.
-14. A `Check site recommendations` action before the list is loaded, then a `Recheck` action that refreshes the snapshot timestamp.
+14. A `Check recommendation` action before the list is loaded, then a `Recheck recommendation` action that refreshes the snapshot timestamp.
 15. A simplified alphabetically sorted `CRL Site` dropdown.
 16. `Valid as of DD-MMM-YYYY HH:MM`, rather than `Valid until`, shown only after an eligible list is loaded.
 17. Missing-information handling when Study Start Date is blank.
@@ -138,6 +138,20 @@ UI behavior:
 - show no check/recheck action because the threshold failure is already known,
 - provide the reason code `START_DATE_WITHIN_4_MONTH_THRESHOLD`.
 
+## Pre-award Eligibility Extension
+
+The MVP1 study-page insert now includes a narrow pre-award eligibility slice layered on top of the proposal-window recommendation:
+
+- Commercial can run recommendation and eligibility independently from the same action level; eligibility returns an ordered response for lead time, CRL site, species, and study type.
+- When a recommendation snapshot is available, the eligibility response is placed directly beneath the selected Preferred site; without a snapshot, it reports the missing prerequisite instead of implying a result.
+- A failed check stops dependent checks and displays readable failure feedback plus the next action.
+- A non-fresh lead-time signal can pass with a warning so freshness remains visible.
+- A passing response can be confirmed in the demo, changing the visible Study status to `Confirmed` and presenting `Proceed to award process`.
+- Confirmation is a local prototype state only. It does not write to SFDC, reserve capacity, book an operational slot, or replace Central Scheduling.
+- A failed response can prepare a human-support handoff; the existing Smartsheet process remains outside this prototype.
+
+This is intentionally a pre-award eligibility gate, not post-award micro scheduling. The checks are a deterministic mock of the proposed API contract until the live integration, authentication, failure semantics, and source-of-truth ownership are agreed.
+
 ## Why `Valid As Of` Replaces `Valid Until`
 
 The stakeholder direction changes the output from a decision contract with expiry semantics to a simple snapshot output.
@@ -155,7 +169,7 @@ These remain outside the simplified MVP1 view:
 - full request workspace,
 - wizard-driven request intake,
 - configuration-readiness checklist,
-- route/species/study-type validation,
+- full request-level configuration validation beyond the ordered demo eligibility checks,
 - LabSci dependency review,
 - Reporting/SEND dependency review,
 - test material availability,
