@@ -142,8 +142,8 @@ UI behavior:
 
 The MVP1 study-page insert now includes a narrow pre-award eligibility slice layered on top of the proposal-window recommendation:
 
-- Commercial can run recommendation and eligibility independently from the same action level; eligibility returns an ordered response for lead time, CRL site, species, and study type.
-- When a recommendation snapshot is available, the eligibility response is placed directly beneath the selected Preferred site; without a snapshot, it reports the missing prerequisite instead of implying a result.
+- Commercial can run recommendation and eligibility independently from the same action level; eligibility checks the study date, species, and study types without requiring a recommendation snapshot first.
+- When a recommendation snapshot is available, the eligibility response is placed directly beneath the selected Preferred site; the human-facing response omits the redundant CRL Site row.
 - A failed check stops dependent checks and displays readable failure feedback plus the next action.
 - A non-fresh lead-time signal can pass with a warning so freshness remains visible.
 - A passing response can be confirmed in the demo, changing the visible Study status to `Confirmed` and presenting `Proceed to award process`.

@@ -995,8 +995,7 @@ function Mvp1Experience({ onHome }) {
     if (!site) return;
     setEligibilityResult(evaluateMvp1Eligibility({
       studyStartDate,
-      selectedSite: site,
-      recommendations: hasCheckedRecommendations ? evaluation.recommendations : []
+      selectedSite: site
     }));
     setIsEligibilityConfirmed(false);
     setIsEligibilityEscalated(false);
@@ -1411,17 +1410,15 @@ function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, on
       </p>
 
       <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
-        {result.checks.map((check) => (
+        {result.checks.filter((check) => check.id !== 'crl_site').map((check) => (
           <div className={`eligibility-check-row ${check.status}`} key={check.id}>
             <div className="eligibility-check-head">
               <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
-              <strong>{check.id}</strong>
+              <span className="eligibility-check-label">
+                <strong>{eligibilityCheckLabelFor(check).value}</strong>
+                <span>{eligibilityCheckLabelFor(check).subLabel}</span>
+              </span>
               <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
-            </div>
-            <div className="eligibility-check-values">
-              <span><b>Operator</b> {check.operator}</span>
-              <span><b>Site value</b> {check.siteValue}</span>
-              <span><b>Study value</b> {check.studyValue}</span>
             </div>
           </div>
         ))}
@@ -1465,11 +1462,24 @@ function eligibilityMarkFor(status) {
 }
 
 function eligibilityLabelFor(status) {
-  if (status === 'pass') return 'Pass';
-  if (status === 'pass_with_warning') return 'Pass / warning';
-  if (status === 'fail') return 'Fail';
-  if (status === 'blocked') return 'Blocked';
-  return 'Not run';
+  if (status === 'pass') return 'Available';
+  if (status === 'pass_with_warning') return 'Available with warning';
+  if (status === 'fail') return 'Unavailable';
+  if (status === 'blocked') return 'More information needed';
+  return 'Not checked';
+}
+
+function eligibilityCheckLabelFor(check) {
+  if (check.id === 'lead_times') {
+    return {
+      value: check.studyValue === 'Needs Study Start Date' ? 'Study Start Date' : check.studyValue,
+      subLabel: 'Date'
+    };
+  }
+  if (check.id === 'species') return { value: check.studyValue, subLabel: 'Species' };
+  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, subLabel: 'Study type L1' };
+  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, subLabel: 'Study type L2' };
+  return { value: check.label, subLabel: '' };
 }
 
 function LastUpdatedMarker({ item }) {

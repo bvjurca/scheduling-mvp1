@@ -747,6 +747,23 @@ h3 {
   min-width: 0;
 }
 
+.eligibility-check-label {
+  display: grid;
+  gap: var(--space-25);
+  min-width: 0;
+}
+
+.eligibility-check-label strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.eligibility-check-label > span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-0);
+  font-weight: 400;
+}
+
 .eligibility-check-mark {
   display: inline-grid;
   width: 17px;
@@ -778,19 +795,6 @@ h3 {
   font-size: var(--font-size-0);
   font-weight: 700;
   white-space: nowrap;
-}
-
-.eligibility-check-values {
-  display: grid;
-  gap: var(--space-50);
-  padding-left: 23px;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-0);
-}
-
-.eligibility-check-values b {
-  color: var(--ink);
-  font-weight: 700;
 }
 
 .eligibility-failure-feedback,
