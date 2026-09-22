@@ -940,7 +940,7 @@ function EntryLanding({ onChooseExperience }) {
 
 function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
-  const [selectedSite, setSelectedSite] = useState('Any');
+  const [selectedSite, setSelectedSite] = useState('Hertenbosch');
   const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
