@@ -26,7 +26,14 @@ const checks = [
     requiredText: [
       'react-aria-components',
       'SFDC Wireframe',
-      'Check site recommendations',
+      'Check recommendation',
+      'Check eligibility',
+      'Confirm eligibility',
+      'Eligibility service response',
+      'Ordered eligibility checks',
+      'Failure feedback',
+      'Proceed to award process',
+      'Escalate to human support',
       'Eligible sites',
       'Eligible sites match current Commercial snapshot as a proposal window',
       'View all',
@@ -80,7 +87,7 @@ const checks = [
   },
   {
     path: '../src/mvp1Scheduling.js',
-    minBytes: 5000,
+    minBytes: 4500,
     requiredText: [
       'evaluateMvp1DateOnly',
       'sortMvp1SiteRecommendations',
@@ -93,6 +100,20 @@ const checks = [
       'Missing information',
       'Requests inside the <4 months threshold should be handled by Central Scheduling.',
       'START_DATE_WITHIN_4_MONTH_THRESHOLD'
+    ]
+  },
+  {
+    path: '../src/mvp1Eligibility.js',
+    minBytes: 4500,
+    requiredText: [
+      'evaluateMvp1Eligibility',
+      'lead_times',
+      'crl_site',
+      'species',
+      'crl_study_type_l1',
+      'crl_study_type_l2',
+      'GREATER_THAN_OR_EQUAL',
+      'pass_with_warning'
     ]
   },
   {

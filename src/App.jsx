@@ -48,6 +48,7 @@ import {
   mvp1AsOfDate,
   sortMvp1SiteRecommendations
 } from './mvp1Scheduling';
+import { evaluateMvp1Eligibility } from './mvp1Eligibility';
 
 const expiryBusinessDays = 5;
 
@@ -943,6 +944,9 @@ function Mvp1Experience({ onHome }) {
   const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
+  const [eligibilityResult, setEligibilityResult] = useState(null);
+  const [isEligibilityConfirmed, setIsEligibilityConfirmed] = useState(false);
+  const [isEligibilityEscalated, setIsEligibilityEscalated] = useState(false);
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const hasPreferredSite = selectedSite !== 'Any';
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
@@ -955,6 +959,7 @@ function Mvp1Experience({ onHome }) {
       setStudyStartDate(value);
       setHasCheckedRecommendations(false);
       setIsEligibleSitesDetailOpen(false);
+      resetEligibilityState();
     }
   }
 
@@ -962,12 +967,14 @@ function Mvp1Experience({ onHome }) {
     setStudyStartDate('');
     setHasCheckedRecommendations(false);
     setIsEligibleSitesDetailOpen(false);
+    resetEligibilityState();
   }
 
   function checkSiteRecommendations() {
     if (!parseFullDate(studyStartDate)) return;
     setHasCheckedRecommendations(true);
     setIsEligibleSitesDetailOpen(false);
+    resetEligibilityState();
     setRecommendationSnapshot((current) => ({
       checkedAt: new Date(),
       variant: current.variant + 1
@@ -976,6 +983,36 @@ function Mvp1Experience({ onHome }) {
 
   function selectCrlSite(site) {
     setSelectedSite(site);
+    resetEligibilityState();
+  }
+
+  function resetEligibilityState() {
+    setEligibilityResult(null);
+    setIsEligibilityConfirmed(false);
+    setIsEligibilityEscalated(false);
+  }
+
+  function checkEligibility(site = selectedSite) {
+    if (!site) return;
+    setEligibilityResult(evaluateMvp1Eligibility({
+      studyStartDate,
+      selectedSite: site,
+      recommendations: hasCheckedRecommendations ? evaluation.recommendations : []
+    }));
+    setIsEligibilityConfirmed(false);
+    setIsEligibilityEscalated(false);
+  }
+
+  function confirmEligibility() {
+    if (!eligibilityResult || !['pass', 'pass_with_warning'].includes(eligibilityResult.status)) return;
+    setIsEligibilityConfirmed(true);
+    setIsEligibilityEscalated(false);
+  }
+
+  function escalateEligibility() {
+    if (!eligibilityResult) return;
+    setIsEligibilityEscalated(true);
+    setIsEligibilityConfirmed(false);
   }
 
   if (isEligibleSitesDetailOpen) {
@@ -1029,7 +1066,7 @@ function Mvp1Experience({ onHome }) {
           <SummaryField label="CRL Scientific Study #" value="32105468" />
           <SummaryField label="Study ID" value="CRL-689542" />
           <SummaryField label="Opportunity" value="MICHELIN - REACH Annex VII Ecotox studies" />
-          <SummaryField label="CRL Site" value="Hertenbosch" />
+          <SummaryField label="CRL Site" value={selectedSite} />
           <SummaryField label="Study Stage" value="Complete" />
         </div>
 
@@ -1103,7 +1140,7 @@ function Mvp1Experience({ onHome }) {
                     Clear (demo only)
                   </Button>
                 </div>
-                <SfdcWireRow label="Study status" value="Complete" muted />
+                <SfdcWireRow label="Study status" value={isEligibilityConfirmed ? 'Confirmed' : 'Complete'} muted />
               </div>
             </section>
           </section>
@@ -1114,7 +1151,13 @@ function Mvp1Experience({ onHome }) {
               selectedSite={selectedSite}
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
+              eligibilityResult={eligibilityResult}
+              isEligibilityConfirmed={isEligibilityConfirmed}
+              isEligibilityEscalated={isEligibilityEscalated}
               onCheckRecommendations={checkSiteRecommendations}
+              onCheckEligibility={checkEligibility}
+              onConfirmEligibility={confirmEligibility}
+              onEscalateEligibility={escalateEligibility}
               onViewAll={() => setIsEligibleSitesDetailOpen(true)}
             />
             <SfdcSideCard title="Related context">
@@ -1200,35 +1243,47 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
   );
 }
 
-function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendations, isSiteOffRamp, onCheckRecommendations, onViewAll }) {
+function Mvp1DecisionOutput({
+  evaluation,
+  selectedSite,
+  hasCheckedRecommendations,
+  isSiteOffRamp,
+  eligibilityResult,
+  isEligibilityConfirmed,
+  isEligibilityEscalated,
+  onCheckRecommendations,
+  onCheckEligibility,
+  onConfirmEligibility,
+  onEscalateEligibility,
+  onViewAll
+}) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
   const isDateOffRamp = evaluation.offRampReason === 'START_DATE_WITHIN_4_MONTH_THRESHOLD';
   const hasRecommendationList = hasCheckedRecommendations && evaluation.recommendations.length > 0;
   const showSiteOffRamp = isSiteOffRamp && !isMissingStartDate && !isDateOffRamp;
   const showKnownOffRampState = isDateOffRamp || showSiteOffRamp;
-  const showCheckedState = (hasCheckedRecommendations || showKnownOffRampState) && !isMissingStartDate;
-  const showCheckAction = !isMissingStartDate && (!hasCheckedRecommendations || hasRecommendationList);
+  const showCheckedState = hasCheckedRecommendations || showKnownOffRampState || isMissingStartDate;
+  const showCheckAction = !isMissingStartDate && !isDateOffRamp && (!hasCheckedRecommendations || hasRecommendationList);
   const panelLevel = showSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = showSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
   const panelCopy = showSiteOffRamp
     ? 'Selected Preferred CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
     : evaluation.copy;
+  const actionHint = hasRecommendationList
+    ? 'Eligibility runs for the selected CRL Site; when it is in the snapshot, the result appears beneath its Preferred line.'
+    : 'Run either check independently; eligibility reports when more study or site information is needed.';
   const eligibleSites = hasRecommendationList ? getCompactMvp1EligibleSites(evaluation.recommendations, selectedSite) : [];
 
   return (
-    <SfdcSideCard title="Eligible sites" className="mvp1-recommendations-card">
+    <SfdcSideCard title="Scheduling" className="mvp1-recommendations-card">
       <div className="mvp1-native-panel">
-        {showCheckedState ? (
+        {showCheckedState && panelLevel !== 'good' ? (
           <div className={`mvp1-native-status ${panelLevel}`}>
-            {panelLevel === 'good' ? null : <strong>{panelTitle}</strong>}
-            {isDateOffRamp && evaluation.statusTimestamp ? (
-              <p>
-                <strong className="mvp1-status-timestamp">{evaluation.statusTimestamp}</strong>
-                {' is not more than four months out from the current snapshot.'}
-              </p>
-            ) : (
-              <p>{panelCopy}</p>
-            )}
+            <div className="mvp1-status-summary">
+              <strong>{panelTitle}</strong>
+              {panelLevel === 'warn' ? <InfoButton copy={actionHint} /> : null}
+            </div>
+            {panelLevel !== 'warn' ? <p>{panelCopy}</p> : null}
           </div>
         ) : null}
 
@@ -1241,17 +1296,29 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
           </div>
         ) : null}
 
-        {!hasRecommendationList ? (
-          <div className="mvp1-empty-state">
-            <strong>{isMissingStartDate || isDateOffRamp ? evaluation.emptyTitle : 'No eligible sites loaded'}</strong>
-            <p>{isMissingStartDate || isDateOffRamp ? evaluation.emptyCopy : 'Select Start Date and optionally a Preferred CRL Site, then check site recommendations to load eligible site/month options.'}</p>
-          </div>
-        ) : null}
+        <p className="mvp1-action-hint">{actionHint}</p>
 
-        {showCheckAction ? (
-          <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
-            {hasRecommendationList ? 'Recheck' : 'Check site recommendations'}
-          </Button>
+        <div className="mvp1-scheduling-actions" aria-label="Scheduling actions">
+          {showCheckAction ? (
+            <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
+              {hasRecommendationList ? 'Recheck recommendation' : 'Check recommendation'}
+            </Button>
+          ) : null}
+          {selectedSite ? (
+            <Button type="button" className="ghost-button eligibility-check-button" onPress={() => onCheckEligibility()}>
+              {eligibilityResult ? 'Recheck eligibility' : 'Check eligibility'}
+            </Button>
+          ) : null}
+        </div>
+
+        {eligibilityResult && !hasRecommendationList ? (
+          <Mvp1EligibilityResult
+            result={eligibilityResult}
+            isConfirmed={isEligibilityConfirmed}
+            isEscalated={isEligibilityEscalated}
+            onConfirm={onConfirmEligibility}
+            onEscalate={onEscalateEligibility}
+          />
         ) : null}
 
         {hasRecommendationList ? (
@@ -1270,14 +1337,27 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
                     </Button>
                   </div>
                 ) : (
-                  <div className="eligible-site-row" key={`${item.site}-${item.availability}`}>
+                  <React.Fragment key={`${item.site}-${item.availability}`}>
+                    <div className={`eligible-site-row ${item.site === selectedSite ? 'is-preferred' : ''}`}>
                     <div className="eligible-site-main">
                       <strong>{item.site}</strong>
                       {selectedSite !== 'Any' && item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
                       <LastUpdatedMarker item={item} />
                     </div>
-                    <em>{item.availability}</em>
-                  </div>
+                      <div className="eligible-site-availability">
+                        <em>{item.availability}</em>
+                      </div>
+                    </div>
+                    {item.site === selectedSite && eligibilityResult ? (
+                      <Mvp1EligibilityResult
+                        result={eligibilityResult}
+                        isConfirmed={isEligibilityConfirmed}
+                        isEscalated={isEligibilityEscalated}
+                        onConfirm={onConfirmEligibility}
+                        onEscalate={onEscalateEligibility}
+                      />
+                    ) : null}
+                  </React.Fragment>
                 )
               ))}
             </div>
@@ -1302,6 +1382,89 @@ function Mvp1DecisionOutput({ evaluation, selectedSite, hasCheckedRecommendation
       </div>
     </SfdcSideCard>
   );
+}
+
+function Mvp1EligibilityResult({ result, isConfirmed, isEscalated, onConfirm, onEscalate }) {
+  const panelStatus = isConfirmed ? 'confirmed' : isEscalated ? 'escalated' : result.status;
+  const panelTitle = isConfirmed ? 'Confirmed for award process' : isEscalated ? 'Human support requested' : result.label;
+
+  return (
+    <section className={`mvp1-eligibility-result ${panelStatus}`} aria-labelledby="mvp1-eligibility-title">
+      <div className="mvp1-eligibility-result-head">
+        <div>
+          <p className="eyebrow">Eligibility service response</p>
+          <h4 id="mvp1-eligibility-title">{panelTitle}</h4>
+        </div>
+        <span className={`eligibility-status-pill ${panelStatus}`}>{panelTitle}</span>
+      </div>
+      <p className="mvp1-eligibility-summary">
+        {isConfirmed
+          ? 'Study Start Date and Status are marked Confirmed in this demo state. Proceed to the award process.'
+          : isEscalated
+            ? 'The check remains visible for review. Use the existing human-support / Smartsheet process outside this prototype.'
+            : result.summary}
+      </p>
+
+      <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
+        {result.checks.map((check) => (
+          <div className={`eligibility-check-row ${check.status}`} key={check.id}>
+            <div className="eligibility-check-head">
+              <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
+              <strong>{check.id}</strong>
+              <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
+            </div>
+            <div className="eligibility-check-values">
+              <span><b>Operator</b> {check.operator}</span>
+              <span><b>Site value</b> {check.siteValue}</span>
+              <span><b>Study value</b> {check.studyValue}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {result.failureFeedback && !isEscalated ? (
+        <div className="eligibility-failure-feedback">
+          <strong>Failure feedback</strong>
+          <p>{result.failureFeedback}</p>
+          <span>Next action: {result.nextAction}</span>
+        </div>
+      ) : null}
+
+      {isConfirmed ? (
+        <div className="eligibility-confirmed-note">
+          <strong>Proceed to award process</strong>
+          <p>Demo only — no SFDC writeback, capacity reservation, or operational booking has occurred.</p>
+        </div>
+      ) : isEscalated ? (
+        <div className="eligibility-escalated-note">
+          <strong>Handoff prepared</strong>
+          <p>Failure feedback is ready to carry into the human-support workflow.</p>
+        </div>
+      ) : result.status === 'pass' || result.status === 'pass_with_warning' ? (
+        <Button type="button" className="primary-button eligibility-confirm-button" onPress={onConfirm}>
+          {result.status === 'pass_with_warning' ? 'Confirm with warning' : 'Confirm eligibility'}
+        </Button>
+      ) : result.status === 'fail' ? (
+        <Button type="button" className="ghost-button secondary-button eligibility-confirm-button" onPress={onEscalate}>
+          Escalate to human support
+        </Button>
+      ) : null}
+    </section>
+  );
+}
+
+function eligibilityMarkFor(status) {
+  if (status === 'pass' || status === 'pass_with_warning') return '✓';
+  if (status === 'fail') return '!';
+  return '–';
+}
+
+function eligibilityLabelFor(status) {
+  if (status === 'pass') return 'Pass';
+  if (status === 'pass_with_warning') return 'Pass / warning';
+  if (status === 'fail') return 'Fail';
+  if (status === 'blocked') return 'Blocked';
+  return 'Not run';
 }
 
 function LastUpdatedMarker({ item }) {
