@@ -940,7 +940,7 @@ function EntryLanding({ onChooseExperience }) {
 
 function Mvp1Experience({ onHome }) {
   const [studyStartDate, setStudyStartDate] = useState(mvp1Defaults.opportunityStartDate);
-  const [selectedSite, setSelectedSite] = useState('Hertenbosch');
+  const [selectedSite, setSelectedSite] = useState('Any');
   const [hasCheckedRecommendations, setHasCheckedRecommendations] = useState(false);
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
@@ -948,10 +948,11 @@ function Mvp1Experience({ onHome }) {
   const [isEligibilityConfirmed, setIsEligibilityConfirmed] = useState(false);
   const [isEligibilityEscalated, setIsEligibilityEscalated] = useState(false);
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
+  const hasPreferredSite = selectedSite !== 'Any';
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
   const parsedStudyStartDate = parseFullDate(studyStartDate);
   const isDateEligibleForSelfServe = Boolean(parsedStudyStartDate && parsedStudyStartDate > addMonths(mvp1AsOfDate, 4));
-  const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && selectedSite && !selectedRecommendation);
+  const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && hasPreferredSite && hasCheckedRecommendations && !selectedRecommendation);
 
   function updateField(name, value) {
     if (name === 'opportunityStartDate') {
@@ -1208,10 +1209,12 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
             <div className="eligible-sites-title-block">
               <span className="eligible-sites-breadcrumb">Studies &gt; In Vivo - Ecotoxicology Daphnia sp. Acute Immobilisation Test</span>
               <h2 id="eligible-sites-detail-title">Eligible Sites</h2>
-              <span>20 items - sorted by lead time, then most recent update</span>
             </div>
             <div className="valid-as-of compact">
               Valid as of <strong>{evaluation.validAsOf}</strong>
+              <a className="valid-source-link" href="#" onClick={(event) => event.preventDefault()}>
+                View source
+              </a>
             </div>
           </div>
 
@@ -1221,18 +1224,16 @@ function Mvp1EligibleSitesDetail({ evaluation, selectedSite, onBack, onHome }) {
               <span>Site</span>
               <span>Lead Time</span>
               <span>Last Updated</span>
-              <span>Source</span>
             </div>
             {eligibleSites.map((item, index) => (
               <div className="eligible-sites-detail-row" role="row" key={`${item.site}-${item.availability}`}>
                 <span>{index + 1}</span>
                 <strong>
                   {item.site}
-                  {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
+                  {selectedSite !== 'Any' && item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
                 </strong>
                 <span>{item.availability}</span>
                 <LastUpdatedMarker item={item} />
-                <a href="#" onClick={(event) => event.preventDefault()}>Site lead times manager</a>
               </div>
             ))}
           </div>
@@ -1266,7 +1267,7 @@ function Mvp1DecisionOutput({
   const panelLevel = showSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = showSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
   const panelCopy = showSiteOffRamp
-    ? 'Selected CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
+    ? 'Selected Preferred CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
     : evaluation.copy;
   const actionHint = hasRecommendationList
     ? 'Eligibility runs for the selected CRL Site; when it is in the snapshot, the result appears beneath its Preferred line.'
@@ -1340,7 +1341,7 @@ function Mvp1DecisionOutput({
                     <div className={`eligible-site-row ${item.site === selectedSite ? 'is-preferred' : ''}`}>
                     <div className="eligible-site-main">
                       <strong>{item.site}</strong>
-                      {item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
+                      {selectedSite !== 'Any' && item.site === selectedSite ? <span className="preferred-pill">Preferred</span> : null}
                       <LastUpdatedMarker item={item} />
                     </div>
                       <div className="eligible-site-availability">
@@ -1360,6 +1361,14 @@ function Mvp1DecisionOutput({
                 )
               ))}
             </div>
+
+            {isDateOffRamp ? (
+              <div className="mvp1-offramp-note">
+                <strong>{evaluation.emptyTitle}</strong>
+                <p>{evaluation.emptyCopy}</p>
+              </div>
+            ) : null}
+
             <div className="eligible-site-disclaimer">
               <p>Eligible sites match current Commercial snapshot as a proposal window. No capacity hold implied.</p>
               <p>Data used: SFDC Opportunity/RFP fields, Lead-time snapshot, Site capability reference.</p>
@@ -1369,20 +1378,6 @@ function Mvp1DecisionOutput({
               View all
             </Button>
           </>
-        ) : null}
-
-        {showCheckedState && evaluation.offRampReason ? (
-          <div className="mvp1-offramp-note">
-            <strong>Off-ramp reason</strong>
-            <p>{evaluation.offRampReason}</p>
-          </div>
-        ) : null}
-
-        {showSiteOffRamp ? (
-          <div className="mvp1-offramp-note">
-            <strong>Off-ramp reason</strong>
-            <p>SITE_OUTSIDE_RECOMMENDED_SET</p>
-          </div>
         ) : null}
       </div>
     </SfdcSideCard>
@@ -1484,7 +1479,8 @@ function LastUpdatedMarker({ item }) {
 }
 
 function Mvp1CrlSiteField({ selectedSite, allSiteOptions, isOffRamp, onChange }) {
-  const selectedKey = selectedSite || null;
+  const selectedKey = selectedSite || 'Any';
+  const siteOptions = ['Any', ...allSiteOptions].filter((site, index, options) => options.indexOf(site) === index);
 
   return (
     <Select
@@ -1492,14 +1488,14 @@ function Mvp1CrlSiteField({ selectedSite, allSiteOptions, isOffRamp, onChange })
       selectedKey={selectedKey}
       onSelectionChange={(key) => onChange(String(key))}
     >
-      <FieldLabel label="CRL Site" info="Preferred CRL Site for the commercial request. This does not reserve capacity." />
+      <FieldLabel label="Preferred CRL Site" info="Optional preferred site for the commercial request. Any keeps the eligible-site check open without applying preferred-site logic." />
       <Button className="select-button">
         <SelectValue />
         <ChevronDownIcon />
       </Button>
       <Popover className="select-popover">
         <ListBox className="select-list">
-          {allSiteOptions.map((site) => (
+          {siteOptions.map((site) => (
             <ListBoxItem className="select-option" id={site} key={site} textValue={site}>
               {site}
             </ListBoxItem>

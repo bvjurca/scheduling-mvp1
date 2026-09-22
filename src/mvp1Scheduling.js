@@ -60,10 +60,11 @@ export function evaluateMvp1DateOnly(studyStartDate, snapshot) {
       level: 'bad',
       title: 'Central Scheduling off-ramp',
       copy: `${formatDate(startDate)} is not more than four months out from the current snapshot.`,
+      statusTimestamp: formatDate(startDate),
       validAsOf,
-      recommendations: [],
+      recommendations: buildMvp1SiteRecommendations(startDate, snapshot),
       emptyTitle: 'No self-serve recommendation',
-      emptyCopy: 'Requests inside the >4 months threshold should be handled by Central Scheduling.',
+      emptyCopy: 'Requests inside the <4 months threshold should be handled by Central Scheduling.',
       offRampReason: 'START_DATE_WITHIN_4_MONTH_THRESHOLD'
     };
   }
@@ -93,7 +94,8 @@ export function sortMvp1SiteRecommendations(recommendations) {
 export function getCompactMvp1EligibleSites(recommendations, selectedSite) {
   const rankedSites = sortMvp1SiteRecommendations(recommendations);
   const visibleSites = rankedSites.slice(0, 5);
-  const preferredSite = selectedSite ? rankedSites.find((item) => item.site === selectedSite) : null;
+  const hasPreferredSite = Boolean(selectedSite && selectedSite !== 'Any');
+  const preferredSite = hasPreferredSite ? rankedSites.find((item) => item.site === selectedSite) : null;
 
   if (!preferredSite || visibleSites.some((item) => item.site === selectedSite)) {
     return visibleSites;
@@ -157,7 +159,7 @@ function subtractDays(date, days) {
 }
 
 function freshnessLevelFor(daysAgo) {
-  if (daysAgo <= 14) return 'fresh';
-  if (daysAgo <= 28) return 'aging';
+  if (daysAgo <= 7) return 'fresh';
+  if (daysAgo <= 21) return 'aging';
   return 'stale';
 }
