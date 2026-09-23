@@ -1282,8 +1282,6 @@ function Mvp1DecisionOutput({
           </div>
         ) : null}
 
-        <p className="mvp1-action-hint">{actionHint}</p>
-
         <div className="mvp1-scheduling-actions" aria-label="Scheduling actions">
           {showCheckAction ? (
             <Button type="button" className="primary-button recommendation-refresh-button" onPress={onCheckRecommendations}>
@@ -1368,21 +1366,13 @@ function Mvp1DecisionOutput({
 
 function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
   const panelStatus = isEscalated ? 'escalated' : result.status;
-  const panelTitle = isEscalated ? 'Human support requested' : result.label;
+  const panelTitle = `${result.selectedSite || 'Selected site'} - ${isEscalated ? 'Human support requested' : result.label}`;
 
   return (
     <section className={`mvp1-eligibility-result ${panelStatus}`} aria-labelledby="mvp1-eligibility-title">
       <div className="mvp1-eligibility-result-head">
-        <div>
-          <p className="eyebrow">Eligibility service response</p>
-          <h4 id="mvp1-eligibility-title">{panelTitle}</h4>
-        </div>
+        <h4 id="mvp1-eligibility-title">{panelTitle}</h4>
       </div>
-      <p className="mvp1-eligibility-summary">
-        {isEscalated
-          ? 'The check remains visible for review. Use the existing human-support / Smartsheet process outside this prototype.'
-          : result.summary}
-      </p>
 
       <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
         {result.checks.filter((check) => check.id !== 'crl_site').map((check) => (

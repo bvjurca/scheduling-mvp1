@@ -28,7 +28,6 @@ const checks = [
       'SFDC Wireframe',
       'Check recommendation',
       'Check eligibility',
-      'Eligibility service response',
       'Ordered eligibility checks',
       'Escalate to human support',
       'Eligible sites',
