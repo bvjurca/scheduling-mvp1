@@ -56,7 +56,7 @@ export function evaluateMvp1Eligibility({ studyStartDate, selectedSite, recommen
     }
   ];
 
-  const hasFreshnessWarning = Boolean(selectedRecommendation && selectedRecommendation.freshnessLevel !== 'fresh');
+  const hasFreshnessWarning = Boolean(selectedRecommendation && selectedRecommendation.freshnessLevel === 'stale');
   if (leadTimesPass && hasFreshnessWarning) {
     checks[0] = {
       ...checks[0],
