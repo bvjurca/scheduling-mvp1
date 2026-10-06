@@ -945,7 +945,6 @@ function Mvp1Experience({ onHome }) {
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const [eligibilityResult, setEligibilityResult] = useState(null);
-  const [isEligibilityEscalated, setIsEligibilityEscalated] = useState(false);
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const hasPreferredSite = selectedSite !== 'Any';
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
@@ -987,7 +986,6 @@ function Mvp1Experience({ onHome }) {
 
   function resetEligibilityState() {
     setEligibilityResult(null);
-    setIsEligibilityEscalated(false);
   }
 
   function checkEligibility(site = selectedSite) {
@@ -997,12 +995,6 @@ function Mvp1Experience({ onHome }) {
       selectedSite: site,
       recommendations: evaluation.recommendations
     }));
-    setIsEligibilityEscalated(false);
-  }
-
-  function escalateEligibility() {
-    if (!eligibilityResult) return;
-    setIsEligibilityEscalated(true);
   }
 
   if (isEligibleSitesDetailOpen) {
@@ -1142,10 +1134,8 @@ function Mvp1Experience({ onHome }) {
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
               eligibilityResult={eligibilityResult}
-              isEligibilityEscalated={isEligibilityEscalated}
               onCheckRecommendations={checkSiteRecommendations}
               onCheckEligibility={checkEligibility}
-              onEscalateEligibility={escalateEligibility}
               onViewAll={() => setIsEligibleSitesDetailOpen(true)}
             />
             <SfdcSideCard title="Related context">
@@ -1237,10 +1227,8 @@ function Mvp1DecisionOutput({
   hasCheckedRecommendations,
   isSiteOffRamp,
   eligibilityResult,
-  isEligibilityEscalated,
   onCheckRecommendations,
   onCheckEligibility,
-  onEscalateEligibility,
   onViewAll
 }) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
@@ -1298,8 +1286,6 @@ function Mvp1DecisionOutput({
         {eligibilityResult && !hasRecommendationList ? (
           <Mvp1EligibilityResult
             result={eligibilityResult}
-            isEscalated={isEligibilityEscalated}
-            onEscalate={onEscalateEligibility}
           />
         ) : null}
 
@@ -1333,8 +1319,6 @@ function Mvp1DecisionOutput({
                     {item.site === selectedSite && eligibilityResult ? (
                       <Mvp1EligibilityResult
                         result={eligibilityResult}
-                        isEscalated={isEligibilityEscalated}
-                        onEscalate={onEscalateEligibility}
                       />
                     ) : null}
                   </React.Fragment>
@@ -1364,9 +1348,9 @@ function Mvp1DecisionOutput({
   );
 }
 
-function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
-  const panelStatus = isEscalated ? 'escalated' : result.status;
-  const panelTitle = `${result.selectedSite || 'Selected site'} - ${isEscalated ? 'Human support requested' : result.label}`;
+function Mvp1EligibilityResult({ result }) {
+  const panelStatus = result.status;
+  const panelTitle = `${result.selectedSite || 'Selected site'} - ${result.label}`;
 
   return (
     <section className={`mvp1-eligibility-result ${panelStatus}`} aria-labelledby="mvp1-eligibility-title">
@@ -1393,16 +1377,6 @@ function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
         })}
       </div>
 
-      {isEscalated ? (
-        <div className="eligibility-escalated-note">
-          <strong>Handoff prepared</strong>
-          <p>The human-support workflow is ready to continue this check.</p>
-        </div>
-      ) : result.status === 'fail' ? (
-        <Button type="button" className="ghost-button secondary-button" onPress={onEscalate}>
-          Escalate to human support
-        </Button>
-      ) : null}
     </section>
   );
 }

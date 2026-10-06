@@ -152,7 +152,7 @@ The MVP1 study-page insert now includes a narrow pre-award eligibility slice lay
 - A non-fresh lead-time signal can pass with a warning so freshness remains visible.
 - A passing response remains a reviewable eligibility result in the demo; it does not advance Study status or present an award CTA.
 - The eligibility response does not write to SFDC, reserve capacity, book an operational slot, or replace Central Scheduling.
-- A failed response can prepare a human-support handoff; the existing Smartsheet process remains outside this prototype.
+- Eligibility remains read-only in this prototype; human-support handoff and the existing Smartsheet process remain outside scope.
 
 This is intentionally a pre-award eligibility gate, not post-award micro scheduling. The checks are a deterministic mock of the proposed API contract until the live integration, authentication, failure semantics, and source-of-truth ownership are agreed.
 
