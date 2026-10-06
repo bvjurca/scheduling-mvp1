@@ -1,5 +1,4 @@
 import {
-  addMonths,
   formatDate,
   formatDateTime,
   monthNames,
@@ -37,9 +36,23 @@ const mvp1LeadTimeOffsetPattern = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 
 
 export const mvp1AllCrlSites = mvp1EligibleSiteLeadTimes.map((item) => item.site).sort((a, b) => a.localeCompare(b));
 
+export function mvp1SelfServeThresholdDate(referenceDate = new Date()) {
+  return new Date(Date.UTC(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth() + 4,
+    referenceDate.getDate(),
+    12
+  ));
+}
+
+export function isMvp1DateEligibleForSelfServe(studyStartDate, referenceDate = new Date()) {
+  const startDate = parseFullDate(studyStartDate);
+  return Boolean(startDate && startDate > mvp1SelfServeThresholdDate(referenceDate));
+}
+
 export function evaluateMvp1DateOnly(studyStartDate, snapshot) {
   const startDate = parseFullDate(studyStartDate);
-  const thresholdDate = addMonths(mvp1AsOfDate, 4);
+  const thresholdDate = mvp1SelfServeThresholdDate();
   const validAsOf = formatDateTime(snapshot.checkedAt);
 
   if (!startDate) {
@@ -59,10 +72,10 @@ export function evaluateMvp1DateOnly(studyStartDate, snapshot) {
     return {
       level: 'bad',
       title: 'Central Scheduling off-ramp',
-      copy: `${formatDate(startDate)} is not more than four months out from the current snapshot.`,
+      copy: `${formatDate(startDate)} is not more than four months out from today.`,
       statusTimestamp: formatDate(startDate),
       validAsOf,
-      recommendations: buildMvp1SiteRecommendations(startDate, snapshot),
+      recommendations: [],
       emptyTitle: 'No self-serve recommendation',
       emptyCopy: 'Requests inside the <4 months threshold should be handled by Central Scheduling.',
       offRampReason: 'START_DATE_WITHIN_4_MONTH_THRESHOLD'
