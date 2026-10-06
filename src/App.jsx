@@ -1389,7 +1389,7 @@ function eligibilityMarkFor(status) {
 
 function eligibilityLabelFor(status) {
   if (status === 'pass') return 'Available';
-  if (status === 'pass_with_warning') return 'Available with warning';
+  if (status === 'pass_with_warning') return 'Available';
   if (status === 'fail') return 'Unavailable';
   if (status === 'blocked') return 'More information needed';
   return 'Not checked';
@@ -1399,7 +1399,11 @@ function eligibilityCheckLabelFor(check) {
   if (check.id === 'lead_times') {
     return {
       value: check.studyValue === 'Needs Study Start Date' ? 'Study Start Date' : check.studyValue,
-      detail: check.status === 'fail' ? `Lead time: ${check.siteValue}` : ''
+      detail: check.status === 'fail'
+        ? `Lead time: ${check.siteValue}`
+        : check.status === 'pass_with_warning'
+          ? 'Verify lead time before sharing'
+          : ''
     };
   }
   if (check.id === 'species') return { value: check.studyValue, detail: '' };
