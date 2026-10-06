@@ -1375,21 +1375,22 @@ function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
       </div>
 
       <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
-        {result.checks.filter((check) => check.id !== 'crl_site').map((check) => (
-          <div className={`eligibility-check-row ${check.status}`} key={check.id}>
-            <div className="eligibility-check-head">
-              <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
-              <span className="eligibility-check-label">
-                <strong>{eligibilityCheckLabelFor(check).value}</strong>
-                <span>{eligibilityCheckLabelFor(check).subLabel}</span>
-                {eligibilityCheckLabelFor(check).detail ? (
-                  <small>{eligibilityCheckLabelFor(check).detail}</small>
-                ) : null}
-              </span>
-              <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
+        {result.checks.filter((check) => check.id !== 'crl_site').map((check) => {
+          const checkLabel = eligibilityCheckLabelFor(check);
+
+          return (
+            <div className={`eligibility-check-row ${check.status}`} key={check.id}>
+              <div className="eligibility-check-head">
+                <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
+                <span className="eligibility-check-label">
+                  <strong>{checkLabel.value}</strong>
+                  {checkLabel.detail ? <small>{checkLabel.detail}</small> : null}
+                </span>
+                <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {isEscalated ? (
@@ -1424,14 +1425,13 @@ function eligibilityCheckLabelFor(check) {
   if (check.id === 'lead_times') {
     return {
       value: check.studyValue === 'Needs Study Start Date' ? 'Study Start Date' : check.studyValue,
-      subLabel: 'Date',
       detail: check.status === 'fail' ? `Lead time: ${check.siteValue}` : ''
     };
   }
-  if (check.id === 'species') return { value: check.studyValue, subLabel: 'Species', detail: '' };
-  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, subLabel: 'Study type L1', detail: '' };
-  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, subLabel: 'Study type L2', detail: '' };
-  return { value: check.label, subLabel: '', detail: '' };
+  if (check.id === 'species') return { value: check.studyValue, detail: '' };
+  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, detail: '' };
+  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, detail: '' };
+  return { value: check.label, detail: '' };
 }
 
 function LastUpdatedMarker({ item }) {

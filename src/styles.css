@@ -695,6 +695,7 @@ h3 {
   display: grid;
   gap: var(--space-100);
   border-top: 1px solid #ffffffb8;
+  min-height: 44px;
   padding-top: var(--space-150);
 }
 
@@ -714,12 +715,6 @@ h3 {
 .eligibility-check-label strong {
   color: var(--ink);
   font-weight: 700;
-}
-
-.eligibility-check-label > span {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-0);
-  font-weight: 400;
 }
 
 .eligibility-check-label small {
@@ -916,6 +911,12 @@ h3 {
   font-style: normal;
   font-weight: 700;
   justify-self: end;
+  text-align: right;
+}
+
+.eligible-site-availability {
+  justify-self: end;
+  min-width: 86px;
   text-align: right;
 }
 
