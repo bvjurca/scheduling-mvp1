@@ -44,6 +44,7 @@ import {
 import {
   evaluateMvp1DateOnly,
   getCompactMvp1EligibleSites,
+  isMvp1DateEligibleForSelfServe,
   mvp1AllCrlSites,
   mvp1AsOfDate,
   sortMvp1SiteRecommendations
@@ -948,8 +949,7 @@ function Mvp1Experience({ onHome }) {
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const hasPreferredSite = selectedSite !== 'Any';
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
-  const parsedStudyStartDate = parseFullDate(studyStartDate);
-  const isDateEligibleForSelfServe = Boolean(parsedStudyStartDate && parsedStudyStartDate > addMonths(mvp1AsOfDate, 4));
+  const isDateEligibleForSelfServe = isMvp1DateEligibleForSelfServe(studyStartDate);
   const isNonRecommendedSite = Boolean(isDateEligibleForSelfServe && hasPreferredSite && hasCheckedRecommendations && !selectedRecommendation);
 
   function updateField(name, value) {
@@ -969,7 +969,7 @@ function Mvp1Experience({ onHome }) {
   }
 
   function checkSiteRecommendations() {
-    if (!parseFullDate(studyStartDate)) return;
+    if (!parseFullDate(studyStartDate) || !isDateEligibleForSelfServe) return;
     setHasCheckedRecommendations(true);
     setIsEligibleSitesDetailOpen(false);
     resetEligibilityState();
@@ -989,7 +989,7 @@ function Mvp1Experience({ onHome }) {
   }
 
   function checkEligibility(site = selectedSite) {
-    if (!site) return;
+    if (!site || !isDateEligibleForSelfServe) return;
     setEligibilityResult(evaluateMvp1Eligibility({
       studyStartDate,
       selectedSite: site,
@@ -1276,14 +1276,14 @@ function Mvp1DecisionOutput({
               {hasRecommendationList ? 'Recheck recommendation' : 'Check recommendation'}
             </Button>
           ) : null}
-          {selectedSite ? (
+          {selectedSite && !isDateOffRamp ? (
             <Button type="button" className="ghost-button eligibility-check-button" onPress={() => onCheckEligibility()}>
               {eligibilityResult ? 'Recheck eligibility' : 'Check eligibility'}
             </Button>
           ) : null}
         </div>
 
-        {eligibilityResult && !hasRecommendationList ? (
+        {eligibilityResult && !hasRecommendationList && !isDateOffRamp ? (
           <Mvp1EligibilityResult
             result={eligibilityResult}
           />
