@@ -628,12 +628,17 @@ h3 {
 }
 
 .mvp1-status-summary {
+  display: grid;
+  gap: var(--space-100);
+}
+
+.mvp1-status-title {
   display: flex;
   align-items: center;
   gap: var(--space-150);
 }
 
-.mvp1-status-summary .info-wrapper {
+.mvp1-status-title .info-wrapper {
   margin-left: auto;
 }
 

@@ -1240,7 +1240,9 @@ function Mvp1DecisionOutput({
   const showCheckAction = !isMissingStartDate && !isDateOffRamp && (!hasCheckedRecommendations || hasRecommendationList);
   const panelLevel = showSiteOffRamp ? 'bad' : evaluation.level;
   const panelTitle = showSiteOffRamp ? 'Central Scheduling off-ramp' : evaluation.title;
-  const panelCopy = showSiteOffRamp
+  const panelCopy = isDateOffRamp
+    ? 'Requested date is <4 months out'
+    : showSiteOffRamp
     ? 'Selected Preferred CRL Site is outside the eligible site set. Send this request to Central Scheduling.'
     : evaluation.copy;
   const actionHint = hasRecommendationList
@@ -1254,10 +1256,12 @@ function Mvp1DecisionOutput({
         {showCheckedState && panelLevel !== 'good' ? (
           <div className={`mvp1-native-status ${panelLevel}`}>
             <div className="mvp1-status-summary">
-              <strong>{panelTitle}</strong>
-              {panelLevel === 'warn' ? <InfoButton copy={actionHint} /> : null}
+              <div className="mvp1-status-title">
+                <strong>{panelTitle}</strong>
+                {panelLevel === 'warn' ? <InfoButton copy={actionHint} /> : null}
+              </div>
+              {panelLevel !== 'warn' ? <p>{panelCopy}</p> : null}
             </div>
-            {panelLevel !== 'warn' ? <p>{panelCopy}</p> : null}
           </div>
         ) : null}
 
