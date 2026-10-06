@@ -945,7 +945,6 @@ function Mvp1Experience({ onHome }) {
   const [isEligibleSitesDetailOpen, setIsEligibleSitesDetailOpen] = useState(false);
   const [recommendationSnapshot, setRecommendationSnapshot] = useState({ checkedAt: mvp1AsOfDate, variant: 0 });
   const [eligibilityResult, setEligibilityResult] = useState(null);
-  const [isEligibilityEscalated, setIsEligibilityEscalated] = useState(false);
   const evaluation = useMemo(() => evaluateMvp1DateOnly(studyStartDate, recommendationSnapshot), [studyStartDate, recommendationSnapshot]);
   const hasPreferredSite = selectedSite !== 'Any';
   const selectedRecommendation = evaluation.recommendations.find((item) => item.site === selectedSite);
@@ -987,7 +986,6 @@ function Mvp1Experience({ onHome }) {
 
   function resetEligibilityState() {
     setEligibilityResult(null);
-    setIsEligibilityEscalated(false);
   }
 
   function checkEligibility(site = selectedSite) {
@@ -997,12 +995,6 @@ function Mvp1Experience({ onHome }) {
       selectedSite: site,
       recommendations: evaluation.recommendations
     }));
-    setIsEligibilityEscalated(false);
-  }
-
-  function escalateEligibility() {
-    if (!eligibilityResult) return;
-    setIsEligibilityEscalated(true);
   }
 
   if (isEligibleSitesDetailOpen) {
@@ -1142,10 +1134,8 @@ function Mvp1Experience({ onHome }) {
               hasCheckedRecommendations={hasCheckedRecommendations}
               isSiteOffRamp={isNonRecommendedSite}
               eligibilityResult={eligibilityResult}
-              isEligibilityEscalated={isEligibilityEscalated}
               onCheckRecommendations={checkSiteRecommendations}
               onCheckEligibility={checkEligibility}
-              onEscalateEligibility={escalateEligibility}
               onViewAll={() => setIsEligibleSitesDetailOpen(true)}
             />
             <SfdcSideCard title="Related context">
@@ -1237,10 +1227,8 @@ function Mvp1DecisionOutput({
   hasCheckedRecommendations,
   isSiteOffRamp,
   eligibilityResult,
-  isEligibilityEscalated,
   onCheckRecommendations,
   onCheckEligibility,
-  onEscalateEligibility,
   onViewAll
 }) {
   const isMissingStartDate = evaluation.offRampReason === 'MISSING_STUDY_START_DATE';
@@ -1298,8 +1286,6 @@ function Mvp1DecisionOutput({
         {eligibilityResult && !hasRecommendationList ? (
           <Mvp1EligibilityResult
             result={eligibilityResult}
-            isEscalated={isEligibilityEscalated}
-            onEscalate={onEscalateEligibility}
           />
         ) : null}
 
@@ -1333,8 +1319,6 @@ function Mvp1DecisionOutput({
                     {item.site === selectedSite && eligibilityResult ? (
                       <Mvp1EligibilityResult
                         result={eligibilityResult}
-                        isEscalated={isEligibilityEscalated}
-                        onEscalate={onEscalateEligibility}
                       />
                     ) : null}
                   </React.Fragment>
@@ -1364,9 +1348,9 @@ function Mvp1DecisionOutput({
   );
 }
 
-function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
-  const panelStatus = isEscalated ? 'escalated' : result.status;
-  const panelTitle = `${result.selectedSite || 'Selected site'} - ${isEscalated ? 'Human support requested' : result.label}`;
+function Mvp1EligibilityResult({ result }) {
+  const panelStatus = result.status;
+  const panelTitle = `${result.selectedSite || 'Selected site'} - ${result.label}`;
 
   return (
     <section className={`mvp1-eligibility-result ${panelStatus}`} aria-labelledby="mvp1-eligibility-title">
@@ -1375,33 +1359,24 @@ function Mvp1EligibilityResult({ result, isEscalated, onEscalate }) {
       </div>
 
       <div className="eligibility-check-list" aria-label="Ordered eligibility checks">
-        {result.checks.filter((check) => check.id !== 'crl_site').map((check) => (
-          <div className={`eligibility-check-row ${check.status}`} key={check.id}>
-            <div className="eligibility-check-head">
-              <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
-              <span className="eligibility-check-label">
-                <strong>{eligibilityCheckLabelFor(check).value}</strong>
-                <span>{eligibilityCheckLabelFor(check).subLabel}</span>
-                {eligibilityCheckLabelFor(check).detail ? (
-                  <small>{eligibilityCheckLabelFor(check).detail}</small>
-                ) : null}
-              </span>
-              <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
+        {result.checks.filter((check) => check.id !== 'crl_site').map((check) => {
+          const checkLabel = eligibilityCheckLabelFor(check);
+
+          return (
+            <div className={`eligibility-check-row ${check.status}`} key={check.id}>
+              <div className="eligibility-check-head">
+                <span className="eligibility-check-mark" aria-hidden="true">{eligibilityMarkFor(check.status)}</span>
+                <span className="eligibility-check-label">
+                  <strong>{checkLabel.value}</strong>
+                  {checkLabel.detail ? <small>{checkLabel.detail}</small> : null}
+                </span>
+                <span className="eligibility-check-status">{eligibilityLabelFor(check.status)}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {isEscalated ? (
-        <div className="eligibility-escalated-note">
-          <strong>Handoff prepared</strong>
-          <p>The human-support workflow is ready to continue this check.</p>
-        </div>
-      ) : result.status === 'fail' ? (
-        <Button type="button" className="ghost-button secondary-button" onPress={onEscalate}>
-          Escalate to human support
-        </Button>
-      ) : null}
     </section>
   );
 }
@@ -1424,14 +1399,13 @@ function eligibilityCheckLabelFor(check) {
   if (check.id === 'lead_times') {
     return {
       value: check.studyValue === 'Needs Study Start Date' ? 'Study Start Date' : check.studyValue,
-      subLabel: 'Date',
       detail: check.status === 'fail' ? `Lead time: ${check.siteValue}` : ''
     };
   }
-  if (check.id === 'species') return { value: check.studyValue, subLabel: 'Species', detail: '' };
-  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, subLabel: 'Study type L1', detail: '' };
-  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, subLabel: 'Study type L2', detail: '' };
-  return { value: check.label, subLabel: '', detail: '' };
+  if (check.id === 'species') return { value: check.studyValue, detail: '' };
+  if (check.id === 'crl_study_type_l1') return { value: check.studyValue, detail: '' };
+  if (check.id === 'crl_study_type_l2') return { value: check.studyValue, detail: '' };
+  return { value: check.label, detail: '' };
 }
 
 function LastUpdatedMarker({ item }) {

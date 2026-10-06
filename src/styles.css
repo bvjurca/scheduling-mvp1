@@ -681,11 +681,6 @@ h3 {
   font-size: var(--font-size-2);
 }
 
-.eligibility-escalated-note p {
-  margin: 0;
-  color: var(--color-text-secondary);
-}
-
 .eligibility-check-list {
   display: grid;
   gap: var(--space-100);
@@ -695,6 +690,7 @@ h3 {
   display: grid;
   gap: var(--space-100);
   border-top: 1px solid #ffffffb8;
+  min-height: 44px;
   padding-top: var(--space-150);
 }
 
@@ -714,12 +710,6 @@ h3 {
 .eligibility-check-label strong {
   color: var(--ink);
   font-weight: 700;
-}
-
-.eligibility-check-label > span {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-0);
-  font-weight: 400;
 }
 
 .eligibility-check-label small {
@@ -761,17 +751,6 @@ h3 {
   font-size: var(--font-size-0);
   font-weight: 700;
   white-space: nowrap;
-}
-
-.eligibility-escalated-note {
-  display: grid;
-  gap: var(--space-100);
-  border-top: 1px solid #ffffffb8;
-  padding-top: var(--space-200);
-}
-
-.eligibility-escalated-note strong {
-  color: var(--amber);
 }
 
 .mvp1-native-status {
@@ -916,6 +895,12 @@ h3 {
   font-style: normal;
   font-weight: 700;
   justify-self: end;
+  text-align: right;
+}
+
+.eligible-site-availability {
+  justify-self: end;
+  min-width: 86px;
   text-align: right;
 }
 

@@ -29,7 +29,6 @@ const checks = [
       'Check recommendation',
       'Check eligibility',
       'Ordered eligibility checks',
-      'Escalate to human support',
       'Eligible sites',
       'Eligible sites match current Commercial snapshot as a proposal window',
       'View all',
