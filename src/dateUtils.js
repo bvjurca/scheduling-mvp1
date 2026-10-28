@@ -30,6 +30,15 @@ export function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
+export function formatDateWindow(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const day = date.getUTCDate();
+  const period = day <= 10 ? 'Early' : day <= 20 ? 'Mid' : 'Late';
+  const month = monthNames[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+  return `${period} ${month} ${year}`;
+}
+
 export function formatDateTime(date) {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
   const day = String(date.getDate()).padStart(2, '0');

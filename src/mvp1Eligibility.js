@@ -1,4 +1,4 @@
-import { formatDate, parseFullDate, parseMonthSelection } from './dateUtils';
+import { formatDateWindow, parseFullDate, parseMonthSelection } from './dateUtils';
 
 export const mvp1EligibilityContext = {
   species: 'Mouse',
@@ -18,8 +18,8 @@ export function evaluateMvp1Eligibility({ studyStartDate, selectedSite, recommen
       id: 'lead_times',
       label: 'Date',
       operator: 'GREATER_THAN_OR_EQUAL',
-      siteValue: availableFrom ? formatDate(availableFrom) : 'No site lead-time snapshot',
-      studyValue: parsedStudyStartDate ? formatDate(parsedStudyStartDate) : 'Needs Study Start Date',
+      siteValue: availableFrom ? formatDateWindow(availableFrom) : 'No site lead-time snapshot',
+      studyValue: parsedStudyStartDate ? formatDateWindow(parsedStudyStartDate) : 'Needs Study Start Date',
       status: leadTimesPass ? 'pass' : 'fail'
     },
     {
